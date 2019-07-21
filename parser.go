@@ -44,6 +44,7 @@ func Parse(raw []byte) (*Token, error) {
 		raw:       raw,
 		header:    header,
 		claims:    claims,
+		payload:   raw[:dot2],
 		signature: signature,
 	}
 	return token, nil
