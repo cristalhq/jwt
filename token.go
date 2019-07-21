@@ -35,3 +35,8 @@ func (t *Token) Payload() []byte {
 func (t *Token) Signature() []byte {
 	return t.signature
 }
+
+// MarshalBinary implements encoding.BinaryMarshaler.
+func (t *Token) MarshalBinary() (data []byte, err error) {
+	return t.raw, nil
+}
