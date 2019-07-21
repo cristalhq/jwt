@@ -1,5 +1,10 @@
 package jwt
 
+import (
+	_ "crypto/sha256" // to register a hash
+	_ "crypto/sha512" // to register a hash
+)
+
 // Algorithm for signing and verifying.
 type Algorithm string
 
@@ -20,3 +25,10 @@ const (
 	PS256 Algorithm = "PS256"
 	PS384 Algorithm = "PS384"
 )
+
+// Signer used to sign and verify tokens.
+type Signer interface {
+	Algorithm() Algorithm
+	Sign(payload []byte, key interface{}) ([]byte, error)
+	Verify(expected, payload []byte, key interface{}) error
+}
