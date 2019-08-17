@@ -1,21 +1,43 @@
-## jwt - JSON Web Tokens for Go
+# jwt
 
-[![Build Status][travis-image]][travis-url]
-[![Go Report Card][go-report-image]][go-report-url]
-[![coverage][coverage-image]][coverage-url]
+[![Build Status][travis-img]][travis-url]
+[![GoDoc][doc-img]][doc-url]
+[![Go Report Card][reportcard-img]][reportcard-url]
+[![Go Report Card][coverage-img]][coverage-url]
 
-[travis-image]: https://travis-ci.org/cristalhq/jwt.svg?branch=master
-[travis-url]: https://travis-ci.org/cristalhq/jwt
-[go-report-image]: https://goreportcard.com/badge/github.com/cristalhq/jwt
-[go-report-url]: https://goreportcard.com/report/github.com/cristalhq/jwt
-[coverage-image]: https://coveralls.io/repos/github/cristalhq/jwt/badge.svg?branch=master
-[coverage-url]: https://coveralls.io/github/cristalhq/jwt?branch=master
+JSON Web Tokens for Go
 
 ## Features
 
-* Dependency-free.
+* Simple API.
 * Optimized for speed.
+* Dependency-free.
+
+## Install
+
+```
+go get github.com/cristalhq/jwt
+```
+
+## Example
+
+```go
+```
 
 ## Documentation
 
 See [these docs](https://godoc.org/github.com/cristalhq/jwt).
+
+## License
+
+[MIT License](LICENSE).
+
+[travis-img]: https://travis-ci.org/cristalhq/jwt.svg?branch=master
+[travis-url]: https://travis-ci.org/cristalhq/jwt
+[doc-img]: https://godoc.org/github.com/cristalhq/jwt?status.svg
+[doc-url]: https://godoc.org/github.com/cristalhq/jwt
+[reportcard-img]: https://goreportcard.com/badge/cristalhq/jwt
+[reportcard-url]: https://goreportcard.com/report/cristalhq/jwt
+[coverage-img]: https://coveralls.io/repos/github/cristalhq/jwt/badge.svg?branch=master
+[coverage-url]: https://coveralls.io/github/cristalhq/jwt?branch=master
+
