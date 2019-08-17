@@ -9,38 +9,35 @@ var _ Signer = (*hsAlg)(nil)
 
 type hsAlg struct {
 	alg  Algorithm
+	key  []byte
 	hash crypto.Hash
 }
 
 // NewHS256 returns new HMAC Signer using SHA256 hash.
-func NewHS256() Signer {
-	return &hsAlg{HS256, crypto.SHA256}
+func NewHS256(key []byte) Signer {
+	return &hsAlg{HS256, key, crypto.SHA256}
 }
 
 // NewHS384 returns new HMAC Signer using SHA384 hash.
-func NewHS384() Signer {
-	return &hsAlg{HS384, crypto.SHA384}
+func NewHS384(key []byte) Signer {
+	return &hsAlg{HS384, key, crypto.SHA384}
 }
 
 // NewHS512 returns new HMAC Signer using SHA512 hash.
-func NewHS512() Signer {
-	return &hsAlg{HS512, crypto.SHA512}
+func NewHS512(key []byte) Signer {
+	return &hsAlg{HS512, key, crypto.SHA512}
 }
 
 func (h *hsAlg) Algorithm() Algorithm {
 	return h.alg
 }
 
-func (h *hsAlg) Sign(payload []byte, key interface{}) ([]byte, error) {
-	keyBytes, ok := key.([]byte)
-	if !ok {
-		return nil, ErrInvalidKeyType
-	}
+func (h *hsAlg) Sign(payload []byte) ([]byte, error) {
 	if !h.hash.Available() {
 		return nil, ErrHashUnavailable
 	}
 
-	hasher := hmac.New(h.hash.New, keyBytes)
+	hasher := hmac.New(h.hash.New, h.key)
 
 	_, err := hasher.Write(payload)
 	if err != nil {
@@ -49,16 +46,8 @@ func (h *hsAlg) Sign(payload []byte, key interface{}) ([]byte, error) {
 	return hasher.Sum(nil), nil
 }
 
-func (h *hsAlg) Verify(expected, payload []byte, key interface{}) error {
-	keyBytes, ok := key.([]byte)
-	if !ok {
-		return ErrInvalidKeyType
-	}
-	if !h.hash.Available() {
-		return ErrHashUnavailable
-	}
-
-	signed, err := h.Sign(payload, keyBytes)
+func (h *hsAlg) Verify(expected, payload []byte) error {
+	signed, err := h.Sign(payload)
 	if err != nil {
 		return err
 	}

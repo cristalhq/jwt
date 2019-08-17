@@ -14,7 +14,6 @@ var (
 // TokenBuilder is used to create a new token.
 type TokenBuilder struct {
 	signer Signer
-	key    interface{}
 	header Header
 }
 
@@ -22,7 +21,6 @@ type TokenBuilder struct {
 func NewTokenBuilder(signer Signer, key interface{}) *TokenBuilder {
 	b := &TokenBuilder{
 		signer: signer,
-		key:    key,
 
 		header: Header{
 			Type:      "JWT",
@@ -90,7 +88,7 @@ func (b *TokenBuilder) encodePayload(headers, claims []byte) []byte {
 }
 
 func (b *TokenBuilder) signPayload(payload []byte) (signed, signature []byte, err error) {
-	signature, err = b.signer.Sign(payload, b.key)
+	signature, err = b.signer.Sign(payload)
 	if err != nil {
 		return nil, nil, err
 	}

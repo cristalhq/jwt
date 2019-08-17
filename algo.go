@@ -29,6 +29,6 @@ const (
 // Signer used to sign and verify tokens.
 type Signer interface {
 	Algorithm() Algorithm
-	Sign(payload []byte, key interface{}) ([]byte, error)
-	Verify(expected, payload []byte, key interface{}) error
+	Sign(payload []byte) ([]byte, error)
+	Verify(expected, payload []byte) error
 }
