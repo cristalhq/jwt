@@ -3,7 +3,7 @@ package jwt
 // StandardClaims https://tools.ietf.org/html/rfc7519#section-4.1
 type StandardClaims struct {
 	// Audience claim identifies the recipients that the JWT is intended for.
-	Audience []string `json:"aud,omitempty"`
+	Audience Audience `json:"aud,omitempty"`
 
 	// ExpiresAt claim identifies the expiration time on or after which the JWT MUST NOT be accepted for processing.
 	ExpiresAt int64 `json:"exp,omitempty"`
