@@ -72,7 +72,7 @@ func (h *hsAlg) Verify(expected, payload []byte) error {
 		return err
 	}
 	if !hmac.Equal(expected, signed) {
-		return ErrSignatureInvalid
+		return ErrInvalidSignature
 	}
 	return nil
 }

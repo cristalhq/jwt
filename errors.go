@@ -15,10 +15,7 @@ const (
 
 	// ErrInvalidKey when provided an incorrect key.
 	ErrInvalidKey = Error("key is invalid")
-	// ErrInvalidKeyType when provided an incorrect key type.
-	ErrInvalidKeyType = Error("key is of invalid type")
-	// ErrHashUnavailable hash wasn't registered.
-	ErrHashUnavailable = Error("the requested hash function is unavailable")
-	// ErrSignatureInvalid signature wasn't correct.
-	ErrSignatureInvalid = Error("signature is invalid")
+
+	// ErrInvalidSignature signature wasn't correct.
+	ErrInvalidSignature = Error("signature is invalid")
 )
