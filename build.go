@@ -18,7 +18,7 @@ type TokenBuilder struct {
 }
 
 // NewTokenBuilder returns new instance of TokenBuilder.
-func NewTokenBuilder(signer Signer, key interface{}) *TokenBuilder {
+func NewTokenBuilder(signer Signer) *TokenBuilder {
 	b := &TokenBuilder{
 		signer: signer,
 
