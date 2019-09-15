@@ -6,21 +6,26 @@ type StandardClaims struct {
 	Audience Audience `json:"aud,omitempty"`
 
 	// ExpiresAt claim identifies the expiration time on or after which the JWT MUST NOT be accepted for processing.
-	ExpiresAt int64 `json:"exp,omitempty"`
+	// Use of this claim is OPTIONAL.
+	ExpiresAt Timestamp `json:"exp,omitempty"`
 
 	// ID claim provides a unique identifier for the JWT.
 	ID string `json:"jti,omitempty"`
 
 	// IssuedAt claim identifies the time at which the JWT was issued.
 	// This claim can be used to determine the age of the JWT.
-	IssuedAt int64 `json:"iat,omitempty"`
+	// Use of this claim is OPTIONAL.
+	IssuedAt Timestamp `json:"iat,omitempty"`
 
 	// Issuer claim identifies the principal that issued the JWT.
+	// Use of this claim is OPTIONAL.
 	Issuer string `json:"iss,omitempty"`
 
 	// NotBefore claim identifies the time before which the JWT MUST NOT be accepted for processing.
-	NotBefore int64 `json:"nbf,omitempty"`
+	// Use of this claim is OPTIONAL.
+	NotBefore Timestamp `json:"nbf,omitempty"`
 
 	// Subject claim identifies the principal that is the subject of the JWT.
+	// Use of this claim is OPTIONAL.
 	Subject string `json:"sub,omitempty"`
 }
