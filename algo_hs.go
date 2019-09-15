@@ -5,27 +5,51 @@ import (
 	"crypto/hmac"
 )
 
+func init() {
+	if !crypto.SHA256.Available() {
+		panic("crypto.SHA256 is not available")
+	}
+	if !crypto.SHA384.Available() {
+		panic("crypto.SHA384 is not available")
+	}
+	if !crypto.SHA512.Available() {
+		panic("crypto.SHA512 is not available")
+	}
+}
+
 var _ Signer = (*hsAlg)(nil)
 
 type hsAlg struct {
 	alg  Algorithm
-	key  []byte
 	hash crypto.Hash
+	key  []byte
 }
 
 // NewHS256 returns new HMAC Signer using SHA256 hash.
 func NewHS256(key []byte) Signer {
-	return &hsAlg{HS256, key, crypto.SHA256}
+	return &hsAlg{
+		alg:  HS256,
+		hash: crypto.SHA256,
+		key:  key,
+	}
 }
 
 // NewHS384 returns new HMAC Signer using SHA384 hash.
 func NewHS384(key []byte) Signer {
-	return &hsAlg{HS384, key, crypto.SHA384}
+	return &hsAlg{
+		alg:  HS384,
+		hash: crypto.SHA384,
+		key:  key,
+	}
 }
 
 // NewHS512 returns new HMAC Signer using SHA512 hash.
 func NewHS512(key []byte) Signer {
-	return &hsAlg{HS512, key, crypto.SHA512}
+	return &hsAlg{
+		alg:  HS512,
+		hash: crypto.SHA512,
+		key:  key,
+	}
 }
 
 func (h *hsAlg) Algorithm() Algorithm {
@@ -33,10 +57,6 @@ func (h *hsAlg) Algorithm() Algorithm {
 }
 
 func (h *hsAlg) Sign(payload []byte) ([]byte, error) {
-	if !h.hash.Available() {
-		return nil, ErrHashUnavailable
-	}
-
 	hasher := hmac.New(h.hash.New, h.key)
 
 	_, err := hasher.Write(payload)
