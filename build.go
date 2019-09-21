@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 )
 
+const tokenSep = '.'
+
 var (
 	base64Encode     = base64.RawURLEncoding.Encode
 	base64EncodedLen = base64.RawURLEncoding.EncodedLen
@@ -56,7 +58,7 @@ func (b *TokenBuilder) Build(claims encoding.BinaryMarshaler) (*Token, error) {
 		return nil, err
 	}
 
-	payload := b.encodePayload(encodedHeader, encodedClaims)
+	payload := concatParts(encodedHeader, encodedClaims)
 
 	signed, signature, err := b.signPayload(payload)
 	if err != nil {
@@ -131,10 +133,6 @@ func (b *TokenBuilder) encodeClaims(claims encoding.BinaryMarshaler) (raw, encod
 	return raw, encoded, nil
 }
 
-func (b *TokenBuilder) encodePayload(headers, claims []byte) []byte {
-	return concat3(headers, []byte{'.'}, claims)
-}
-
 func (b *TokenBuilder) signPayload(payload []byte) (signed, signature []byte, err error) {
 	signature, err = b.signer.Sign(payload)
 	if err != nil {
@@ -144,11 +142,17 @@ func (b *TokenBuilder) signPayload(payload []byte) (signed, signature []byte, er
 	encodedSignature := make([]byte, base64EncodedLen(len(signature)))
 	base64Encode(encodedSignature, signature)
 
-	signed = concat3(payload, []byte{'.'}, encodedSignature)
+	signed = concatParts(payload, encodedSignature)
 
 	return signed, signature, nil
 }
 
-func concat3(a, b, c []byte) []byte {
-	return append(a, append(b, c...)...)
+func concatParts(a, b []byte) []byte {
+	buf := make([]byte, len(a)+1+len(b))
+	buf[len(a)] = tokenSep
+
+	copy(buf, a)
+	copy(buf, b)
+
+	return buf
 }
