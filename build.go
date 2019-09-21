@@ -60,6 +60,37 @@ func (b *TokenBuilder) Build(claims encoding.BinaryMarshaler) (*Token, error) {
 }
 
 func (b *TokenBuilder) encodeHeader() ([]byte, error) {
+	switch b.signer.Algorithm() {
+	case HS256:
+		return []byte("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"), nil
+	case HS384:
+		return []byte("eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9"), nil
+	case HS512:
+		return []byte("eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9"), nil
+
+	case RS256:
+		return []byte("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"), nil
+	case RS384:
+		return []byte("eyJhbGciOiJSUzM4NCIsInR5cCI6IkpXVCJ9"), nil
+	case RS512:
+		return []byte("eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9"), nil
+
+	case ES256:
+		return []byte("eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9"), nil
+	case ES384:
+		return []byte("eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9"), nil
+	case ES512:
+		return []byte("eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9"), nil
+
+	case PS256:
+		return []byte("eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9"), nil
+	case PS384:
+		return []byte("eyJhbGciOiJQUzM4NCIsInR5cCI6IkpXVCJ9"), nil
+
+	default:
+		// another algorithm? encode below
+	}
+
 	buf, err := json.Marshal(b.header)
 	if err != nil {
 		return nil, err
