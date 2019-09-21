@@ -40,10 +40,3 @@ const (
 	PS256 Algorithm = "PS256"
 	PS384 Algorithm = "PS384"
 )
-
-// Signer used to sign and verify tokens.
-type Signer interface {
-	Algorithm() Algorithm
-	Sign(payload []byte) ([]byte, error)
-	Verify(expected, payload []byte) error
-}
