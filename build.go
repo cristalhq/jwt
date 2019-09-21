@@ -17,6 +17,20 @@ type TokenBuilder struct {
 	header Header
 }
 
+// Build is used to create and encode JWT with a provided claims.
+func Build(signer Signer, claims encoding.BinaryMarshaler) (*Token, error) {
+	return NewTokenBuilder(signer).Build(claims)
+}
+
+// BuildWithHeader is used to create and encode JWT with a provided claims.
+func BuildWithHeader(signer Signer, header *Header, claims encoding.BinaryMarshaler) (*Token, error) {
+	b := &TokenBuilder{
+		signer: signer,
+		header: *header,
+	}
+	return b.Build(claims)
+}
+
 // NewTokenBuilder returns new instance of TokenBuilder.
 func NewTokenBuilder(signer Signer) *TokenBuilder {
 	b := &TokenBuilder{
