@@ -1,5 +1,7 @@
 package jwt
 
+import "encoding/json"
+
 // StandardClaims https://tools.ietf.org/html/rfc7519#section-4.1
 type StandardClaims struct {
 	// Audience claim identifies the recipients that the JWT is intended for.
@@ -28,4 +30,8 @@ type StandardClaims struct {
 	// Subject claim identifies the principal that is the subject of the JWT.
 	// Use of this claim is OPTIONAL.
 	Subject string `json:"sub,omitempty"`
+}
+
+func (sc *StandardClaims) MarshalBinary() (data []byte, err error) {
+	return json.Marshal(sc)
 }
