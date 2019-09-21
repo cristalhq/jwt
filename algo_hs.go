@@ -5,18 +5,6 @@ import (
 	"crypto/hmac"
 )
 
-func init() {
-	if !crypto.SHA256.Available() {
-		panic("crypto.SHA256 is not available")
-	}
-	if !crypto.SHA384.Available() {
-		panic("crypto.SHA384 is not available")
-	}
-	if !crypto.SHA512.Available() {
-		panic("crypto.SHA512 is not available")
-	}
-}
-
 var _ Signer = (*hsAlg)(nil)
 
 type hsAlg struct {

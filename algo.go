@@ -1,9 +1,22 @@
 package jwt
 
 import (
+	"crypto"
 	_ "crypto/sha256" // to register a hash
 	_ "crypto/sha512" // to register a hash
 )
+
+func init() {
+	if !crypto.SHA256.Available() {
+		panic("crypto.SHA256 is not available")
+	}
+	if !crypto.SHA384.Available() {
+		panic("crypto.SHA384 is not available")
+	}
+	if !crypto.SHA512.Available() {
+		panic("crypto.SHA512 is not available")
+	}
+}
 
 // Algorithm for signing and verifying.
 type Algorithm string
