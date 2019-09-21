@@ -15,6 +15,8 @@ JSON Web Tokens for Go
 
 ## Install
 
+Go version 1.13
+
 ```
 go get github.com/cristalhq/jwt
 ```
@@ -50,4 +52,3 @@ See [these docs](https://godoc.org/github.com/cristalhq/jwt).
 [reportcard-url]: https://goreportcard.com/report/cristalhq/jwt
 [coverage-img]: https://coveralls.io/repos/github/cristalhq/jwt/badge.svg?branch=master
 [coverage-url]: https://coveralls.io/github/cristalhq/jwt?branch=master
-
