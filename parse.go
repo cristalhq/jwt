@@ -49,3 +49,15 @@ func Parse(raw []byte) (*Token, error) {
 	}
 	return token, nil
 }
+
+// ParseAndVerify decodes a token and verifies it's signature with a given signer.
+func ParseAndVerify(rawToken []byte, signer Signer) (*Token, error) {
+	token, err := Parse(rawToken)
+	if err != nil {
+		return nil, err
+	}
+	if err := signer.Verify(token.signature, token.payload); err != nil {
+		return nil, err
+	}
+	return token, nil
+}
