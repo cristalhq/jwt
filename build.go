@@ -61,6 +61,9 @@ func (b *TokenBuilder) Build(claims encoding.BinaryMarshaler) (*Token, error) {
 
 func (b *TokenBuilder) encodeHeader() ([]byte, error) {
 	switch b.signer.Algorithm() {
+	case NoEncryption:
+		return []byte("eyJhbGciOiJub25lIn0"), nil
+
 	case HS256:
 		return []byte("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"), nil
 	case HS384:
