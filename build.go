@@ -151,8 +151,8 @@ func concatParts(a, b []byte) []byte {
 	buf := make([]byte, len(a)+1+len(b))
 	buf[len(a)] = tokenSep
 
-	copy(buf, a)
-	copy(buf, b)
+	copy(buf[:len(a)], a)
+	copy(buf[len(a)+1:], b)
 
 	return buf
 }
