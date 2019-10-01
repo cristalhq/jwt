@@ -1,7 +1,6 @@
 package jwt
 
 import (
-	"github.com/stretchr/testify/assert"
 	"testing"
 )
 
@@ -10,10 +9,12 @@ func TestHS256_WithValidSignature(t *testing.T) {
 	tokenBuilder := NewTokenBuilder(hs256Signer)
 	claims := &StandardClaims{}
 
-	token, err := tokenBuilder.Build(claims)
-	assert.NoError(t, err)
+	token, _ := tokenBuilder.Build(claims)
 
-	assert.Nil(t, hs256Signer.Verify(token.Signature(), token.Payload()))
+	result := hs256Signer.Verify(token.Signature(), token.Payload())
+	if result != nil {
+		t.Errorf("want `%v`, got: `%v`", nil, result)
+	}
 }
 
 func TestHS256_WithInvalidSignature(t *testing.T) {
@@ -24,7 +25,10 @@ func TestHS256_WithInvalidSignature(t *testing.T) {
 
 	token, _ := tokenBuilder.Build(claims)
 
-	assert.Error(t, hs256Signer2.Verify(token.Signature(), token.Payload()))
+	result := hs256Signer2.Verify(token.Signature(), token.Payload())
+	if result == nil {
+		t.Errorf("want `%v`, got: `%v`", ErrInvalidSignature, result)
+	}
 }
 
 func TestHS384_WithValidSignature(t *testing.T) {
@@ -32,10 +36,12 @@ func TestHS384_WithValidSignature(t *testing.T) {
 	tokenBuilder := NewTokenBuilder(hs384Signer)
 	claims := &StandardClaims{}
 
-	token, err := tokenBuilder.Build(claims)
-	assert.NoError(t, err)
+	token, _ := tokenBuilder.Build(claims)
 
-	assert.Nil(t, hs384Signer.Verify(token.Signature(), token.Payload()))
+	result := hs384Signer.Verify(token.Signature(), token.Payload())
+	if result != nil {
+		t.Errorf("want `%v`, got: `%v`", nil, result)
+	}
 }
 
 func TestHS384_WithInvalidSignature(t *testing.T) {
@@ -46,7 +52,10 @@ func TestHS384_WithInvalidSignature(t *testing.T) {
 
 	token, _ := tokenBuilder.Build(claims)
 
-	assert.Error(t, hs384Signer2.Verify(token.Signature(), token.Payload()))
+	result := hs384Signer2.Verify(token.Signature(), token.Payload())
+	if result == nil {
+		t.Errorf("want `%v`, got: `%v`", ErrInvalidSignature, result)
+	}
 }
 
 func TestHS512_WithValidSignature(t *testing.T) {
@@ -54,10 +63,12 @@ func TestHS512_WithValidSignature(t *testing.T) {
 	tokenBuilder := NewTokenBuilder(hs512Signer)
 	claims := &StandardClaims{}
 
-	token, err := tokenBuilder.Build(claims)
-	assert.NoError(t, err)
+	token, _ := tokenBuilder.Build(claims)
 
-	assert.Nil(t, hs512Signer.Verify(token.Signature(), token.Payload()))
+	result := hs512Signer.Verify(token.Signature(), token.Payload())
+	if result != nil {
+		t.Errorf("want `%v`, got: `%v`", nil, result)
+	}
 }
 
 func TestHS512_WithInvalidSignature(t *testing.T) {
@@ -68,5 +79,8 @@ func TestHS512_WithInvalidSignature(t *testing.T) {
 
 	token, _ := tokenBuilder.Build(claims)
 
-	assert.Error(t, hs512Signer2.Verify(token.Signature(), token.Payload()))
+	result := hs512Signer2.Verify(token.Signature(), token.Payload())
+	if result == nil {
+		t.Errorf("want `%v`, got: `%v`", ErrInvalidSignature, result)
+	}
 }
