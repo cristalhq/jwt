@@ -1,4 +1,4 @@
-package example
+package jwt
 
 import (
 	"github.com/cristalhq/jwt"
