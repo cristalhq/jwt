@@ -1,7 +1,7 @@
 package example
 
 import (
-	jwt "github.com/cristalhq/jwt"
+	"github.com/cristalhq/jwt"
 )
 
 func simpleExample() []byte {
