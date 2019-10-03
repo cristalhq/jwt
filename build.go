@@ -105,6 +105,8 @@ func (b *TokenBuilder) encodeHeader() ([]byte, error) {
 		return []byte("eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9"), nil
 	case PS384:
 		return []byte("eyJhbGciOiJQUzM4NCIsInR5cCI6IkpXVCJ9"), nil
+	case PS512:
+		return []byte("eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9"), nil
 
 	default:
 		// another algorithm? encode below
