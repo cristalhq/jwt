@@ -1,86 +1,120 @@
 package jwt
 
 import (
+	"encoding"
 	"testing"
 )
 
-func TestHS256_WithValidSignature(t *testing.T) {
-	hs256Signer := NewHS256([]byte("key"))
-	tokenBuilder := NewTokenBuilder(hs256Signer)
-	claims := &StandardClaims{}
+func TestHS_WithValidSignature(t *testing.T) {
+	f := func(signer Signer, claims encoding.BinaryMarshaler) {
+		tokenBuilder := NewTokenBuilder(signer)
+		token, _ := tokenBuilder.Build(claims)
 
-	token, _ := tokenBuilder.Build(claims)
-
-	result := hs256Signer.Verify(token.Signature(), token.Payload())
-	if result != nil {
-		t.Errorf("want `%v`, got: `%v`", nil, result)
+		err := signer.Verify(token.Signature(), token.Payload())
+		if err != nil {
+			t.Errorf("want no err, got: `%v`", err)
+		}
 	}
+	f(
+		NewHS256([]byte("key1")),
+		&StandardClaims{},
+	)
+	f(
+		NewHS384([]byte("key2")),
+		&StandardClaims{},
+	)
+	f(
+		NewHS512([]byte("key3")),
+		&StandardClaims{},
+	)
 }
 
-func TestHS256_WithInvalidSignature(t *testing.T) {
-	hs256Signer1 := NewHS256([]byte("key1"))
-	hs256Signer2 := NewHS256([]byte("key2"))
-	tokenBuilder := NewTokenBuilder(hs256Signer1)
-	claims := &StandardClaims{}
+func TestHS_WithValidSignature_CustomClaims(t *testing.T) {
+	f := func(signer Signer, claims encoding.BinaryMarshaler) {
+		tokenBuilder := NewTokenBuilder(signer)
+		token, _ := tokenBuilder.Build(claims)
 
-	token, _ := tokenBuilder.Build(claims)
-
-	result := hs256Signer2.Verify(token.Signature(), token.Payload())
-	if result == nil {
-		t.Errorf("want `%v`, got: `%v`", ErrInvalidSignature, result)
+		err := signer.Verify(token.Signature(), token.Payload())
+		if err != nil {
+			t.Errorf("want no err, got: `%v`", err)
+		}
 	}
+	f(
+		NewHS256([]byte("key1")),
+		&customClaims{
+			TestField: "foo",
+		},
+	)
+	f(
+		NewHS384([]byte("key2")),
+		&customClaims{
+			TestField: "bar",
+		},
+	)
+	f(
+		NewHS512([]byte("key3")),
+		&customClaims{
+			TestField: "baz",
+		},
+	)
 }
 
-func TestHS384_WithValidSignature(t *testing.T) {
-	hs384Signer := NewHS384([]byte("key"))
-	tokenBuilder := NewTokenBuilder(hs384Signer)
-	claims := &StandardClaims{}
+func TestHS_WithInvalidSignature(t *testing.T) {
+	f := func(signer, verifier Signer, claims encoding.BinaryMarshaler) {
+		tokenBuilder := NewTokenBuilder(signer)
+		token, _ := tokenBuilder.Build(claims)
 
-	token, _ := tokenBuilder.Build(claims)
-
-	result := hs384Signer.Verify(token.Signature(), token.Payload())
-	if result != nil {
-		t.Errorf("want `%v`, got: `%v`", nil, result)
+		err := verifier.Verify(token.Signature(), token.Payload())
+		if err == nil {
+			t.Errorf("want %v, got nil", ErrInvalidSignature)
+		}
 	}
+	f(
+		NewHS256([]byte("key1")),
+		NewHS256([]byte("1key")),
+		&StandardClaims{},
+	)
+	f(
+		NewHS384([]byte("key2")),
+		NewHS384([]byte("2key")),
+		&StandardClaims{},
+	)
+	f(
+		NewHS512([]byte("key3")),
+		NewHS512([]byte("3key")),
+		&StandardClaims{},
+	)
 }
 
-func TestHS384_WithInvalidSignature(t *testing.T) {
-	hs384Signer1 := NewHS384([]byte("key1"))
-	hs384Signer2 := NewHS384([]byte("key2"))
-	tokenBuilder := NewTokenBuilder(hs384Signer1)
-	claims := &StandardClaims{}
+func TestHS_WithInvalidSignature_CustomClaims(t *testing.T) {
+	f := func(signer, verifier Signer, claims encoding.BinaryMarshaler) {
+		tokenBuilder := NewTokenBuilder(signer)
+		token, _ := tokenBuilder.Build(claims)
 
-	token, _ := tokenBuilder.Build(claims)
-
-	result := hs384Signer2.Verify(token.Signature(), token.Payload())
-	if result == nil {
-		t.Errorf("want `%v`, got: `%v`", ErrInvalidSignature, result)
+		err := verifier.Verify(token.Signature(), token.Payload())
+		if err == nil {
+			t.Errorf("want %v, got nil", ErrInvalidSignature)
+		}
 	}
-}
-
-func TestHS512_WithValidSignature(t *testing.T) {
-	hs512Signer := NewHS512([]byte("key"))
-	tokenBuilder := NewTokenBuilder(hs512Signer)
-	claims := &StandardClaims{}
-
-	token, _ := tokenBuilder.Build(claims)
-
-	result := hs512Signer.Verify(token.Signature(), token.Payload())
-	if result != nil {
-		t.Errorf("want `%v`, got: `%v`", nil, result)
-	}
-}
-
-func TestHS512_WithInvalidSignature(t *testing.T) {
-	hs512Signer1 := NewHS512([]byte("key1"))
-	hs512Signer2 := NewHS512([]byte("key2"))
-	tokenBuilder := NewTokenBuilder(hs512Signer1)
-	claims := &StandardClaims{}
-
-	token, _ := tokenBuilder.Build(claims)
-
-	result := hs512Signer2.Verify(token.Signature(), token.Payload())
-	if result == nil {
-		t.Errorf("want `%v`, got: `%v`", ErrInvalidSignature, result)
-	}
+	f(
+		NewHS256([]byte("key1")),
+		NewHS256([]byte("1key")),
+		&customClaims{
+			TestField: "foo",
+		},
+	)
+	f(
+		NewHS384([]byte("key2")),
+		NewHS384([]byte("2key")),
+		&customClaims{
+			TestField: "bar",
+		},
+	)
+	f(
+		NewHS512([]byte("key3")),
+		NewHS512([]byte("3key")),
+		&customClaims{
+			TestField: "baz",
+		},
+	)
 }
