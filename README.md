@@ -44,8 +44,8 @@ See [these docs](https://godoc.org/github.com/cristalhq/jwt).
 
 [MIT License](LICENSE).
 
-[build-img]: https://github.com/cristalhq/oauth2/workflows/Go/badge.svg
-[build-url]: https://github.com/cristalhq/oauth2/actions
+[build-img]: https://github.com/cristalhq/jwt/workflows/Go/badge.svg
+[build-url]: https://github.com/cristalhq/jwt/actions
 [doc-img]: https://godoc.org/github.com/cristalhq/jwt?status.svg
 [doc-url]: https://godoc.org/github.com/cristalhq/jwt
 [reportcard-img]: https://goreportcard.com/badge/cristalhq/jwt
