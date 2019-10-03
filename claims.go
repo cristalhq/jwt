@@ -32,6 +32,10 @@ type StandardClaims struct {
 	Subject string `json:"sub,omitempty"`
 }
 
+// MarshalBinary is needed for Build and TokenBuilder.Build functions.
+//
+// Same interface (encoding.MarshalBinary) must be implemented by custom user claims.
+//
 func (sc *StandardClaims) MarshalBinary() (data []byte, err error) {
 	return json.Marshal(sc)
 }
