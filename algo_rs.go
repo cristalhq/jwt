@@ -15,7 +15,10 @@ type rsAlg struct {
 	privatekey *rsa.PrivateKey
 }
 
-// NewRS256 returns new HMAC Signer using XXX hash.
+// NewRS256 returns new HMAC Signer using RSA and SHA256 hash.
+//
+// Both public and private keys must not be nil.
+//
 func NewRS256(publicKey *rsa.PublicKey, privatekey *rsa.PrivateKey) Signer {
 	return &rsAlg{
 		alg:        RS256,
@@ -25,7 +28,10 @@ func NewRS256(publicKey *rsa.PublicKey, privatekey *rsa.PrivateKey) Signer {
 	}
 }
 
-// NewRS384 returns new HMAC Signer using XXX hash.
+// NewRS384 returns new HMAC Signer using RSA and SHA384 hash.
+//
+// Both public and private keys must not be nil.
+//
 func NewRS384(publicKey *rsa.PublicKey, privatekey *rsa.PrivateKey) Signer {
 	return &rsAlg{
 		alg:        RS384,
@@ -35,7 +41,10 @@ func NewRS384(publicKey *rsa.PublicKey, privatekey *rsa.PrivateKey) Signer {
 	}
 }
 
-// NewRS512 returns new HMAC Signer using XXX hash.
+// NewRS512 returns new HMAC Signer using RSA and SHA512 hash.
+//
+// Both public and private keys must not be nil.
+//
 func NewRS512(publicKey *rsa.PublicKey, privatekey *rsa.PrivateKey) Signer {
 	return &rsAlg{
 		alg:        RS512,
