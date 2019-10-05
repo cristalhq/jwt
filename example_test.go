@@ -65,3 +65,29 @@ func Example_BuildUserClaims() {
 	// Payload   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIiwiaXNfYWRtaW4iOnRydWUsImVtYWlsIjoiZm9vQGJhci5iYXoifQ
 	// Token     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIiwiaXNfYWRtaW4iOnRydWUsImVtYWlsIjoiZm9vQGJhci5iYXoifQ.Km2HO5sXMXfrIJMTCA6xf7wamjUABB_glFW3gCGWJCI
 }
+
+type dummyClaims map[string]interface{}
+
+func (d *dummyClaims) MarshalBinary() ([]byte, error) {
+	return json.Marshal(d)
+}
+
+func Example_DummyClaims() {
+	signer := jwt.NewHS256([]byte(`secret`))
+	builder := jwt.NewTokenBuilder(signer)
+
+	claims := dummyClaims(map[string]interface{}{
+		"aUdIeNcE": "@everyone",
+		"well":     "well-well-well",
+	})
+	token, _ := builder.Build(&claims)
+
+	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
+	fmt.Printf("Payload   %v\n", string(token.Payload()))
+	fmt.Printf("Token     %v\n", string(token.Raw()))
+
+	// Output:
+	// Claims    {"aUdIeNcE":"@everyone","well":"well-well-well"}
+	// Payload   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhVWRJZU5jRSI6IkBldmVyeW9uZSIsIndlbGwiOiJ3ZWxsLXdlbGwtd2VsbCJ9
+	// Token     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhVWRJZU5jRSI6IkBldmVyeW9uZSIsIndlbGwiOiJ3ZWxsLXdlbGwtd2VsbCJ9.vN4rxWHBX4mjG-s0tiM_9ngX_e8KOEyXyEdjsTiTvqI
+}
