@@ -40,4 +40,6 @@ const (
 	PS256 Algorithm = "PS256"
 	PS384 Algorithm = "PS384"
 	PS512 Algorithm = "PS512"
+
+	Ed25519 Algorithm = "Ed25519"
 )
