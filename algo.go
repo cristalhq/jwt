@@ -25,6 +25,8 @@ type Algorithm string
 const (
 	NoEncryption Algorithm = "none"
 
+	EdDSA Algorithm = "EdDSA"
+
 	HS256 Algorithm = "HS256"
 	HS384 Algorithm = "HS384"
 	HS512 Algorithm = "HS512"
@@ -40,6 +42,4 @@ const (
 	PS256 Algorithm = "PS256"
 	PS384 Algorithm = "PS384"
 	PS512 Algorithm = "PS512"
-
-	Ed25519 Algorithm = "Ed25519"
 )

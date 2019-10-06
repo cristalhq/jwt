@@ -12,13 +12,13 @@ type ed25519Alg struct {
 	privateKey ed25519.PrivateKey
 }
 
-// NewEd25519 returns new signer using EdDSA algorithm.
+// NewEdDSA returns new signer using EdDSA algorithm.
 //
 // Both public and private keys must not be nil.
 //
-func NewEd25519(publicKey ed25519.PublicKey, privateKey ed25519.PrivateKey) Signer {
+func NewEdDSA(publicKey ed25519.PublicKey, privateKey ed25519.PrivateKey) Signer {
 	return &ed25519Alg{
-		alg:        Ed25519,
+		alg:        EdDSA,
 		publicKey:  publicKey,
 		privateKey: privateKey,
 	}
