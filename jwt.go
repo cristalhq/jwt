@@ -1,18 +1,41 @@
 package jwt
 
-import "encoding/json"
+import (
+	"bytes"
+	"encoding/json"
+)
 
 // Header stores JWT header data.
 // see https://tools.ietf.org/html/rfc7515
 // and https://tools.ietf.org/html/rfc7519
 type Header struct {
-	Algorithm      Algorithm `json:"alg"`
-	Type           string    `json:"typ,omitempty"` // type of JWS: it can only be "JWT" here
-	ContentType    string    `json:"cty,omitempty"`
-	JSONKeyURL     string    `json:"jku,omitempty"`
-	KeyID          string    `json:"kid,omitempty"`
-	X509URL        string    `json:"x5u,omitempty"`
-	X509Thumbprint string    `json:"x5t,omitempty"`
+	Algorithm   Algorithm `json:"alg"`
+	Type        string    `json:"typ,omitempty"` // type of JWS: it can only be "JWT" here
+	ContentType string    `json:"cty,omitempty"`
+	KeyID       string    `json:"kid,omitempty"`
+}
+
+// MarshalJSON ...
+func (h *Header) MarshalJSON() (data []byte, err error) {
+	buf := bytes.Buffer{}
+	buf.WriteString(`{"alg":"`)
+	buf.WriteString(string(h.Algorithm))
+
+	if h.Type != "" {
+		buf.WriteString(`","typ":"`)
+		buf.WriteString(h.Type)
+	}
+	if h.ContentType != "" {
+		buf.WriteString(`","cyt":"`)
+		buf.WriteString(h.ContentType)
+	}
+	if h.KeyID != "" {
+		buf.WriteString(`","kid":"`)
+		buf.WriteString(h.KeyID)
+	}
+	buf.WriteString(`"}`)
+
+	return buf.Bytes(), nil
 }
 
 // Signer used to sign and verify tokens.
