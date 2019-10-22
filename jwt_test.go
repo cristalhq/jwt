@@ -17,6 +17,8 @@ func (cs *customClaims) MarshalBinary() (data []byte, err error) {
 
 func TestMarshalHeader(t *testing.T) {
 	f := func(h *Header, want string) {
+		t.Helper()
+
 		raw, err := json.Marshal(h)
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
