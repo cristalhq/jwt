@@ -8,6 +8,11 @@ import (
 
 var base64Decode = base64.RawURLEncoding.Decode
 
+// ParseString decodes a token.
+func ParseString(raw string) (*Token, error) {
+	return Parse([]byte(raw))
+}
+
 // Parse decodes a token from a raw bytes.
 func Parse(raw []byte) (*Token, error) {
 	dot1 := bytes.IndexByte(raw, '.')
@@ -50,9 +55,14 @@ func Parse(raw []byte) (*Token, error) {
 	return token, nil
 }
 
+// ParseAndVerifyString decodes a token and verifies it's signature with a given signer.
+func ParseAndVerifyString(raw string, signer Signer) (*Token, error) {
+	return ParseAndVerify([]byte(raw), signer)
+}
+
 // ParseAndVerify decodes a token and verifies it's signature with a given signer.
-func ParseAndVerify(rawToken []byte, signer Signer) (*Token, error) {
-	token, err := Parse(rawToken)
+func ParseAndVerify(raw []byte, signer Signer) (*Token, error) {
+	token, err := Parse(raw)
 	if err != nil {
 		return nil, err
 	}
