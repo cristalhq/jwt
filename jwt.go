@@ -26,7 +26,7 @@ func (h *Header) MarshalJSON() (data []byte, err error) {
 		buf.WriteString(h.Type)
 	}
 	if h.ContentType != "" {
-		buf.WriteString(`","cyt":"`)
+		buf.WriteString(`","cty":"`)
 		buf.WriteString(h.ContentType)
 	}
 	if h.KeyID != "" {
