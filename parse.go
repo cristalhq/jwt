@@ -18,7 +18,7 @@ func Parse(raw []byte) (*Token, error) {
 	dot1 := bytes.IndexByte(raw, '.')
 	dot2 := bytes.LastIndexByte(raw, '.')
 	if dot2 <= dot1 {
-		return nil, ErrPartMissed
+		return nil, ErrInvalidFormat
 	}
 
 	buf := make([]byte, len(raw))

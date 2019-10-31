@@ -10,8 +10,8 @@ func (e Error) Error() string {
 var _ error = (Error)("")
 
 const (
-	// ErrPartMissed indicates that token format is invalid.
-	ErrPartMissed = Error("jwt: token format is invalid")
+	// ErrInvalidFormat indicates that token format is invalid.
+	ErrInvalidFormat = Error("jwt: token format is invalid")
 
 	// ErrInvalidKey when provided an incorrect key.
 	ErrInvalidKey = Error("jwt: key is invalid")
