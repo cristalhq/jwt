@@ -48,10 +48,7 @@ func NewTokenBuilder(signer Signer) *TokenBuilder {
 
 // Build used to create and encode JWT with a provided claims.
 func (b *TokenBuilder) Build(claims encoding.BinaryMarshaler) (*Token, error) {
-	encodedHeader, err := b.encodeHeader()
-	if err != nil {
-		return nil, err
-	}
+	encodedHeader := b.encodeHeader()
 
 	rawClaims, encodedClaims, err := b.encodeClaims(claims)
 	if err != nil {
@@ -75,54 +72,52 @@ func (b *TokenBuilder) Build(claims encoding.BinaryMarshaler) (*Token, error) {
 	return token, nil
 }
 
-func (b *TokenBuilder) encodeHeader() ([]byte, error) {
+func (b *TokenBuilder) encodeHeader() []byte {
 	switch b.signer.Algorithm() {
 	case NoEncryption:
-		return []byte("eyJhbGciOiJub25lIn0"), nil
+		return []byte("eyJhbGciOiJub25lIn0")
 	case EdDSA:
-		return []byte("eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9"), nil
+		return []byte("eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9")
 
 	case HS256:
-		return []byte("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"), nil
+		return []byte("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9")
 	case HS384:
-		return []byte("eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9"), nil
+		return []byte("eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9")
 	case HS512:
-		return []byte("eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9"), nil
+		return []byte("eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9")
 
 	case RS256:
-		return []byte("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"), nil
+		return []byte("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9")
 	case RS384:
-		return []byte("eyJhbGciOiJSUzM4NCIsInR5cCI6IkpXVCJ9"), nil
+		return []byte("eyJhbGciOiJSUzM4NCIsInR5cCI6IkpXVCJ9")
 	case RS512:
-		return []byte("eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9"), nil
+		return []byte("eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9")
 
 	case ES256:
-		return []byte("eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9"), nil
+		return []byte("eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9")
 	case ES384:
-		return []byte("eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9"), nil
+		return []byte("eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9")
 	case ES512:
-		return []byte("eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9"), nil
+		return []byte("eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9")
 
 	case PS256:
-		return []byte("eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9"), nil
+		return []byte("eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9")
 	case PS384:
-		return []byte("eyJhbGciOiJQUzM4NCIsInR5cCI6IkpXVCJ9"), nil
+		return []byte("eyJhbGciOiJQUzM4NCIsInR5cCI6IkpXVCJ9")
 	case PS512:
-		return []byte("eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9"), nil
+		return []byte("eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9")
 
 	default:
 		// another algorithm? encode below
 	}
 
-	buf, err := json.Marshal(b.header)
-	if err != nil {
-		return nil, err
-	}
+	// returned err is always nil, see *Header.MarshalJSON
+	buf, _ := json.Marshal(b.header)
 
 	encoded := make([]byte, base64EncodedLen(len(buf)))
 	base64Encode(encoded, buf)
 
-	return encoded, nil
+	return encoded
 }
 
 func (b *TokenBuilder) encodeClaims(claims encoding.BinaryMarshaler) (raw, encoded []byte, err error) {
