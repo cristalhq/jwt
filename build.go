@@ -50,7 +50,7 @@ func NewTokenBuilder(signer Signer) *TokenBuilder {
 func (b *TokenBuilder) Build(claims encoding.BinaryMarshaler) (*Token, error) {
 	encodedHeader := b.encodeHeader()
 
-	rawClaims, encodedClaims, err := b.encodeClaims(claims)
+	rawClaims, encodedClaims, err := encodeClaims(claims)
 	if err != nil {
 		return nil, err
 	}
@@ -120,7 +120,7 @@ func (b *TokenBuilder) encodeHeader() []byte {
 	return encoded
 }
 
-func (b *TokenBuilder) encodeClaims(claims encoding.BinaryMarshaler) (raw, encoded []byte, err error) {
+func encodeClaims(claims encoding.BinaryMarshaler) (raw, encoded []byte, err error) {
 	raw, err = claims.MarshalBinary()
 	if err != nil {
 		return nil, nil, err
