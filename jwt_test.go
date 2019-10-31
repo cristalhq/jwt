@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"encoding/json"
+	"strings"
 	"testing"
 )
 
@@ -91,4 +92,35 @@ func TestMarshalHeader(t *testing.T) {
 		},
 		`{"alg":"RS256","cty":"json"}`,
 	)
+}
+
+func TestSecurePrint(t *testing.T) {
+	sign := NewHS256([]byte(`test-key`))
+	claims := &StandardClaims{
+		ID:       "test-id",
+		Audience: Audience([]string{"test-user"}),
+	}
+
+	token, err := Build(sign, claims)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	secure := token.String()
+	insecure := token.InsecureString()
+
+	pos := strings.Index(secure, `.<signature>`)
+
+	if secure[:pos] != insecure[:pos] {
+		t.Fatalf("parts must be equal, got %v and %v", secure[:pos], insecure[:pos])
+	}
+	if secure[pos:] == insecure[pos:] {
+		t.Fatalf("parts must not be equal, got %v and %v", secure[:pos], insecure[:pos])
+	}
+	if !strings.HasSuffix(secure, `.<signature>`) {
+		t.Fatalf("must have safe suffix, got %v", secure)
+	}
+	if strings.HasSuffix(insecure, `.<signature>`) {
+		t.Fatalf("must not have safe suffix, got %v", insecure)
+	}
 }

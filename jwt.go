@@ -54,6 +54,17 @@ type Token struct {
 	signature []byte
 }
 
+// String returns token as string, without a signature (replaced with `.<signature>`).
+func (t Token) String() string {
+	dot := bytes.LastIndexByte(t.raw, '.')
+	return string(t.raw[:dot]) + `.<signature>`
+}
+
+// InsecureString returns token as is, with a signature (which may be sensitive).
+func (t Token) InsecureString() string {
+	return string(t.raw)
+}
+
 // Raw returns token's raw bytes.
 func (t *Token) Raw() []byte {
 	return t.raw
