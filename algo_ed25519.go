@@ -24,15 +24,15 @@ func NewEdDSA(publicKey ed25519.PublicKey, privateKey ed25519.PrivateKey) Signer
 	}
 }
 
-func (h *ed25519Alg) Algorithm() Algorithm {
+func (h ed25519Alg) Algorithm() Algorithm {
 	return h.alg
 }
 
-func (h *ed25519Alg) Sign(payload []byte) ([]byte, error) {
+func (h ed25519Alg) Sign(payload []byte) ([]byte, error) {
 	return ed25519.Sign(h.privateKey, payload), nil
 }
 
-func (h *ed25519Alg) Verify(expected, payload []byte) error {
+func (h ed25519Alg) Verify(expected, payload []byte) error {
 	if !ed25519.Verify(h.publicKey, payload, expected) {
 		return ErrInvalidSignature
 	}

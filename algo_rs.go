@@ -54,11 +54,11 @@ func NewRS512(publicKey *rsa.PublicKey, privatekey *rsa.PrivateKey) Signer {
 	}
 }
 
-func (h *rsAlg) Algorithm() Algorithm {
+func (h rsAlg) Algorithm() Algorithm {
 	return h.alg
 }
 
-func (h *rsAlg) Sign(payload []byte) ([]byte, error) {
+func (h rsAlg) Sign(payload []byte) ([]byte, error) {
 	hasher := h.hash.New()
 
 	_, err := hasher.Write(payload)
@@ -73,7 +73,7 @@ func (h *rsAlg) Sign(payload []byte) ([]byte, error) {
 	return bytes, nil
 }
 
-func (h *rsAlg) Verify(expected, payload []byte) error {
+func (h rsAlg) Verify(expected, payload []byte) error {
 	hasher := h.hash.New()
 
 	_, err := hasher.Write(expected)

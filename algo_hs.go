@@ -40,11 +40,11 @@ func NewHS512(key []byte) Signer {
 	}
 }
 
-func (h *hsAlg) Algorithm() Algorithm {
+func (h hsAlg) Algorithm() Algorithm {
 	return h.alg
 }
 
-func (h *hsAlg) Sign(payload []byte) ([]byte, error) {
+func (h hsAlg) Sign(payload []byte) ([]byte, error) {
 	hasher := hmac.New(h.hash.New, h.key)
 
 	_, err := hasher.Write(payload)
@@ -54,7 +54,7 @@ func (h *hsAlg) Sign(payload []byte) ([]byte, error) {
 	return hasher.Sum(nil), nil
 }
 
-func (h *hsAlg) Verify(expected, payload []byte) error {
+func (h hsAlg) Verify(expected, payload []byte) error {
 	signed, err := h.Sign(payload)
 	if err != nil {
 		return err
