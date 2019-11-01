@@ -26,3 +26,12 @@ jobs:
 
     - name: Test
       run: go test -v .
+
+    - name: Generate Coverage
+      run: go test -coverprofile=coverage.txt
+
+    - name: Upload Coverage
+      uses: codecov/codecov-action@v1.0.3
+      with:
+        token: ${{secrets.CODECOV_TOKEN}}
+        file: ./coverage.txt
