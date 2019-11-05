@@ -15,7 +15,7 @@ type Header struct {
 	KeyID       string    `json:"kid,omitempty"`
 }
 
-// MarshalJSON ...
+// MarshalJSON implements json.Marshaler interface.
 func (h Header) MarshalJSON() (data []byte, err error) {
 	buf := bytes.Buffer{}
 	buf.WriteString(`{"alg":"`)

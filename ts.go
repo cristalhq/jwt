@@ -16,6 +16,7 @@ func (t Timestamp) Time() time.Time {
 	return time.Unix(int64(t), 0)
 }
 
+// UnmarshalJSON implements json.Unmarshaler interface.
 func (t *Timestamp) UnmarshalJSON(data []byte) error {
 	s := string(data)
 	if s == "null" {

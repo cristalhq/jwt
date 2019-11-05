@@ -18,7 +18,7 @@ func (a Audience) MarshalJSON() ([]byte, error) {
 	}
 }
 
-// UnmarshalJSON implements an unmarshaling function for "aud" claim.
+// UnmarshalJSON implements json.Unmarshaler interface.
 func (a *Audience) UnmarshalJSON(b []byte) error {
 	var v interface{}
 	if err := json.Unmarshal(b, &v); err != nil {
