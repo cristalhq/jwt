@@ -46,6 +46,7 @@ func TestAudienceUnmarshal(t *testing.T) {
 	}
 
 	f(`[]`, Audience{})
+	f(`{}`, Audience{})
 	f(`"admin"`, Audience{"admin"})
 	f(`["admin"]`, Audience{"admin"})
 	f(`["admin","co-admin"]`, Audience{"admin", "co-admin"})
