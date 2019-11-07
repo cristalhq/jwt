@@ -15,7 +15,7 @@ type rsAlg struct {
 	privatekey *rsa.PrivateKey
 }
 
-// NewRS256 returns new HMAC Signer using RSA and SHA256 hash.
+// NewRS256 returns new RSA Signer using RSA and SHA256 hash.
 //
 // Both public and private keys must not be nil.
 //
@@ -28,7 +28,7 @@ func NewRS256(publicKey *rsa.PublicKey, privatekey *rsa.PrivateKey) Signer {
 	}
 }
 
-// NewRS384 returns new HMAC Signer using RSA and SHA384 hash.
+// NewRS384 returns new RSA Signer using RSA and SHA384 hash.
 //
 // Both public and private keys must not be nil.
 //
@@ -41,7 +41,7 @@ func NewRS384(publicKey *rsa.PublicKey, privatekey *rsa.PrivateKey) Signer {
 	}
 }
 
-// NewRS512 returns new HMAC Signer using RSA and SHA512 hash.
+// NewRS512 returns new RSA Signer using RSA and SHA512 hash.
 //
 // Both public and private keys must not be nil.
 //
@@ -59,26 +59,38 @@ func (h rsAlg) Algorithm() Algorithm {
 }
 
 func (h rsAlg) Sign(payload []byte) ([]byte, error) {
+	signed, err := h.sign(payload)
+	if err != nil {
+		return nil, err
+	}
+
+	signature, err := rsa.SignPKCS1v15(rand.Reader, h.privatekey, h.hash, signed)
+	if err != nil {
+		return nil, err
+	}
+	return signature, nil
+}
+
+func (h rsAlg) Verify(payload, signature []byte) error {
+	signed, err := h.sign(payload)
+	if err != nil {
+		return err
+	}
+
+	err = rsa.VerifyPKCS1v15(h.publickey, h.hash, signed, signature)
+	if err != nil {
+		return ErrInvalidSignature
+	}
+	return nil
+}
+
+func (h rsAlg) sign(payload []byte) ([]byte, error) {
 	hasher := h.hash.New()
 
 	_, err := hasher.Write(payload)
 	if err != nil {
 		return nil, err
 	}
-
-	bytes, err := rsa.SignPKCS1v15(rand.Reader, h.privatekey, h.hash, hasher.Sum(nil))
-	if err != nil {
-		return nil, err
-	}
-	return bytes, nil
-}
-
-func (h rsAlg) Verify(expected, payload []byte) error {
-	hasher := h.hash.New()
-
-	_, err := hasher.Write(expected)
-	if err != nil {
-		return err
-	}
-	return rsa.VerifyPKCS1v15(h.publickey, h.hash, hasher.Sum(nil), payload)
+	signed := hasher.Sum(nil)
+	return signed, nil
 }

@@ -2,7 +2,6 @@ package jwt
 
 import (
 	"crypto/rsa"
-	"encoding"
 	"math/big"
 	"testing"
 )
@@ -45,8 +44,8 @@ func init() {
 	}
 }
 
-func TestRS256_WithValidSignature(t *testing.T) {
-	f := func(signer Signer, claims encoding.BinaryMarshaler) {
+func TestRSA(t *testing.T) {
+	f := func(signer Signer, claims BinaryMarshaler) {
 		t.Helper()
 
 		tokenBuilder := NewTokenBuilder(signer)
@@ -91,8 +90,8 @@ func TestRS256_WithValidSignature(t *testing.T) {
 	)
 }
 
-func TestRS384_WithInvalidSignature(t *testing.T) {
-	f := func(signer, verifier Signer, claims encoding.BinaryMarshaler) {
+func TestRSA_InvalidSignature(t *testing.T) {
+	f := func(signer, verifier Signer, claims BinaryMarshaler) {
 		t.Helper()
 
 		tokenBuilder := NewTokenBuilder(signer)
