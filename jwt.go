@@ -42,7 +42,7 @@ func (h Header) MarshalJSON() (data []byte, err error) {
 type Signer interface {
 	Algorithm() Algorithm
 	Sign(payload []byte) ([]byte, error)
-	Verify(expected, payload []byte) error
+	Verify(payload, signature []byte) error
 }
 
 // Token represents a JWT token.
