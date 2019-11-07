@@ -45,6 +45,21 @@ func (h hsAlg) Algorithm() Algorithm {
 }
 
 func (h hsAlg) Sign(payload []byte) ([]byte, error) {
+	return h.sign(payload)
+}
+
+func (h hsAlg) Verify(payload, signature []byte) error {
+	signed, err := h.sign(payload)
+	if err != nil {
+		return err
+	}
+	if !hmac.Equal(signature, signed) {
+		return ErrInvalidSignature
+	}
+	return nil
+}
+
+func (h hsAlg) sign(payload []byte) ([]byte, error) {
 	hasher := hmac.New(h.hash.New, h.key)
 
 	_, err := hasher.Write(payload)
@@ -52,15 +67,4 @@ func (h hsAlg) Sign(payload []byte) ([]byte, error) {
 		return nil, err
 	}
 	return hasher.Sum(nil), nil
-}
-
-func (h hsAlg) Verify(expected, payload []byte) error {
-	signed, err := h.Sign(payload)
-	if err != nil {
-		return err
-	}
-	if !hmac.Equal(expected, signed) {
-		return ErrInvalidSignature
-	}
-	return nil
 }

@@ -1,18 +1,20 @@
 package jwt
 
 import (
-	"encoding"
 	"testing"
 )
 
-func TestHS_WithValidSignature(t *testing.T) {
-	f := func(signer Signer, claims encoding.BinaryMarshaler) {
+func TestHMAC(t *testing.T) {
+	f := func(signer Signer, claims BinaryMarshaler) {
 		t.Helper()
 
 		tokenBuilder := NewTokenBuilder(signer)
-		token, _ := tokenBuilder.Build(claims)
+		token, err := tokenBuilder.Build(claims)
+		if err != nil {
+			t.Errorf("want nil, got %#v", err)
+		}
 
-		err := signer.Verify(token.Signature(), token.Payload())
+		err = signer.Verify(token.Payload(), token.Signature())
 		if err != nil {
 			t.Errorf("want no err, got: `%v`", err)
 		}
@@ -50,16 +52,19 @@ func TestHS_WithValidSignature(t *testing.T) {
 	)
 }
 
-func TestHS_WithInvalidSignature(t *testing.T) {
-	f := func(signer, verifier Signer, claims encoding.BinaryMarshaler) {
+func TestHMAC_InvalidSignature(t *testing.T) {
+	f := func(signer, verifier Signer, claims BinaryMarshaler) {
 		t.Helper()
 
 		tokenBuilder := NewTokenBuilder(signer)
-		token, _ := tokenBuilder.Build(claims)
+		token, err := tokenBuilder.Build(claims)
+		if err != nil {
+			t.Errorf("want nil, got %#v", err)
+		}
 
-		err := verifier.Verify(token.Signature(), token.Payload())
+		err = verifier.Verify(token.Payload(), token.Signature())
 		if err == nil {
-			t.Errorf("want %v, got nil", ErrInvalidSignature)
+			t.Errorf("want %#v, got nil", ErrInvalidSignature)
 		}
 	}
 	f(
