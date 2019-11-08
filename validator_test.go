@@ -7,6 +7,7 @@ import (
 
 func TestValidator(t *testing.T) {
 	now := time.Now()
+	later := now.Add(time.Minute)
 
 	f := func(check Check, claims *StandardClaims, wantErr error) {
 		t.Helper()
@@ -23,108 +24,87 @@ func TestValidator(t *testing.T) {
 		}
 	}
 
+	// AudienceChecker
 	f(
 		AudienceChecker(Audience([]string{"winner"})),
-		&StandardClaims{
-			Audience: Audience([]string{"winner"}),
-		},
+		&StandardClaims{Audience: Audience([]string{"winner"})},
 		nil,
 	)
 	f(
 		AudienceChecker(Audience([]string{"user"})),
-		&StandardClaims{
-			Audience: Audience([]string{"winner"}),
-		},
+		&StandardClaims{Audience: Audience([]string{"winner"})},
 		ErrAudValidation,
 	)
 
+	// ExpirationTimeChecker
 	f(
 		ExpirationTimeChecker(now),
-		&StandardClaims{
-			ExpiresAt: Timestamp(now.Add(time.Minute).Unix()),
-		},
+		&StandardClaims{ExpiresAt: Timestamp(later.Unix())},
 		nil,
 	)
 	f(
-		ExpirationTimeChecker(now.Add(time.Minute)),
-		&StandardClaims{
-			ExpiresAt: Timestamp(now.Unix()),
-		},
+		ExpirationTimeChecker(later),
+		&StandardClaims{ExpiresAt: Timestamp(now.Unix())},
 		ErrExpValidation,
 	)
 
+	// IDChecker
 	f(
 		IDChecker("test-id"),
-		&StandardClaims{
-			ID: "test-id",
-		},
+		&StandardClaims{ID: "test-id"},
 		nil,
 	)
 	f(
 		IDChecker("test-id"),
-		&StandardClaims{
-			ID: "id-test",
-		},
+		&StandardClaims{ID: "id-test"},
 		ErrJtiValidation,
 	)
 
+	// IssuedAtChecker
 	f(
 		IssuedAtChecker(now),
-		&StandardClaims{
-			IssuedAt: Timestamp(now.Unix()),
-		},
+		&StandardClaims{IssuedAt: Timestamp(now.Unix())},
 		nil,
 	)
 	f(
 		IssuedAtChecker(now),
-		&StandardClaims{
-			IssuedAt: Timestamp(now.Add(time.Minute).Unix()),
-		},
+		&StandardClaims{IssuedAt: Timestamp(later.Unix())},
 		ErrIatValidation,
 	)
 
+	// IssuerChecker
 	f(
 		IssuerChecker("best-issuer"),
-		&StandardClaims{
-			Issuer: "best-issuer",
-		},
+		&StandardClaims{Issuer: "best-issuer"},
 		nil,
 	)
 	f(
 		IssuerChecker("best-issuer"),
-		&StandardClaims{
-			Issuer: "better-issuer",
-		},
+		&StandardClaims{Issuer: "better-issuer"},
 		ErrIssValidation,
 	)
 
+	// NotBeforeChecker
 	f(
-		NotBeforeChecker(now.Add(time.Minute)),
-		&StandardClaims{
-			NotBefore: Timestamp(now.Unix()),
-		},
+		NotBeforeChecker(later),
+		&StandardClaims{NotBefore: Timestamp(now.Unix())},
 		nil,
 	)
 	f(
 		NotBeforeChecker(now),
-		&StandardClaims{
-			NotBefore: Timestamp(now.Add(time.Minute).Unix()),
-		},
+		&StandardClaims{NotBefore: Timestamp(later.Unix())},
 		ErrNbfValidation,
 	)
 
+	// SubjectChecker
 	f(
 		SubjectChecker("great-subject"),
-		&StandardClaims{
-			Subject: "great-subject",
-		},
+		&StandardClaims{Subject: "great-subject"},
 		nil,
 	)
 	f(
 		SubjectChecker("great-subject"),
-		&StandardClaims{
-			Subject: "can-be-better",
-		},
+		&StandardClaims{Subject: "can-be-better"},
 		ErrSubValidation,
 	)
 }
