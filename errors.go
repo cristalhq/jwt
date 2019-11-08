@@ -9,19 +9,20 @@ func (e Error) Error() string {
 
 var _ error = (Error)("")
 
+// Build and parse errors.
 const (
 	// ErrInvalidFormat indicates that token format is invalid.
 	ErrInvalidFormat = Error("jwt: token format is invalid")
-
-	// ErrInvalidKey when provided an incorrect key.
-	ErrInvalidKey = Error("jwt: key is invalid")
 
 	// ErrInvalidSignature signature wasn't correct.
 	ErrInvalidSignature = Error("jwt: signature is invalid")
 )
 
-// Validation errors
+// Validation errors.
 const (
+	// ErrTokenExpired is the error when token is expited.
+	ErrTokenExpired = Error("jwt: token has expited")
+
 	// ErrAudValidation is the error for an invalid "aud" claim.
 	ErrAudValidation = Error("jwt: aud claim is invalid")
 
