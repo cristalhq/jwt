@@ -8,7 +8,7 @@ import (
 )
 
 func Example_BuildSimple() {
-	signer := jwt.NewHS256([]byte(`secret`))
+	signer, _ := jwt.NewHS256([]byte(`secret`))
 	builder := jwt.NewTokenBuilder(signer)
 
 	claims := &jwt.StandardClaims{
@@ -43,7 +43,7 @@ func (u *userClaims) MarshalBinary() ([]byte, error) {
 }
 
 func Example_BuildUserClaims() {
-	signer := jwt.NewHS256([]byte(`secret`))
+	signer, _ := jwt.NewHS256([]byte(`secret`))
 	builder := jwt.NewTokenBuilder(signer)
 
 	claims := &userClaims{
@@ -73,7 +73,7 @@ func (d *dummyClaims) MarshalBinary() ([]byte, error) {
 }
 
 func Example_DummyClaims() {
-	signer := jwt.NewHS256([]byte(`secret`))
+	signer, _ := jwt.NewHS256([]byte(`secret`))
 	builder := jwt.NewTokenBuilder(signer)
 
 	claims := dummyClaims(map[string]interface{}{
