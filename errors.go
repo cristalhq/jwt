@@ -11,6 +11,9 @@ var _ error = (Error)("")
 
 // Build and parse errors.
 const (
+	// ErrInvalidKey indicates that key is invalid.
+	ErrInvalidKey = Error("jwt: key is invalid")
+
 	// ErrInvalidFormat indicates that token format is invalid.
 	ErrInvalidFormat = Error("jwt: token format is invalid")
 

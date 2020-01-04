@@ -12,7 +12,7 @@ func (h noEncryptAlg) Algorithm() Algorithm {
 }
 
 func (h noEncryptAlg) Sign(payload []byte) ([]byte, error) {
-	return nil, nil
+	return payload, nil
 }
 
 func (h noEncryptAlg) Verify(expected, payload []byte) error {

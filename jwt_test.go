@@ -6,6 +6,10 @@ import (
 	"testing"
 )
 
+func getSigner(s Signer, _ error) Signer {
+	return s
+}
+
 type customClaims struct {
 	StandardClaims
 
@@ -95,7 +99,7 @@ func TestMarshalHeader(t *testing.T) {
 }
 
 func TestSecurePrint(t *testing.T) {
-	sign := NewHS256([]byte(`test-key`))
+	sign, _ := NewHS256([]byte(`test-key`))
 	claims := &StandardClaims{
 		ID:       "test-id",
 		Audience: Audience([]string{"test-user"}),

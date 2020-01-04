@@ -1,6 +1,9 @@
 package jwt
 
-import "testing"
+import (
+	"bytes"
+	"testing"
+)
 
 func TestNone(t *testing.T) {
 	signer := NewNoEncrypt()
@@ -21,7 +24,7 @@ func TestNone(t *testing.T) {
 	if err != nil {
 		t.Errorf("want nil, got #%v", err)
 	}
-	if sign != nil {
+	if !bytes.Equal(sign, []byte("test")) {
 		t.Errorf("want nil, got #%v", sign)
 	}
 

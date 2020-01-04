@@ -14,30 +14,39 @@ type hsAlg struct {
 }
 
 // NewHS256 returns new HMAC Signer using SHA256 hash.
-func NewHS256(key []byte) Signer {
+func NewHS256(key []byte) (Signer, error) {
+	if len(key) == 0 {
+		return nil, ErrInvalidKey
+	}
 	return &hsAlg{
 		alg:  HS256,
 		hash: crypto.SHA256,
 		key:  key,
-	}
+	}, nil
 }
 
 // NewHS384 returns new HMAC Signer using SHA384 hash.
-func NewHS384(key []byte) Signer {
+func NewHS384(key []byte) (Signer, error) {
+	if len(key) == 0 {
+		return nil, ErrInvalidKey
+	}
 	return &hsAlg{
 		alg:  HS384,
 		hash: crypto.SHA384,
 		key:  key,
-	}
+	}, nil
 }
 
 // NewHS512 returns new HMAC Signer using SHA512 hash.
-func NewHS512(key []byte) Signer {
+func NewHS512(key []byte) (Signer, error) {
+	if len(key) == 0 {
+		return nil, ErrInvalidKey
+	}
 	return &hsAlg{
 		alg:  HS512,
 		hash: crypto.SHA512,
 		key:  key,
-	}
+	}, nil
 }
 
 func (h hsAlg) Algorithm() Algorithm {

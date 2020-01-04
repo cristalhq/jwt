@@ -26,11 +26,11 @@ func TestBuild(t *testing.T) {
 			ID:       "just an id",
 			Audience: Audience([]string{"audience"}),
 		},
-		`eyJhbGciOiJub25lIn0.eyJhdWQiOiJhdWRpZW5jZSIsImp0aSI6Imp1c3QgYW4gaWQifQ.`,
+		`eyJhbGciOiJub25lIn0.eyJhdWQiOiJhdWRpZW5jZSIsImp0aSI6Imp1c3QgYW4gaWQifQ.ZXlKaGJHY2lPaUp1YjI1bEluMC5leUpoZFdRaU9pSmhkV1JwWlc1alpTSXNJbXAwYVNJNkltcDFjM1FnWVc0Z2FXUWlmUQ`,
 	)
 
 	f(
-		NewHS256([]byte("test-key-256")),
+		getSigner(NewHS256([]byte("test-key-256"))),
 		&StandardClaims{
 			ID:       "just an id",
 			Audience: Audience([]string{"audience"}),
@@ -38,7 +38,7 @@ func TestBuild(t *testing.T) {
 		`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWRpZW5jZSIsImp0aSI6Imp1c3QgYW4gaWQifQ.6EWV4IFTyCqCUn-_R1AFRgJptvmV09Os57WAejPcf7Q`,
 	)
 	f(
-		NewHS384([]byte("test-key-384")),
+		getSigner(NewHS384([]byte("test-key-384"))),
 		&StandardClaims{
 			ID:       "just an id",
 			Audience: Audience([]string{"audience"}),
@@ -46,7 +46,7 @@ func TestBuild(t *testing.T) {
 		`eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWRpZW5jZSIsImp0aSI6Imp1c3QgYW4gaWQifQ.aWImRb5WxBvJCPlQcWxg6YXH2jriPBd4Z7vjBn0MjYY8ZBpdJXw8kgbkn6_9yeo6`,
 	)
 	f(
-		NewHS512([]byte("test-key-512")),
+		getSigner(NewHS512([]byte("test-key-512"))),
 		&StandardClaims{
 			ID:       "just an id",
 			Audience: Audience([]string{"audience"}),
@@ -72,23 +72,24 @@ func TestBuildWithHeader(t *testing.T) {
 		}
 	}
 
+	key := []byte("key")
 	f(
-		NewHS256(nil),
+		getSigner(NewHS256(key)),
 		Header{Algorithm: HS256, Type: "JWT"},
 		`{"alg":"HS256","typ":"JWT"}`,
 	)
 	f(
-		NewHS512(nil),
+		getSigner(NewHS512(key)),
 		Header{Algorithm: HS512, Type: "jit"},
 		`{"alg":"HS512","typ":"jit"}`,
 	)
 	f(
-		NewHS512(nil),
+		getSigner(NewHS512(key)),
 		Header{Algorithm: Algorithm("OwO"), Type: "JWT"},
 		`{"alg":"OwO","typ":"JWT"}`,
 	)
 	f(
-		NewHS512(nil),
+		getSigner(NewHS512(key)),
 		Header{Algorithm: Algorithm("UwU"), Type: "jit"},
 		`{"alg":"UwU","typ":"jit"}`,
 	)
@@ -115,29 +116,30 @@ func TestBuildHeader(t *testing.T) {
 		`{"alg":"none"}`,
 	)
 
+	key := []byte("key")
 	f(
-		NewHS256(nil), Header{Algorithm: HS256, Type: "JWT"},
+		getSigner(NewHS256(key)), Header{Algorithm: HS256, Type: "JWT"},
 		`{"alg":"HS256","typ":"JWT"}`,
 	)
 	f(
-		NewHS384(nil), Header{Algorithm: HS384, Type: "JWT"},
+		getSigner(NewHS384(key)), Header{Algorithm: HS384, Type: "JWT"},
 		`{"alg":"HS384","typ":"JWT"}`,
 	)
 	f(
-		NewHS512(nil), Header{Algorithm: HS512, Type: "JWT"},
+		getSigner(NewHS512(key)), Header{Algorithm: HS512, Type: "JWT"},
 		`{"alg":"HS512","typ":"JWT"}`,
 	)
 
 	f(
-		NewRS256(rsaPublicKey1, rsaPrivateKey1), Header{Algorithm: RS256, Type: "JWT"},
+		getSigner(NewRS256(rsaPublicKey1, rsaPrivateKey1)), Header{Algorithm: RS256, Type: "JWT"},
 		`{"alg":"RS256","typ":"JWT"}`,
 	)
 	f(
-		NewRS384(rsaPublicKey1, rsaPrivateKey1), Header{Algorithm: RS384, Type: "JWT"},
+		getSigner(NewRS384(rsaPublicKey1, rsaPrivateKey1)), Header{Algorithm: RS384, Type: "JWT"},
 		`{"alg":"RS384","typ":"JWT"}`,
 	)
 	f(
-		NewRS512(rsaPublicKey1, rsaPrivateKey1), Header{Algorithm: RS512, Type: "JWT"},
+		getSigner(NewRS512(rsaPublicKey1, rsaPrivateKey1)), Header{Algorithm: RS512, Type: "JWT"},
 		`{"alg":"RS512","typ":"JWT"}`,
 	)
 }
