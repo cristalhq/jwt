@@ -125,3 +125,32 @@ func SubjectChecker(sub string) Check {
 		return nil
 	}
 }
+
+// ValidAtChecker validates whether the token is valid at the specified time, based on
+// the values of the IssuedAt, NotBefore and ExpiresAt claims in the claims.
+//
+func ValidAtChecker(now time.Time) Check {
+	return func(claims *StandardClaims) error {
+		if claims.IsExpired(now) ||
+			!claims.IsIssuedBefore(now) ||
+			claims.HasPassedNotBefore(now) {
+			return ErrTokenExpired
+		}
+		return nil
+	}
+}
+
+// ValidAtNowChecker validates whether the token is valid at the current time, based on
+// the values of the IssuedAt, NotBefore and ExpiresAt claims in the claims.
+//
+func ValidAtNowChecker() Check {
+	return func(claims *StandardClaims) error {
+		now := time.Now()
+		if claims.IsExpired(now) ||
+			!claims.IsIssuedBefore(now) ||
+			claims.HasPassedNotBefore(now) {
+			return ErrTokenExpired
+		}
+		return nil
+	}
+}

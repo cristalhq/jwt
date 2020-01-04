@@ -107,6 +107,20 @@ func TestValidator(t *testing.T) {
 		&StandardClaims{Subject: "can-be-better"},
 		ErrSubValidation,
 	)
+
+	// ValidAtChecker
+	// f(
+	// 	ValidAtChecker(now),
+	// 	&StandardClaims{},
+	// 	nil,
+	// )
+	// f(
+	// 	ValidAtChecker(now),
+	// 	&StandardClaims{
+	// 		NotBefore: Timestamp(later.Unix()),
+	// 	},
+	// 	ErrSubValidation,
+	// )
 }
 
 func TestCustomValidator(t *testing.T) {
