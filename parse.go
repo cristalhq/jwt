@@ -66,7 +66,7 @@ func ParseAndVerify(raw []byte, signer Signer) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	if err := signer.Verify(token.signature, token.payload); err != nil {
+	if err := signer.Verify(token.payload, token.signature); err != nil {
 		return nil, err
 	}
 	return token, nil
