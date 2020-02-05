@@ -1,3 +1,3 @@
 module github.com/cristalhq/jwt
 
-go 1.12
+go 1.13
