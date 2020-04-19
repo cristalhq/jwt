@@ -36,6 +36,8 @@ token, _ := builder.Build(claims)
 raw := token.Raw() // JWT signed token
 ```
 
+Also see examples: [build](https://github.com/cristalhq/jwt/blob/master/example_build_test.go), [parse](https://github.com/cristalhq/jwt/blob/master/example_parse_test.go), [validate](https://github.com/cristalhq/jwt/blob/master/example_validate_test.go).
+
 ## Documentation
 
 See [these docs](https://godoc.org/github.com/cristalhq/jwt).
