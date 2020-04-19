@@ -24,16 +24,19 @@ go get github.com/cristalhq/jwt
 ## Example
 
 ```go
-signer := jwt.NewHS256([]byte(`secret`))
+key := []byte(`secret`)
+signer, errSigner := jwt.NewHS256(key)
 builder := jwt.NewTokenBuilder(signer)
 
 claims := &jwt.StandardClaims{
     Audience: []string{"admin"},
     ID:       "random-unique-string",
 }
-token, _ := builder.Build(claims)
+token, errBuild := builder.Build(claims)
 
 raw := token.Raw() // JWT signed token
+
+errVerify := signer.Verify(token.Payload(), token.Signature())
 ```
 
 ## Documentation
