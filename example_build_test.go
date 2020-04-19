@@ -8,14 +8,18 @@ import (
 )
 
 func Example_BuildSimple() {
-	signer, _ := jwt.NewHS256([]byte(`secret`))
+	key := []byte(`secret`)
+	signer, _ := jwt.NewHS256(key)
 	builder := jwt.NewTokenBuilder(signer)
 
 	claims := &jwt.StandardClaims{
 		Audience: []string{"admin"},
 		ID:       "random-unique-string",
 	}
-	token, _ := builder.Build(claims)
+	token, errBuild := builder.Build(claims)
+	if errBuild != nil {
+		panic(errBuild)
+	}
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
@@ -43,7 +47,8 @@ func (u *userClaims) MarshalBinary() ([]byte, error) {
 }
 
 func Example_BuildUserClaims() {
-	signer, _ := jwt.NewHS256([]byte(`secret`))
+	key := []byte(`secret`)
+	signer, _ := jwt.NewHS256(key)
 	builder := jwt.NewTokenBuilder(signer)
 
 	claims := &userClaims{
@@ -54,7 +59,10 @@ func Example_BuildUserClaims() {
 		IsAdministrator: true,
 		Email:           "foo@bar.baz",
 	}
-	token, _ := builder.Build(claims)
+	token, errBuild := builder.Build(claims)
+	if errBuild != nil {
+		panic(errBuild)
+	}
 
 	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
 	fmt.Printf("Payload   %v\n", string(token.Payload()))
@@ -73,14 +81,18 @@ func (d *dummyClaims) MarshalBinary() ([]byte, error) {
 }
 
 func Example_DummyClaims() {
-	signer, _ := jwt.NewHS256([]byte(`secret`))
+	key := []byte(`secret`)
+	signer, _ := jwt.NewHS256(key)
 	builder := jwt.NewTokenBuilder(signer)
 
 	claims := dummyClaims(map[string]interface{}{
 		"aUdIeNcE": "@everyone",
 		"well":     "well-well-well",
 	})
-	token, _ := builder.Build(&claims)
+	token, errBuild := builder.Build(&claims)
+	if errBuild != nil {
+		panic(errBuild)
+	}
 
 	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
 	fmt.Printf("Payload   %v\n", string(token.Payload()))

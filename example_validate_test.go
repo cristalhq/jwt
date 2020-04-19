@@ -10,10 +10,9 @@ import (
 func Example_Validate() {
 	t := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs`
 
-	token, err := jwt.Parse([]byte(t))
-	if err != nil {
-		fmt.Printf("parse err: %q", err)
-		return
+	token, errParse := jwt.Parse([]byte(t))
+	if errParse != nil {
+		panic(errParse)
 	}
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
@@ -30,9 +29,9 @@ func Example_Validate() {
 		jwt.IDChecker("random-unique-string"),
 	)
 
-	err = validator.Validate(claims)
-	if err != nil {
-		fmt.Printf("token is invalid: %#v", err)
+	errValidate := validator.Validate(claims)
+	if errValidate != nil {
+		panic(errValidate)
 	}
 
 	// Output:
