@@ -90,46 +90,6 @@ func (b *TokenBuilder) Build(claims BinaryMarshaler) (*Token, error) {
 }
 
 func encodeHeader(header *Header) []byte {
-	if header.Type == "JWT" {
-		switch header.Algorithm {
-		case NoEncryption:
-			return []byte("eyJhbGciOiJub25lIn0")
-		case EdDSA:
-			return []byte("eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9")
-
-		case HS256:
-			return []byte("eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9")
-		case HS384:
-			return []byte("eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9")
-		case HS512:
-			return []byte("eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9")
-
-		case RS256:
-			return []byte("eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9")
-		case RS384:
-			return []byte("eyJhbGciOiJSUzM4NCIsInR5cCI6IkpXVCJ9")
-		case RS512:
-			return []byte("eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9")
-
-		case ES256:
-			return []byte("eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9")
-		case ES384:
-			return []byte("eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9")
-		case ES512:
-			return []byte("eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9")
-
-		case PS256:
-			return []byte("eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9")
-		case PS384:
-			return []byte("eyJhbGciOiJQUzM4NCIsInR5cCI6IkpXVCJ9")
-		case PS512:
-			return []byte("eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9")
-
-		default:
-			// another algorithm? encode below
-		}
-	}
-
 	// returned err is always nil, see *Header.MarshalJSON
 	buf, _ := json.Marshal(header)
 
