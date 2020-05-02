@@ -2,7 +2,6 @@ package jwt
 
 import (
 	"encoding/base64"
-	"encoding/json"
 )
 
 const tokenSep = '.'
@@ -91,7 +90,7 @@ func (b *TokenBuilder) Build(claims BinaryMarshaler) (*Token, error) {
 
 func encodeHeader(header *Header) []byte {
 	// returned err is always nil, see *Header.MarshalJSON
-	buf, _ := json.Marshal(header)
+	buf, _ := header.MarshalJSON()
 
 	encoded := make([]byte, base64EncodedLen(len(buf)))
 	base64Encode(encoded, buf)
