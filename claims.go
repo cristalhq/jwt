@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"crypto/subtle"
 	"encoding/json"
 	"time"
 )
@@ -43,7 +44,7 @@ func (sc StandardClaims) MarshalBinary() (data []byte, err error) {
 // IsPermittedFor returns true if claims is allowed to be used by the audience.
 func (sc StandardClaims) IsPermittedFor(audience string) bool {
 	for _, aud := range sc.Audience {
-		if aud == audience {
+		if areEqual(aud, audience) {
 			return true
 		}
 	}
@@ -60,7 +61,7 @@ func (sc StandardClaims) IsExpired(now time.Time) bool {
 
 // IsID returns true if claims has the given id.
 func (sc StandardClaims) IsID(id string) bool {
-	return sc.ID == id
+	return areEqual(sc.ID, id)
 }
 
 // IsIssuedBefore returns true if the token was issued before of given time.
@@ -74,7 +75,7 @@ func (sc StandardClaims) IsIssuedBefore(now time.Time) bool {
 // IsIssuedBy returns true if the token was issued by any of given issuers.
 func (sc StandardClaims) IsIssuedBy(issuers ...string) bool {
 	for _, issuer := range issuers {
-		if sc.Issuer == issuer {
+		if areEqual(sc.Issuer, issuer) {
 			return true
 		}
 	}
@@ -91,5 +92,9 @@ func (sc StandardClaims) HasPassedNotBefore(now time.Time) bool {
 
 // IsSubject returns true if claims has the given subject.
 func (sc StandardClaims) IsSubject(subject string) bool {
-	return sc.Subject == subject
+	return areEqual(sc.Subject, subject)
+}
+
+func areEqual(a, b string) bool {
+	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
 }

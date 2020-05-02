@@ -51,7 +51,7 @@ func AudienceChecker(aud Audience) Check {
 	return func(claims *StandardClaims) error {
 		for _, givenAud := range aud {
 			for _, tokenAud := range claims.Audience {
-				if tokenAud == givenAud {
+				if areEqual(tokenAud, givenAud) {
 					return nil
 				}
 			}
