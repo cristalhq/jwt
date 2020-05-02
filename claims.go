@@ -96,5 +96,5 @@ func (sc StandardClaims) IsSubject(subject string) bool {
 }
 
 func areEqual(a, b string) bool {
-	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 0
+	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
 }
