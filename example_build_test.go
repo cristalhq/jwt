@@ -17,9 +17,7 @@ func Example_BuildSimple() {
 		ID:       "random-unique-string",
 	}
 	token, errBuild := builder.Build(claims)
-	if errBuild != nil {
-		panic(errBuild)
-	}
+	checkErr(errBuild)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
@@ -60,9 +58,7 @@ func Example_BuildUserClaims() {
 		Email:           "foo@bar.baz",
 	}
 	token, errBuild := builder.Build(claims)
-	if errBuild != nil {
-		panic(errBuild)
-	}
+	checkErr(errBuild)
 
 	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
 	fmt.Printf("Payload   %v\n", string(token.Payload()))
@@ -90,9 +86,7 @@ func Example_DummyClaims() {
 		"well":     "well-well-well",
 	})
 	token, errBuild := builder.Build(&claims)
-	if errBuild != nil {
-		panic(errBuild)
-	}
+	checkErr(errBuild)
 
 	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
 	fmt.Printf("Payload   %v\n", string(token.Payload()))

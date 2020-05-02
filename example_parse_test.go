@@ -10,9 +10,7 @@ func Example_Parse() {
 	t := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs`
 
 	token, errParse := jwt.Parse([]byte(t))
-	if errParse != nil {
-		panic(errParse)
-	}
+	checkErr(errParse)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
@@ -23,9 +21,7 @@ func Example_Parse() {
 	// key := []byte(`secret`)
 	// signer, _ := jwt.NewHS256(key)
 	// errVerify := signer.Verify(token.Payload(), token.Signature())
-	// if errVerify != nil {
-	// 	panic(errVerify)
-	// }
+	// checkErr(errVerify)
 
 	// Output:
 	// Algorithm HS256
@@ -42,9 +38,7 @@ func Example_ParseAndVerify() {
 	t := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs`
 
 	token, errParse := jwt.ParseAndVerify([]byte(t), signer)
-	if errParse != nil {
-		panic(errParse)
-	}
+	checkErr(errParse)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)

@@ -11,9 +11,7 @@ func Example_Validate() {
 	t := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs`
 
 	token, errParse := jwt.Parse([]byte(t))
-	if errParse != nil {
-		panic(errParse)
-	}
+	checkErr(errParse)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
@@ -30,9 +28,7 @@ func Example_Validate() {
 	)
 
 	errValidate := validator.Validate(claims)
-	if errValidate != nil {
-		panic(errValidate)
-	}
+	checkErr(errValidate)
 
 	// Output:
 	// Algorithm HS256
