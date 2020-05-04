@@ -75,21 +75,21 @@ func ExpirationTimeChecker(now time.Time) Check {
 //
 func IDChecker(jti string) Check {
 	return func(claims *StandardClaims) error {
-		if !claims.IsID(jti) {
-			return ErrJtiValidation
+		if claims.IsID(jti) {
+			return nil
 		}
-		return nil
+		return ErrJtiValidation
 	}
 }
 
-// IssuedAtChecker validates the "iat" claim.
+// IsIssuedBeforeChecker validates the "iat" claim.
 //
-func IssuedAtChecker(now time.Time) Check {
+func IsIssuedBeforeChecker(now time.Time) Check {
 	return func(claims *StandardClaims) error {
-		if !claims.IsIssuedBefore(now) {
-			return ErrIatValidation
+		if claims.IsIssuedBefore(now) {
+			return nil
 		}
-		return nil
+		return ErrIatValidation
 	}
 }
 
@@ -97,10 +97,10 @@ func IssuedAtChecker(now time.Time) Check {
 //
 func IssuerChecker(iss string) Check {
 	return func(claims *StandardClaims) error {
-		if !claims.IsIssuedBy(iss) {
-			return ErrIssValidation
+		if claims.IsIssuedBy(iss) {
+			return nil
 		}
-		return nil
+		return ErrIssValidation
 	}
 }
 
@@ -108,10 +108,10 @@ func IssuerChecker(iss string) Check {
 //
 func NotBeforeChecker(now time.Time) Check {
 	return func(claims *StandardClaims) error {
-		if !claims.HasPassedNotBefore(now) {
-			return ErrNbfValidation
+		if claims.HasPassedNotBefore(now) {
+			return nil
 		}
-		return nil
+		return ErrNbfValidation
 	}
 }
 
@@ -119,10 +119,10 @@ func NotBeforeChecker(now time.Time) Check {
 //
 func SubjectChecker(sub string) Check {
 	return func(claims *StandardClaims) error {
-		if !claims.IsSubject(sub) {
-			return ErrSubValidation
+		if claims.IsSubject(sub) {
+			return nil
 		}
-		return nil
+		return ErrSubValidation
 	}
 }
 

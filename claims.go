@@ -53,10 +53,7 @@ func (sc StandardClaims) IsPermittedFor(audience string) bool {
 
 // IsExpired returns true if the token is expired.
 func (sc StandardClaims) IsExpired(now time.Time) bool {
-	if sc.ExpiresAt == 0 {
-		return false
-	}
-	return sc.ExpiresAt.Time().Before(now)
+	return sc.ExpiresAt != 0 && sc.ExpiresAt.Time().Before(now)
 }
 
 // IsID returns true if claims has the given id.
@@ -66,10 +63,7 @@ func (sc StandardClaims) IsID(id string) bool {
 
 // IsIssuedBefore returns true if the token was issued before of given time.
 func (sc StandardClaims) IsIssuedBefore(now time.Time) bool {
-	if sc.IssuedAt == 0 {
-		return false
-	}
-	return sc.IssuedAt.Time().Before(now)
+	return sc.IssuedAt == 0 || sc.IssuedAt.Time().Before(now)
 }
 
 // IsIssuedBy returns true if the token was issued by any of given issuers.
@@ -84,10 +78,7 @@ func (sc StandardClaims) IsIssuedBy(issuers ...string) bool {
 
 // HasPassedNotBefore returns true if the token activation is used after the given time.
 func (sc StandardClaims) HasPassedNotBefore(now time.Time) bool {
-	if sc.NotBefore == 0 {
-		return true
-	}
-	return sc.NotBefore.Time().Before(now)
+	return sc.NotBefore == 0 || sc.NotBefore.Time().After(now)
 }
 
 // IsSubject returns true if claims has the given subject.

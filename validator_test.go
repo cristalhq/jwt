@@ -6,9 +6,6 @@ import (
 )
 
 func TestValidator(t *testing.T) {
-	now := time.Now()
-	later := now.Add(time.Minute)
-
 	f := func(check Check, claims *StandardClaims, wantErr error) {
 		t.Helper()
 
@@ -36,18 +33,6 @@ func TestValidator(t *testing.T) {
 		ErrAudValidation,
 	)
 
-	// ExpirationTimeChecker
-	f(
-		ExpirationTimeChecker(now),
-		&StandardClaims{ExpiresAt: Timestamp(later.Unix())},
-		nil,
-	)
-	f(
-		ExpirationTimeChecker(later),
-		&StandardClaims{ExpiresAt: Timestamp(now.Unix())},
-		ErrExpValidation,
-	)
-
 	// IDChecker
 	f(
 		IDChecker("test-id"),
@@ -58,18 +43,6 @@ func TestValidator(t *testing.T) {
 		IDChecker("test-id"),
 		&StandardClaims{ID: "id-test"},
 		ErrJtiValidation,
-	)
-
-	// IssuedAtChecker
-	f(
-		IssuedAtChecker(now),
-		&StandardClaims{IssuedAt: Timestamp(now.Unix())},
-		nil,
-	)
-	f(
-		IssuedAtChecker(now),
-		&StandardClaims{IssuedAt: Timestamp(later.Unix())},
-		ErrIatValidation,
 	)
 
 	// IssuerChecker
@@ -84,18 +57,6 @@ func TestValidator(t *testing.T) {
 		ErrIssValidation,
 	)
 
-	// NotBeforeChecker
-	f(
-		NotBeforeChecker(later),
-		&StandardClaims{NotBefore: Timestamp(now.Unix())},
-		nil,
-	)
-	f(
-		NotBeforeChecker(now),
-		&StandardClaims{NotBefore: Timestamp(later.Unix())},
-		ErrNbfValidation,
-	)
-
 	// SubjectChecker
 	f(
 		SubjectChecker("great-subject"),
@@ -106,6 +67,77 @@ func TestValidator(t *testing.T) {
 		SubjectChecker("great-subject"),
 		&StandardClaims{Subject: "can-be-better"},
 		ErrSubValidation,
+	)
+}
+
+func TestTimingValidator(t *testing.T) {
+	now := time.Now()
+	later := now.Add(time.Minute)
+
+	f := func(check Check, claims *StandardClaims, wantErr error) {
+		t.Helper()
+
+		validator := NewValidator(check)
+		err := validator.Validate(claims)
+		switch {
+		case err != nil && wantErr == nil:
+			t.Errorf("got %#v, want nil", err)
+		case err != nil && wantErr != nil && err != wantErr:
+			t.Errorf("got %#v, want %#v", err, wantErr)
+		case err == nil && wantErr != nil:
+			t.Errorf("got nil, want %#v", wantErr)
+		}
+	}
+
+	// ExpirationTimeChecker
+	f(
+		ExpirationTimeChecker(now),
+		&StandardClaims{},
+		nil,
+	)
+	f(
+		ExpirationTimeChecker(now),
+		&StandardClaims{ExpiresAt: Timestamp(later.Unix())},
+		nil,
+	)
+	f(
+		ExpirationTimeChecker(later),
+		&StandardClaims{ExpiresAt: Timestamp(now.Unix())},
+		ErrExpValidation,
+	)
+
+	// IsIssuedBeforeChecker
+	f(
+		IsIssuedBeforeChecker(now),
+		&StandardClaims{},
+		nil,
+	)
+	f(
+		IsIssuedBeforeChecker(now),
+		&StandardClaims{IssuedAt: Timestamp(now.Unix())},
+		nil,
+	)
+	f(
+		IsIssuedBeforeChecker(now),
+		&StandardClaims{IssuedAt: Timestamp(later.Unix())},
+		ErrIatValidation,
+	)
+
+	// NotBeforeChecker
+	f(
+		NotBeforeChecker(later),
+		&StandardClaims{},
+		nil,
+	)
+	f(
+		NotBeforeChecker(later),
+		&StandardClaims{NotBefore: Timestamp(now.Unix())},
+		ErrNbfValidation,
+	)
+	f(
+		NotBeforeChecker(now),
+		&StandardClaims{NotBefore: Timestamp(later.Unix())},
+		nil,
 	)
 
 	// ValidAtChecker

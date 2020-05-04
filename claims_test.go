@@ -56,8 +56,8 @@ func TestClaims(t *testing.T) {
 }
 
 func TestTimingClaims(t *testing.T) {
-	before := time.Now()
-	after := before.Add(time.Minute)
+	now := time.Now()
+	later := now.Add(time.Minute)
 
 	f := func(claims *StandardClaims, f func(claims *StandardClaims) bool, want bool) {
 		t.Helper()
@@ -72,21 +72,21 @@ func TestTimingClaims(t *testing.T) {
 	f(
 		&StandardClaims{},
 		func(claims *StandardClaims) bool {
-			return claims.IsExpired(after)
+			return claims.IsExpired(later)
 		},
 		false,
 	)
 	f(
-		&StandardClaims{ExpiresAt: Timestamp(before.Unix())},
+		&StandardClaims{ExpiresAt: Timestamp(now.Unix())},
 		func(claims *StandardClaims) bool {
-			return claims.IsExpired(after)
+			return claims.IsExpired(later)
 		},
 		true,
 	)
 	f(
-		&StandardClaims{ExpiresAt: Timestamp(after.Unix())},
+		&StandardClaims{ExpiresAt: Timestamp(later.Unix())},
 		func(claims *StandardClaims) bool {
-			return claims.IsExpired(before)
+			return claims.IsExpired(now)
 		},
 		false,
 	)
@@ -95,21 +95,21 @@ func TestTimingClaims(t *testing.T) {
 	f(
 		&StandardClaims{},
 		func(claims *StandardClaims) bool {
-			return claims.IsIssuedBefore(after)
-		},
-		false,
-	)
-	f(
-		&StandardClaims{IssuedAt: Timestamp(before.Unix())},
-		func(claims *StandardClaims) bool {
-			return claims.IsIssuedBefore(after)
+			return claims.IsIssuedBefore(later)
 		},
 		true,
 	)
 	f(
-		&StandardClaims{IssuedAt: Timestamp(after.Unix())},
+		&StandardClaims{IssuedAt: Timestamp(now.Unix())},
 		func(claims *StandardClaims) bool {
-			return claims.IsIssuedBefore(before)
+			return claims.IsIssuedBefore(later)
+		},
+		true,
+	)
+	f(
+		&StandardClaims{IssuedAt: Timestamp(later.Unix())},
+		func(claims *StandardClaims) bool {
+			return claims.IsIssuedBefore(now)
 		},
 		false,
 	)
@@ -118,22 +118,22 @@ func TestTimingClaims(t *testing.T) {
 	f(
 		&StandardClaims{},
 		func(claims *StandardClaims) bool {
-			return claims.HasPassedNotBefore(after)
+			return claims.HasPassedNotBefore(later)
 		},
 		true,
 	)
 	f(
-		&StandardClaims{NotBefore: Timestamp(before.Unix())},
+		&StandardClaims{NotBefore: Timestamp(now.Unix())},
 		func(claims *StandardClaims) bool {
-			return claims.HasPassedNotBefore(after)
-		},
-		true,
-	)
-	f(
-		&StandardClaims{NotBefore: Timestamp(after.Unix())},
-		func(claims *StandardClaims) bool {
-			return claims.HasPassedNotBefore(before)
+			return claims.HasPassedNotBefore(later)
 		},
 		false,
+	)
+	f(
+		&StandardClaims{NotBefore: Timestamp(later.Unix())},
+		func(claims *StandardClaims) bool {
+			return claims.HasPassedNotBefore(now)
+		},
+		true,
 	)
 }
