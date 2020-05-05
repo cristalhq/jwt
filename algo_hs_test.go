@@ -16,7 +16,7 @@ func TestHMAC(t *testing.T) {
 
 		err = signer.Verify(token.Payload(), token.Signature())
 		if err != nil {
-			t.Errorf("want no err, got: `%v`", err)
+			t.Errorf("want no err, got: %#v", err)
 		}
 	}
 	f(
