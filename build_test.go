@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"encoding/base64"
+	"errors"
 	"testing"
 )
 
@@ -9,25 +10,16 @@ func TestBuild(t *testing.T) {
 	f := func(signer Signer, claims interface{}, want string) {
 		t.Helper()
 
-		token, err := NewBuilder(signer).Build(claims)
+		token, err := BuildBytes(signer, claims)
 		if err != nil {
 			t.Error(err)
 		}
 
-		raw := string(token.String())
+		raw := string(token)
 		if raw != want {
 			t.Errorf("want %v, got %v", want, raw)
 		}
 	}
-
-	f(
-		NewNoEncrypt(),
-		&StandardClaims{
-			ID:       "just an id",
-			Audience: Audience([]string{"audience"}),
-		},
-		`eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.ZXlKaGJHY2lPaUp1YjI1bElpd2lkSGx3SWpvaVNsZFVJbjAuZXlKcWRHa2lPaUpxZFhOMElHRnVJR2xrSWl3aVlYVmtJam9pWVhWa2FXVnVZMlVpZlE`,
-	)
 
 	f(
 		getSigner(NewHS256([]byte("test-key-256"))),
@@ -37,23 +29,6 @@ func TestBuild(t *testing.T) {
 		},
 		`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`,
 	)
-	f(
-		getSigner(NewHS384([]byte("test-key-384"))),
-		&StandardClaims{
-			ID:       "just an id",
-			Audience: Audience([]string{"audience"}),
-		},
-		`eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.l_Ric0QxkvqmGfBqr-f90dHsdBaiXQuYbKzlqC92eyNv3j1J3FHCeMjbiwB94q9S`,
-	)
-	f(
-		getSigner(NewHS512([]byte("test-key-512"))),
-		&StandardClaims{
-			ID:       "just an id",
-			Audience: Audience([]string{"audience"}),
-		},
-		`eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.Um-OqqMOsmXQUqNoaIohIJQKbaYtY1rpBfyx46lh4vrXj1JFCahz5BIltASpYZJ-t4-yAyvaYfMZuUC7PHDhcA`,
-	)
-
 }
 
 func TestBuildHeader(t *testing.T) {
@@ -71,12 +46,6 @@ func TestBuildHeader(t *testing.T) {
 			t.Errorf("want %v, got %v", want, raw)
 		}
 	}
-
-	f(
-		NewNoEncrypt(),
-		Header{Algorithm: NoEncryption, Type: "JWT"},
-		`{"alg":"none","typ":"JWT"}`,
-	)
 
 	key := []byte("key")
 	f(
@@ -112,8 +81,42 @@ func TestBuildHeader(t *testing.T) {
 	)
 }
 
+func TestBuildMalformed(t *testing.T) {
+	f := func(signer Signer, claims interface{}) {
+		t.Helper()
+
+		_, err := BuildBytes(signer, claims)
+		if err == nil {
+			t.Error("want err, got nil")
+		}
+	}
+
+	f(
+		badSigner{},
+		nil,
+	)
+	f(
+		getSigner(NewHS256([]byte("test-key"))),
+		badSigner.Algorithm,
+	)
+}
+
 func toBase64(s string) string {
 	buf := make([]byte, base64EncodedLen(len(s)))
 	base64.RawURLEncoding.Encode(buf, []byte(s))
 	return string(buf)
+}
+
+var _ Signer = badSigner{}
+
+type badSigner struct{}
+
+func (badSigner) Algorithm() Algorithm {
+	return "bad"
+}
+func (badSigner) Sign(payload []byte) ([]byte, error) {
+	return nil, errors.New("error by design")
+}
+func (badSigner) Verify(payload, signature []byte) error {
+	return errors.New("error by design")
 }
