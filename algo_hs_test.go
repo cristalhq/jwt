@@ -5,7 +5,7 @@ import (
 )
 
 func TestHMAC(t *testing.T) {
-	f := func(signer Signer, claims BinaryMarshaler) {
+	f := func(signer Signer, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)
@@ -53,7 +53,7 @@ func TestHMAC(t *testing.T) {
 }
 
 func TestHMAC_InvalidSignature(t *testing.T) {
-	f := func(signer, verifier Signer, claims BinaryMarshaler) {
+	f := func(signer, verifier Signer, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)

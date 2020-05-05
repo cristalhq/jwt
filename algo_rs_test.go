@@ -45,7 +45,7 @@ func init() {
 }
 
 func TestRSA(t *testing.T) {
-	f := func(signer Signer, claims BinaryMarshaler) {
+	f := func(signer Signer, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)
@@ -91,7 +91,7 @@ func TestRSA(t *testing.T) {
 }
 
 func TestRSA_InvalidSignature(t *testing.T) {
-	f := func(signer, verifier Signer, claims BinaryMarshaler) {
+	f := func(signer, verifier Signer, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)

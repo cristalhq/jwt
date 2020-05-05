@@ -39,7 +39,7 @@ var ed25519Public = ed25519.PublicKey([]byte{
 })
 
 func TestEdDSA(t *testing.T) {
-	f := func(signer Signer, claims BinaryMarshaler) {
+	f := func(signer Signer, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)
@@ -68,7 +68,7 @@ func TestEdDSA(t *testing.T) {
 }
 
 func TestEdDSA_InvalidSignature(t *testing.T) {
-	f := func(signer, verifier Signer, claims BinaryMarshaler) {
+	f := func(signer, verifier Signer, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)

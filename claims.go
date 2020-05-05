@@ -2,7 +2,6 @@ package jwt
 
 import (
 	"crypto/subtle"
-	"encoding/json"
 	"time"
 )
 
@@ -34,11 +33,6 @@ type StandardClaims struct {
 	// NotBefore claim identifies the time before which the JWT MUST NOT be accepted for processing.
 	// Use of this claim is OPTIONAL.
 	NotBefore *NumericDate `json:"nbf,omitempty"`
-}
-
-// MarshalBinary default marshaling to JSON.
-func (sc StandardClaims) MarshalBinary() (data []byte, err error) {
-	return json.Marshal(sc)
 }
 
 // IsAudience reports whether token has a given audience.

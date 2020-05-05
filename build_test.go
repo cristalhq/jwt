@@ -6,7 +6,7 @@ import (
 )
 
 func TestBuild(t *testing.T) {
-	f := func(signer Signer, claims BinaryMarshaler, want string) {
+	f := func(signer Signer, claims interface{}, want string) {
 		t.Helper()
 
 		token, err := NewBuilder(signer).Build(claims)

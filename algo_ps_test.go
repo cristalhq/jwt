@@ -5,7 +5,7 @@ import (
 )
 
 func TestPS256_WithValidSignature(t *testing.T) {
-	f := func(signer Signer, claims BinaryMarshaler) {
+	f := func(signer Signer, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)
@@ -51,7 +51,7 @@ func TestPS256_WithValidSignature(t *testing.T) {
 }
 
 func TestPS384_WithInvalidSignature(t *testing.T) {
-	f := func(signer, verifier Signer, claims BinaryMarshaler) {
+	f := func(signer, verifier Signer, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)

@@ -42,7 +42,7 @@ func init() {
 }
 
 func TestES256_WithValidSignature(t *testing.T) {
-	f := func(signer Signer, claims BinaryMarshaler) {
+	f := func(signer Signer, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)
@@ -88,7 +88,7 @@ func TestES256_WithValidSignature(t *testing.T) {
 }
 
 func TestES384_WithInvalidSignature(t *testing.T) {
-	f := func(signer, verifier Signer, claims BinaryMarshaler) {
+	f := func(signer, verifier Signer, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)

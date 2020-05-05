@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"encoding/base64"
+	"encoding/json"
 )
 
 var (
@@ -15,18 +16,13 @@ type Builder struct {
 	header Header
 }
 
-// BinaryMarshaler a marshaling interface for user claims.
-type BinaryMarshaler interface {
-	MarshalBinary() (data []byte, err error)
-}
-
 // BuildBytes is used to create and encode JWT with a provided claims.
-func BuildBytes(signer Signer, claims BinaryMarshaler) ([]byte, error) {
+func BuildBytes(signer Signer, claims interface{}) ([]byte, error) {
 	return NewBuilder(signer).BuildBytes(claims)
 }
 
 // Build is used to create and encode JWT with a provided claims.
-func Build(signer Signer, claims BinaryMarshaler) (*Token, error) {
+func Build(signer Signer, claims interface{}) (*Token, error) {
 	return NewBuilder(signer).Build(claims)
 }
 
@@ -44,7 +40,7 @@ func NewBuilder(signer Signer) *Builder {
 }
 
 // BuildBytes used to create and encode JWT with a provided claims.
-func (b *Builder) BuildBytes(claims BinaryMarshaler) ([]byte, error) {
+func (b *Builder) BuildBytes(claims interface{}) ([]byte, error) {
 	token, err := b.Build(claims)
 	if err != nil {
 		return nil, err
@@ -53,7 +49,7 @@ func (b *Builder) BuildBytes(claims BinaryMarshaler) ([]byte, error) {
 }
 
 // Build used to create and encode JWT with a provided claims.
-func (b *Builder) Build(claims BinaryMarshaler) (*Token, error) {
+func (b *Builder) Build(claims interface{}) (*Token, error) {
 	rawClaims, encodedClaims, err := encodeClaims(claims)
 	if err != nil {
 		return nil, err
@@ -87,8 +83,8 @@ func encodeHeader(header *Header) []byte {
 	return encoded
 }
 
-func encodeClaims(claims BinaryMarshaler) (raw, encoded []byte, err error) {
-	raw, err = claims.MarshalBinary()
+func encodeClaims(claims interface{}) (raw, encoded []byte, err error) {
+	raw, err = json.Marshal(claims)
 	if err != nil {
 		return nil, nil, err
 	}
