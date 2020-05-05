@@ -26,7 +26,7 @@ func TestBuild(t *testing.T) {
 			ID:       "just an id",
 			Audience: Audience([]string{"audience"}),
 		},
-		`eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJhdWQiOiJhdWRpZW5jZSIsImp0aSI6Imp1c3QgYW4gaWQifQ.ZXlKaGJHY2lPaUp1YjI1bElpd2lkSGx3SWpvaVNsZFVJbjAuZXlKaGRXUWlPaUpoZFdScFpXNWpaU0lzSW1wMGFTSTZJbXAxYzNRZ1lXNGdhV1FpZlE`,
+		`eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.ZXlKaGJHY2lPaUp1YjI1bElpd2lkSGx3SWpvaVNsZFVJbjAuZXlKcWRHa2lPaUpxZFhOMElHRnVJR2xrSWl3aVlYVmtJam9pWVhWa2FXVnVZMlVpZlE`,
 	)
 
 	f(
@@ -35,7 +35,7 @@ func TestBuild(t *testing.T) {
 			ID:       "just an id",
 			Audience: Audience([]string{"audience"}),
 		},
-		`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWRpZW5jZSIsImp0aSI6Imp1c3QgYW4gaWQifQ.6EWV4IFTyCqCUn-_R1AFRgJptvmV09Os57WAejPcf7Q`,
+		`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`,
 	)
 	f(
 		getSigner(NewHS384([]byte("test-key-384"))),
@@ -43,7 +43,7 @@ func TestBuild(t *testing.T) {
 			ID:       "just an id",
 			Audience: Audience([]string{"audience"}),
 		},
-		`eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWRpZW5jZSIsImp0aSI6Imp1c3QgYW4gaWQifQ.aWImRb5WxBvJCPlQcWxg6YXH2jriPBd4Z7vjBn0MjYY8ZBpdJXw8kgbkn6_9yeo6`,
+		`eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.l_Ric0QxkvqmGfBqr-f90dHsdBaiXQuYbKzlqC92eyNv3j1J3FHCeMjbiwB94q9S`,
 	)
 	f(
 		getSigner(NewHS512([]byte("test-key-512"))),
@@ -51,7 +51,7 @@ func TestBuild(t *testing.T) {
 			ID:       "just an id",
 			Audience: Audience([]string{"audience"}),
 		},
-		`eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWRpZW5jZSIsImp0aSI6Imp1c3QgYW4gaWQifQ.cLQPM2tE9toJdvxN4HlAZXm7c3FTHMgTMw5M0Ba1AxRsU6-z_Ftiqik1IcscAXmi5v3bNRCan6qFNm1NKiDmJQ`,
+		`eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.Um-OqqMOsmXQUqNoaIohIJQKbaYtY1rpBfyx46lh4vrXj1JFCahz5BIltASpYZJ-t4-yAyvaYfMZuUC7PHDhcA`,
 	)
 
 }

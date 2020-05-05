@@ -20,7 +20,7 @@ func TestClaims(t *testing.T) {
 			Audience: Audience([]string{"winner"}),
 		},
 		func(claims *StandardClaims) bool {
-			return claims.IsPermittedFor("winner")
+			return claims.HasAudience("winner")
 		},
 		true,
 	)
@@ -29,7 +29,7 @@ func TestClaims(t *testing.T) {
 			Audience: Audience([]string{"w0nner"}),
 		},
 		func(claims *StandardClaims) bool {
-			return claims.IsPermittedFor("winner")
+			return claims.HasAudience("winner")
 		},
 		false,
 	)
@@ -49,7 +49,7 @@ func TestClaims(t *testing.T) {
 			Issuer: "test-issuer",
 		},
 		func(claims *StandardClaims) bool {
-			return claims.IsIssuedBy("test-issuer")
+			return claims.IsIssuer("test-issuer")
 		},
 		true,
 	)
@@ -68,71 +68,71 @@ func TestTimingClaims(t *testing.T) {
 		}
 	}
 
-	// IsExpired
+	// IsValidExpiresAt
 	f(
 		&StandardClaims{},
 		func(claims *StandardClaims) bool {
-			return claims.IsExpired(after)
-		},
-		false,
-	)
-	f(
-		&StandardClaims{ExpiresAt: Timestamp(before.Unix())},
-		func(claims *StandardClaims) bool {
-			return claims.IsExpired(after)
+			return claims.IsValidExpiresAt(after)
 		},
 		true,
 	)
 	f(
-		&StandardClaims{ExpiresAt: Timestamp(after.Unix())},
+		&StandardClaims{ExpiresAt: NewNumericDate(before)},
 		func(claims *StandardClaims) bool {
-			return claims.IsExpired(before)
+			return claims.IsValidExpiresAt(after)
+		},
+		false,
+	)
+	f(
+		&StandardClaims{ExpiresAt: NewNumericDate(after)},
+		func(claims *StandardClaims) bool {
+			return claims.IsValidExpiresAt(before)
+		},
+		true,
+	)
+
+	// IsValidIssuedAt
+	f(
+		&StandardClaims{},
+		func(claims *StandardClaims) bool {
+			return claims.IsValidIssuedAt(after)
+		},
+		true,
+	)
+	f(
+		&StandardClaims{IssuedAt: NewNumericDate(before)},
+		func(claims *StandardClaims) bool {
+			return claims.IsValidIssuedAt(after)
+		},
+		true,
+	)
+	f(
+		&StandardClaims{IssuedAt: NewNumericDate(after)},
+		func(claims *StandardClaims) bool {
+			return claims.IsValidIssuedAt(before)
 		},
 		false,
 	)
 
-	// IsIssuedBefore
+	// IsValidNotBefore
 	f(
 		&StandardClaims{},
 		func(claims *StandardClaims) bool {
-			return claims.IsIssuedBefore(after)
-		},
-		false,
-	)
-	f(
-		&StandardClaims{IssuedAt: Timestamp(before.Unix())},
-		func(claims *StandardClaims) bool {
-			return claims.IsIssuedBefore(after)
+			return claims.IsValidNotBefore(after)
 		},
 		true,
 	)
 	f(
-		&StandardClaims{IssuedAt: Timestamp(after.Unix())},
+		&StandardClaims{NotBefore: NewNumericDate(before)},
 		func(claims *StandardClaims) bool {
-			return claims.IsIssuedBefore(before)
-		},
-		false,
-	)
-
-	// HasPassedNotBefore
-	f(
-		&StandardClaims{},
-		func(claims *StandardClaims) bool {
-			return claims.HasPassedNotBefore(after)
+			return claims.IsValidNotBefore(after)
 		},
 		true,
 	)
 	f(
-		&StandardClaims{NotBefore: Timestamp(before.Unix())},
+		&StandardClaims{NotBefore: NewNumericDate(after)},
 		func(claims *StandardClaims) bool {
-			return claims.HasPassedNotBefore(after)
-		},
-		true,
-	)
-	f(
-		&StandardClaims{NotBefore: Timestamp(after.Unix())},
-		func(claims *StandardClaims) bool {
-			return claims.HasPassedNotBefore(before)
+			return claims.IsValidNotBefore(before)
 		},
 		false,
 	)
