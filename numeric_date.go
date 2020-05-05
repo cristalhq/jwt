@@ -3,6 +3,7 @@ package jwt
 import (
 	"encoding/json"
 	"math"
+	"strconv"
 	"time"
 )
 
@@ -27,9 +28,7 @@ func NewNumericDate(t time.Time) *NumericDate {
 
 // MarshalJSON implements the json.Marshaler interface.
 func (t NumericDate) MarshalJSON() ([]byte, error) {
-	ts := t.Truncate(marshalTimePrecision).UnixNano()
-	f := float64(ts) / float64(time.Second)
-	return json.Marshal(f)
+	return []byte(strconv.FormatInt(t.Unix(), 10)), nil
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.

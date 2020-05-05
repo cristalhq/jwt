@@ -29,21 +29,21 @@ func TestNumericDateMarshal(t *testing.T) {
 }
 
 func TestNumericDateUnmarshal(t *testing.T) {
-	f := func(got string, want NumericDate) {
+	f := func(s string, want NumericDate) {
 		t.Helper()
 
-		var a NumericDate
-		err := json.Unmarshal([]byte(got), &a)
+		var got NumericDate
+		err := json.Unmarshal([]byte(s), &got)
 		if err != nil {
 			t.Errorf("want no err, got: %#v", err)
+		}
+		if got.Unix() != want.Unix() {
+			t.Errorf("want %#v, got %#v", want.Unix(), got.Unix())
 		}
 	}
 
 	f(`1588707274.3769999`, NumericDate{})
-	// f(`[]`, NumericDate{})
-	// f(`"admin"`, NumericDate{"admin"})
-	// f(`["admin"]`, NumericDate{"admin"})
-	// f(`["admin","co-admin"]`, NumericDate{"admin", "co-admin"})
+	f(`1588707274`, NumericDate{})
 }
 
 func TestNumericDateUnmarshalMalformed(t *testing.T) {
