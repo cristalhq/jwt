@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func getSigner(s Signer, _ error) Signer {
+func mustSigner(s Signer, _ error) Signer {
 	return s
 }
 

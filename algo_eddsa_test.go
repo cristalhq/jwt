@@ -55,12 +55,12 @@ func TestEdDSA(t *testing.T) {
 	}
 
 	f(
-		getSigner(NewEdDSA(ed25519Public, ed25519Private)),
+		mustSigner(NewEdDSA(ed25519Public, ed25519Private)),
 		&StandardClaims{},
 	)
 
 	f(
-		getSigner(NewEdDSA(ed25519Public, ed25519Private)),
+		mustSigner(NewEdDSA(ed25519Public, ed25519Private)),
 		&customClaims{
 			TestField: "foo",
 		},
@@ -84,14 +84,14 @@ func TestEdDSA_InvalidSignature(t *testing.T) {
 	}
 
 	f(
-		getSigner(NewEdDSA(ed25519Public, ed25519Private2)),
-		getSigner(NewEdDSA(ed25519Public, ed25519Private)),
+		mustSigner(NewEdDSA(ed25519Public, ed25519Private2)),
+		mustSigner(NewEdDSA(ed25519Public, ed25519Private)),
 		&StandardClaims{},
 	)
 
 	f(
-		getSigner(NewEdDSA(ed25519Public, ed25519Private2)),
-		getSigner(NewEdDSA(ed25519Public, ed25519Private)),
+		mustSigner(NewEdDSA(ed25519Public, ed25519Private2)),
+		mustSigner(NewEdDSA(ed25519Public, ed25519Private)),
 		&customClaims{
 			TestField: "foo",
 		},

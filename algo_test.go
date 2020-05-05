@@ -11,23 +11,23 @@ func TestCorrectAlgorithm(t *testing.T) {
 	}
 
 	hmacKey := []byte("key")
-	f(getSigner(NewHS256(hmacKey)), HS256)
-	f(getSigner(NewHS384(hmacKey)), HS384)
-	f(getSigner(NewHS512(hmacKey)), HS512)
+	f(mustSigner(NewHS256(hmacKey)), HS256)
+	f(mustSigner(NewHS384(hmacKey)), HS384)
+	f(mustSigner(NewHS512(hmacKey)), HS512)
 
 	rsaPub, rsaPriv := rsaPublicKey1, rsaPrivateKey1
-	f(getSigner(NewRS256(rsaPub, rsaPriv)), RS256)
-	f(getSigner(NewRS384(rsaPub, rsaPriv)), RS384)
-	f(getSigner(NewRS512(rsaPub, rsaPriv)), RS512)
+	f(mustSigner(NewRS256(rsaPub, rsaPriv)), RS256)
+	f(mustSigner(NewRS384(rsaPub, rsaPriv)), RS384)
+	f(mustSigner(NewRS512(rsaPub, rsaPriv)), RS512)
 
-	f(getSigner(NewPS256(rsaPub, rsaPriv)), PS256)
-	f(getSigner(NewPS384(rsaPub, rsaPriv)), PS384)
-	f(getSigner(NewPS512(rsaPub, rsaPriv)), PS512)
+	f(mustSigner(NewPS256(rsaPub, rsaPriv)), PS256)
+	f(mustSigner(NewPS384(rsaPub, rsaPriv)), PS384)
+	f(mustSigner(NewPS512(rsaPub, rsaPriv)), PS512)
 
 	// ecdsaPub, ecdsaPriv := nil, nil
-	// f(getSigner(NewES256(ecdsaPub, ecdsaPriv)), ES256)
-	// f(getSigner(NewES384(ecdsaPub, ecdsaPriv)), ES384)
-	// f(getSigner(NewES512(ecdsaPub, ecdsaPriv)), ES512)
+	// f(mustSigner(NewES256(ecdsaPub, ecdsaPriv)), ES256)
+	// f(mustSigner(NewES384(ecdsaPub, ecdsaPriv)), ES384)
+	// f(mustSigner(NewES512(ecdsaPub, ecdsaPriv)), ES512)
 }
 
 func TestPanicOnNilKey(t *testing.T) {

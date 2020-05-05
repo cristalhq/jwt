@@ -55,32 +55,32 @@ func TestES256_WithValidSignature(t *testing.T) {
 	}
 
 	f(
-		getSigner(NewES256(ecdsaPublicKey256, ecdsaPrivateKey256)),
+		mustSigner(NewES256(ecdsaPublicKey256, ecdsaPrivateKey256)),
 		&StandardClaims{},
 	)
 	f(
-		getSigner(NewES384(ecdsaPublicKey384, ecdsaPrivateKey384)),
+		mustSigner(NewES384(ecdsaPublicKey384, ecdsaPrivateKey384)),
 		&StandardClaims{},
 	)
 	f(
-		getSigner(NewES512(ecdsaPublicKey521, ecdsaPrivateKey521)),
+		mustSigner(NewES512(ecdsaPublicKey521, ecdsaPrivateKey521)),
 		&StandardClaims{},
 	)
 
 	f(
-		getSigner(NewES256(ecdsaPublicKey256, ecdsaPrivateKey256)),
+		mustSigner(NewES256(ecdsaPublicKey256, ecdsaPrivateKey256)),
 		&customClaims{
 			TestField: "foo",
 		},
 	)
 	f(
-		getSigner(NewES384(ecdsaPublicKey384, ecdsaPrivateKey384)),
+		mustSigner(NewES384(ecdsaPublicKey384, ecdsaPrivateKey384)),
 		&customClaims{
 			TestField: "bar",
 		},
 	)
 	f(
-		getSigner(NewES512(ecdsaPublicKey521, ecdsaPrivateKey521)),
+		mustSigner(NewES512(ecdsaPublicKey521, ecdsaPrivateKey521)),
 		&customClaims{
 			TestField: "baz",
 		},
@@ -100,38 +100,38 @@ func TestES384_WithInvalidSignature(t *testing.T) {
 		}
 	}
 	f(
-		getSigner(NewES256(ecdsaPublicKey256, ecdsaPrivateKey256)),
-		getSigner(NewES256(ecdsaOtherPublicKey256, ecdsaOtherPrivateKey256)),
+		mustSigner(NewES256(ecdsaPublicKey256, ecdsaPrivateKey256)),
+		mustSigner(NewES256(ecdsaOtherPublicKey256, ecdsaOtherPrivateKey256)),
 		&StandardClaims{},
 	)
 	f(
-		getSigner(NewES384(ecdsaPublicKey384, ecdsaPrivateKey384)),
-		getSigner(NewES384(ecdsaOtherPublicKey384, ecdsaOtherPrivateKey384)),
+		mustSigner(NewES384(ecdsaPublicKey384, ecdsaPrivateKey384)),
+		mustSigner(NewES384(ecdsaOtherPublicKey384, ecdsaOtherPrivateKey384)),
 		&StandardClaims{},
 	)
 	f(
-		getSigner(NewES512(ecdsaPublicKey521, ecdsaPrivateKey521)),
-		getSigner(NewES512(ecdsaOtherPublicKey521, ecdsaOtherPrivateKey521)),
+		mustSigner(NewES512(ecdsaPublicKey521, ecdsaPrivateKey521)),
+		mustSigner(NewES512(ecdsaOtherPublicKey521, ecdsaOtherPrivateKey521)),
 		&StandardClaims{},
 	)
 
 	f(
-		getSigner(NewES256(ecdsaPublicKey256, ecdsaPrivateKey256)),
-		getSigner(NewES256(ecdsaOtherPublicKey256, ecdsaOtherPrivateKey256)),
+		mustSigner(NewES256(ecdsaPublicKey256, ecdsaPrivateKey256)),
+		mustSigner(NewES256(ecdsaOtherPublicKey256, ecdsaOtherPrivateKey256)),
 		&customClaims{
 			TestField: "foo",
 		},
 	)
 	f(
-		getSigner(NewES384(ecdsaPublicKey384, ecdsaPrivateKey384)),
-		getSigner(NewES384(ecdsaOtherPublicKey384, ecdsaOtherPrivateKey384)),
+		mustSigner(NewES384(ecdsaPublicKey384, ecdsaPrivateKey384)),
+		mustSigner(NewES384(ecdsaOtherPublicKey384, ecdsaOtherPrivateKey384)),
 		&customClaims{
 			TestField: "bar",
 		},
 	)
 	f(
-		getSigner(NewES512(ecdsaPublicKey521, ecdsaPrivateKey521)),
-		getSigner(NewES512(ecdsaOtherPublicKey521, ecdsaOtherPrivateKey521)),
+		mustSigner(NewES512(ecdsaPublicKey521, ecdsaPrivateKey521)),
+		mustSigner(NewES512(ecdsaOtherPublicKey521, ecdsaOtherPrivateKey521)),
 		&customClaims{
 			TestField: "baz",
 		},

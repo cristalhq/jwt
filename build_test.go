@@ -22,7 +22,7 @@ func TestBuild(t *testing.T) {
 	}
 
 	f(
-		getSigner(NewHS256([]byte("test-key-256"))),
+		mustSigner(NewHS256([]byte("test-key-256"))),
 		&StandardClaims{
 			ID:       "just an id",
 			Audience: Audience([]string{"audience"}),
@@ -49,33 +49,33 @@ func TestBuildHeader(t *testing.T) {
 
 	key := []byte("key")
 	f(
-		getSigner(NewHS256(key)),
+		mustSigner(NewHS256(key)),
 		Header{Algorithm: HS256, Type: "JWT"},
 		`{"alg":"HS256","typ":"JWT"}`,
 	)
 	f(
-		getSigner(NewHS384(key)),
+		mustSigner(NewHS384(key)),
 		Header{Algorithm: HS384, Type: "JWT"},
 		`{"alg":"HS384","typ":"JWT"}`,
 	)
 	f(
-		getSigner(NewHS512(key)),
+		mustSigner(NewHS512(key)),
 		Header{Algorithm: HS512, Type: "JWT"},
 		`{"alg":"HS512","typ":"JWT"}`,
 	)
 
 	f(
-		getSigner(NewRS256(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS256(rsaPublicKey1, rsaPrivateKey1)),
 		Header{Algorithm: RS256, Type: "JWT"},
 		`{"alg":"RS256","typ":"JWT"}`,
 	)
 	f(
-		getSigner(NewRS384(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS384(rsaPublicKey1, rsaPrivateKey1)),
 		Header{Algorithm: RS384, Type: "JWT"},
 		`{"alg":"RS384","typ":"JWT"}`,
 	)
 	f(
-		getSigner(NewRS512(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS512(rsaPublicKey1, rsaPrivateKey1)),
 		Header{Algorithm: RS512, Type: "JWT"},
 		`{"alg":"RS512","typ":"JWT"}`,
 	)
@@ -96,7 +96,7 @@ func TestBuildMalformed(t *testing.T) {
 		nil,
 	)
 	f(
-		getSigner(NewHS256([]byte("test-key"))),
+		mustSigner(NewHS256([]byte("test-key"))),
 		badSigner.Algorithm,
 	)
 }
