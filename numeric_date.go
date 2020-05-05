@@ -19,8 +19,14 @@ func NewNumericDate(t time.Time) *NumericDate {
 	if t.IsZero() {
 		return nil
 	}
-	out := NumericDate{t}
-	return &out
+	return &NumericDate{t}
+}
+
+// MarshalJSON implements the json.Marshaler interface.
+func (t *NumericDate) MarshalJSON() ([]byte, error) {
+	ts := t.Truncate(marshalTimePrecision).UnixNano()
+	f := float64(ts) / float64(time.Second)
+	return json.Marshal(f)
 }
 
 // UnmarshalJSON implements the json.Unmarshaler interface.
@@ -37,11 +43,4 @@ func (t *NumericDate) UnmarshalJSON(data []byte) error {
 	nSecs := int64((f - float64(secs)) * 1e9)
 	*t = NumericDate{time.Unix(secs, nSecs)}
 	return nil
-}
-
-// MarshalJSON implements the json.Marshaler interface.
-func (t *NumericDate) MarshalJSON() ([]byte, error) {
-	ts := t.Truncate(marshalTimePrecision).UnixNano()
-	f := float64(ts) / float64(time.Second)
-	return json.Marshal(f)
 }
