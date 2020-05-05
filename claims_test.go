@@ -18,21 +18,21 @@ func TestClaims(t *testing.T) {
 	f(
 		&StandardClaims{Audience: Audience([]string{"winner"})},
 		func(claims *StandardClaims) bool {
-			return claims.IsAudience("winner")
+			return claims.IsForAudience("winner")
 		},
 		true,
 	)
 	f(
 		&StandardClaims{Audience: Audience([]string{"oops", "winner"})},
 		func(claims *StandardClaims) bool {
-			return claims.IsAudience("winner")
+			return claims.IsForAudience("winner")
 		},
 		true,
 	)
 	f(
 		&StandardClaims{Audience: Audience([]string{"w0nner"})},
 		func(claims *StandardClaims) bool {
-			return claims.IsAudience("winner")
+			return claims.IsForAudience("winner")
 		},
 		false,
 	)

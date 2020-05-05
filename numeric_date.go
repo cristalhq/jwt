@@ -7,8 +7,6 @@ import (
 	"time"
 )
 
-const marshalTimePrecision = time.Second
-
 // NumericDate represents date for StandardClaims
 // See: https://tools.ietf.org/html/rfc7519#section-2
 //

@@ -5,7 +5,9 @@ import (
 	"time"
 )
 
-// StandardClaims https://tools.ietf.org/html/rfc7519#section-4.1
+// StandardClaims represents claims for JWT.
+// See: https://tools.ietf.org/html/rfc7519#section-4.1
+//
 type StandardClaims struct {
 	// ID claim provides a unique identifier for the JWT.
 	ID string `json:"jti,omitempty"`
@@ -35,8 +37,8 @@ type StandardClaims struct {
 	NotBefore *NumericDate `json:"nbf,omitempty"`
 }
 
-// IsAudience reports whether token has a given audience.
-func (sc *StandardClaims) IsAudience(audience string) bool {
+// IsForAudience reports whether token has a given audience.
+func (sc *StandardClaims) IsForAudience(audience string) bool {
 	for _, aud := range sc.Audience {
 		if constTimeEqual(aud, audience) {
 			return true
