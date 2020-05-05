@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"encoding/json"
+	"math"
 	"time"
 )
 
@@ -39,8 +40,8 @@ func (t *NumericDate) UnmarshalJSON(data []byte) error {
 	if err != nil {
 		return err
 	}
-	secs := int64(f)
-	nSecs := int64((f - float64(secs)) * 1e9)
-	*t = NumericDate{time.Unix(secs, nSecs)}
+	sec, dec := math.Modf(f)
+	ts := time.Unix(int64(sec), int64(dec*1e9))
+	*t = NumericDate{ts}
 	return nil
 }
