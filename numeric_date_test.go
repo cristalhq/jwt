@@ -2,7 +2,9 @@ package jwt
 
 import (
 	"encoding/json"
+	"strconv"
 	"testing"
+	"time"
 )
 
 func TestNumericDateMarshal(t *testing.T) {
@@ -11,7 +13,7 @@ func TestNumericDateMarshal(t *testing.T) {
 
 		raw, err := json.Marshal(got)
 		if err != nil {
-			t.Errorf("want no err, got: %v", err)
+			t.Errorf("want no err, got: %#v", err)
 		}
 
 		if string(raw) != want {
@@ -19,43 +21,50 @@ func TestNumericDateMarshal(t *testing.T) {
 		}
 	}
 
-	_ = f
-	// now := time.Now()
-	// f(NewNumericDate(now), `""`)
-	// f(NewNumericDate(time.Time{}), `["admin","co-admin"]`)
-	// f(NumericDate{now}, now.String())
+	now := time.Now()
+	nowTS := now.Unix()
+
+	f(NewNumericDate(time.Time{}), `null`)
+	f(NewNumericDate(now), strconv.Itoa(int(nowTS)))
 }
 
-// func TestNumericDateUnmarshal(t *testing.T) {
-// 	f := func(got string, want NumericDate, wantErr bool) {
-// 		t.Helper()
+func TestNumericDateUnmarshal(t *testing.T) {
+	f := func(got string, want NumericDate) {
+		t.Helper()
 
-// 		var a NumericDate
-// 		err := json.Unmarshal([]byte(got), &a)
-// 		if err != nil {
-// 			if !wantErr {
-// 				t.Errorf("want no err, got: %v", err)
-// 			}
-// 		} else {
-// 			if wantErr {
-// 				t.Errorf("want no err, got: %v", err)
-// 			}
-// 		}
+		var a NumericDate
+		err := json.Unmarshal([]byte(got), &a)
+		if err != nil {
+			t.Errorf("want no err, got: %#v", err)
+		}
+	}
 
-// 		if len(want) != len(a) {
-// 			t.Errorf("want %#v, got: %#v", len(want), len(a))
-// 		}
-// 		for i := range a {
-// 			if a[i] != want[i] {
-// 				t.Errorf("want %#v, got: %#v", want[i], a[i])
-// 			}
-// 		}
-// 	}
+	f(`1588707274.3769999`, NumericDate{})
+	// f(`[]`, NumericDate{})
+	// f(`"admin"`, NumericDate{"admin"})
+	// f(`["admin"]`, NumericDate{"admin"})
+	// f(`["admin","co-admin"]`, NumericDate{"admin", "co-admin"})
+}
 
-// 	f(`abc12`, NumericDate{}, true)
-// 	f(`{}`, NumericDate{}, true)
-// 	f(`[]`, NumericDate{}, false)
-// 	f(`"admin"`, NumericDate{"admin"}, false)
-// 	f(`["admin"]`, NumericDate{"admin"}, false)
-// 	f(`["admin","co-admin"]`, NumericDate{"admin", "co-admin"}, false)
-// }
+func TestNumericDateUnmarshalMalformed(t *testing.T) {
+	f := func(got string) {
+		t.Helper()
+
+		var nd NumericDate
+		err := json.Unmarshal([]byte(got), &nd)
+		if err == nil {
+			t.Error("want err")
+		}
+
+	}
+
+	f(``)
+	f(`abc12`)
+	f(`{}`)
+	f(`[{}]`)
+	f(`["admin",{}]`)
+	f(`["admin",123]`)
+	f(`abc12`)
+	f(`{}`)
+	f(`[]`)
+}

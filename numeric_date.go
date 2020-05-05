@@ -15,6 +15,8 @@ type NumericDate struct {
 	time.Time
 }
 
+var _ json.Marshaler = (*NumericDate)(nil)
+
 // NewNumericDate creates a new NumericDate value from time.Time.
 func NewNumericDate(t time.Time) *NumericDate {
 	if t.IsZero() {
@@ -24,7 +26,7 @@ func NewNumericDate(t time.Time) *NumericDate {
 }
 
 // MarshalJSON implements the json.Marshaler interface.
-func (t *NumericDate) MarshalJSON() ([]byte, error) {
+func (t NumericDate) MarshalJSON() ([]byte, error) {
 	ts := t.Truncate(marshalTimePrecision).UnixNano()
 	f := float64(ts) / float64(time.Second)
 	return json.Marshal(f)
