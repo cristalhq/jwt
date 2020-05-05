@@ -12,7 +12,6 @@ func getSigner(s Signer, _ error) Signer {
 
 type customClaims struct {
 	StandardClaims
-
 	TestField string `json:"test_field"`
 }
 
@@ -28,23 +27,17 @@ func TestMarshalHeader(t *testing.T) {
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
-
 		if string(raw) != want {
 			t.Errorf("got: %v, want %v", string(raw), want)
 		}
 	}
 
 	f(
-		&Header{
-			Algorithm: RS256,
-		},
-		`{"alg":"RS256"}`,
+		&Header{Algorithm: RS256},
+		`{"alg":"RS256","typ":"JWT"}`,
 	)
 	f(
-		&Header{
-			Algorithm: RS256,
-			Type:      "JWT",
-		},
+		&Header{Algorithm: RS256, Type: "JWT"},
 		`{"alg":"RS256","typ":"JWT"}`,
 	)
 }

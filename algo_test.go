@@ -4,6 +4,7 @@ import "testing"
 
 func TestCorrectAlgorithm(t *testing.T) {
 	f := func(s Signer, want Algorithm) {
+		t.Helper()
 		if alg := s.Algorithm(); alg != want {
 			t.Errorf("got %#v, want %#v", alg, want)
 		}
@@ -31,6 +32,7 @@ func TestCorrectAlgorithm(t *testing.T) {
 
 func TestPanicOnNilKey(t *testing.T) {
 	f := func(_ Signer, err error) {
+		t.Helper()
 		if err == nil {
 			t.Error("should have an error")
 		}

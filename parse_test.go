@@ -4,11 +4,34 @@ import (
 	"testing"
 )
 
-func TestParseAndVerifyString(t *testing.T) {
-	sign, _ := NewHS256([]byte(`test-key-256`))
-	token := "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWRpZW5jZSIsImp0aSI6Imp1c3QgYW4gaWQifQ.6EWV4IFTyCqCUn-_R1AFRgJptvmV09Os57WAejPcf7Q"
+func TestParseString(t *testing.T) {
+	f := func(got string, header Header, payload, signature string) {
+		t.Helper()
 
-	if _, err := ParseAndVerifyString(token, sign); err != nil {
-		t.Fatal(err)
+		_, err := ParseString(got)
+		if err == nil {
+			t.Error("got nil want nil")
+		}
 	}
+
+	// TODO
+	f(``, Header{}, "", "")
+}
+
+func TestParseMalformed(t *testing.T) {
+	f := func(got string) {
+		t.Helper()
+
+		_, err := ParseString(got)
+		if err == nil {
+			t.Error("got nil want nil")
+		}
+	}
+
+	f(`xyz.xyz`)
+	f(`a.xyz.xyz`)
+	f(`xyz.ab/c.xyz`)
+	f(`xyz.abc.x/yz`)
+	f(`x/z.ab_c.xyz`)
+	f(`ab_c.xyz.xyz`)
 }

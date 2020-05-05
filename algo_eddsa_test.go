@@ -42,7 +42,7 @@ func TestEdDSA(t *testing.T) {
 	f := func(signer Signer, claims BinaryMarshaler) {
 		t.Helper()
 
-		tokenBuilder := NewTokenBuilder(signer)
+		tokenBuilder := NewBuilder(signer)
 		token, err := tokenBuilder.Build(claims)
 		if err != nil {
 			t.Errorf("want nil, got %#v", err)
@@ -71,7 +71,7 @@ func TestEdDSA_InvalidSignature(t *testing.T) {
 	f := func(signer, verifier Signer, claims BinaryMarshaler) {
 		t.Helper()
 
-		tokenBuilder := NewTokenBuilder(signer)
+		tokenBuilder := NewBuilder(signer)
 		token, err := tokenBuilder.Build(claims)
 		if err != nil {
 			t.Errorf("want nil, got %#v", err)

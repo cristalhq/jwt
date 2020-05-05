@@ -25,24 +25,24 @@ func Parse(raw []byte) (*Token, error) {
 
 	headerN, err := base64Decode(buf, raw[:dot1])
 	if err != nil {
-		return nil, err
+		return nil, ErrInvalidFormat
 	}
 
 	claimsN, err := base64Decode(buf[headerN:], raw[dot1+1:dot2])
 	if err != nil {
-		return nil, err
+		return nil, ErrInvalidFormat
 	}
 	claims := buf[headerN : headerN+claimsN]
 
 	signN, err := base64Decode(buf[headerN+claimsN:], raw[dot2+1:])
 	if err != nil {
-		return nil, err
+		return nil, ErrInvalidFormat
 	}
 	signature := buf[headerN+claimsN : headerN+claimsN+signN]
 
 	var header Header
 	if err := json.Unmarshal(buf[:headerN], &header); err != nil {
-		return nil, err
+		return nil, ErrInvalidFormat
 	}
 
 	token := &Token{

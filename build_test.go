@@ -9,7 +9,7 @@ func TestBuild(t *testing.T) {
 	f := func(signer Signer, claims BinaryMarshaler, want string) {
 		t.Helper()
 
-		token, err := NewTokenBuilder(signer).Build(claims)
+		token, err := NewBuilder(signer).Build(claims)
 		if err != nil {
 			t.Error(err)
 		}
@@ -56,50 +56,11 @@ func TestBuild(t *testing.T) {
 
 }
 
-func TestBuildWithHeader(t *testing.T) {
-	f := func(signer Signer, header Header, want string) {
-		t.Helper()
-
-		token, err := BuildWithHeader(signer, header, &StandardClaims{})
-		if err != nil {
-			t.Error(err)
-		}
-
-		want = toBase64(want)
-		raw := string(token.RawHeader())
-		if raw != want {
-			t.Errorf("want %v, got %v", want, raw)
-		}
-	}
-
-	key := []byte("key")
-	f(
-		getSigner(NewHS256(key)),
-		Header{Algorithm: HS256, Type: "JWT"},
-		`{"alg":"HS256","typ":"JWT"}`,
-	)
-	f(
-		getSigner(NewHS512(key)),
-		Header{Algorithm: HS512, Type: "jit"},
-		`{"alg":"HS512","typ":"jit"}`,
-	)
-	f(
-		getSigner(NewHS512(key)),
-		Header{Algorithm: Algorithm("OwO"), Type: "JWT"},
-		`{"alg":"OwO","typ":"JWT"}`,
-	)
-	f(
-		getSigner(NewHS512(key)),
-		Header{Algorithm: Algorithm("UwU"), Type: "jit"},
-		`{"alg":"UwU","typ":"jit"}`,
-	)
-}
-
 func TestBuildHeader(t *testing.T) {
 	f := func(signer Signer, header Header, want string) {
 		t.Helper()
 
-		token, err := NewTokenBuilder(signer).Build(&StandardClaims{})
+		token, err := NewBuilder(signer).Build(&StandardClaims{})
 		if err != nil {
 			t.Error(err)
 		}

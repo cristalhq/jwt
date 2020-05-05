@@ -41,8 +41,8 @@ func (sc StandardClaims) MarshalBinary() (data []byte, err error) {
 	return json.Marshal(sc)
 }
 
-// HasAudience reports whether token has a given audience.
-func (sc *StandardClaims) HasAudience(audience string) bool {
+// IsAudience reports whether token has a given audience.
+func (sc *StandardClaims) IsAudience(audience string) bool {
 	for _, aud := range sc.Audience {
 		if areEqual(aud, audience) {
 			return true

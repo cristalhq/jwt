@@ -10,10 +10,10 @@ import (
 //
 type Token struct {
 	raw       []byte
-	header    Header
-	claims    json.RawMessage
 	payload   []byte
 	signature []byte
+	header    Header
+	claims    json.RawMessage
 }
 
 func (t Token) String() string {
@@ -62,20 +62,11 @@ func (t Token) Signature() []byte {
 //
 type Header struct {
 	Algorithm Algorithm `json:"alg"`
-	Type      string    `json:"typ,omitempty"` // type of JWS: it can only be "JWT" here
+	Type      string    `json:"typ,omitempty"` // only "JWT" can be here
 }
 
 // MarshalJSON implements the json.Marshaler interface.
 func (h Header) MarshalJSON() (data []byte, err error) {
-	buf := bytes.Buffer{}
-	buf.WriteString(`{"alg":"`)
-	buf.WriteString(string(h.Algorithm))
-
-	if h.Type != "" {
-		buf.WriteString(`","typ":"`)
-		buf.WriteString(h.Type)
-	}
-	buf.WriteString(`"}`)
-
-	return buf.Bytes(), nil
+	buf := []byte(`{"alg":"` + h.Algorithm + `","typ":"JWT"}`)
+	return buf, nil
 }

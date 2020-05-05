@@ -16,40 +16,44 @@ func TestClaims(t *testing.T) {
 	}
 
 	f(
-		&StandardClaims{
-			Audience: Audience([]string{"winner"}),
-		},
+		&StandardClaims{Audience: Audience([]string{"winner"})},
 		func(claims *StandardClaims) bool {
-			return claims.HasAudience("winner")
+			return claims.IsAudience("winner")
 		},
 		true,
 	)
 	f(
-		&StandardClaims{
-			Audience: Audience([]string{"w0nner"}),
-		},
+		&StandardClaims{Audience: Audience([]string{"oops", "winner"})},
 		func(claims *StandardClaims) bool {
-			return claims.HasAudience("winner")
+			return claims.IsAudience("winner")
+		},
+		true,
+	)
+	f(
+		&StandardClaims{Audience: Audience([]string{"w0nner"})},
+		func(claims *StandardClaims) bool {
+			return claims.IsAudience("winner")
 		},
 		false,
 	)
-
 	f(
-		&StandardClaims{
-			ID: "test-id",
-		},
+		&StandardClaims{ID: "test-id"},
 		func(claims *StandardClaims) bool {
 			return claims.IsID("test-id")
 		},
 		true,
 	)
-
 	f(
-		&StandardClaims{
-			Issuer: "test-issuer",
-		},
+		&StandardClaims{Issuer: "test-issuer"},
 		func(claims *StandardClaims) bool {
 			return claims.IsIssuer("test-issuer")
+		},
+		true,
+	)
+	f(
+		&StandardClaims{Subject: "test-subject"},
+		func(claims *StandardClaims) bool {
+			return claims.IsSubject("test-subject")
 		},
 		true,
 	)
@@ -134,6 +138,47 @@ func TestTimingClaims(t *testing.T) {
 		func(claims *StandardClaims) bool {
 			return claims.IsValidNotBefore(before)
 		},
+		false,
+	)
+}
+
+func TestIsValidAt(t *testing.T) {
+	now := time.Now()
+	before := now.Add(-time.Minute)
+	beforeNow := now.Add(-10 * time.Second)
+	afterNow := now.Add(10 * time.Second)
+	after := now.Add(time.Minute)
+
+	f := func(claims *StandardClaims, f func(claims *StandardClaims) bool, want bool) {
+		t.Helper()
+
+		got := f(claims)
+		if got != want {
+			t.Errorf("got %#v, want %#v", got, want)
+		}
+	}
+
+	f(
+		&StandardClaims{},
+		func(claims *StandardClaims) bool { return claims.IsValidAt(after) },
+		true,
+	)
+	f(
+		&StandardClaims{
+			ExpiresAt: NewNumericDate(after),
+			NotBefore: NewNumericDate(before),
+			IssuedAt:  NewNumericDate(beforeNow),
+		},
+		func(claims *StandardClaims) bool { return claims.IsValidAt(now) },
+		true,
+	)
+	f(
+		&StandardClaims{
+			ExpiresAt: NewNumericDate(after),
+			NotBefore: NewNumericDate(before),
+			IssuedAt:  NewNumericDate(afterNow),
+		},
+		func(claims *StandardClaims) bool { return claims.IsValidAt(now) },
 		false,
 	)
 }

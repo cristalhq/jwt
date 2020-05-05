@@ -4,15 +4,13 @@ import (
 	"encoding/base64"
 )
 
-const tokenSep = '.'
-
 var (
 	base64Encode     = base64.RawURLEncoding.Encode
 	base64EncodedLen = base64.RawURLEncoding.EncodedLen
 )
 
-// TokenBuilder is used to create a new token.
-type TokenBuilder struct {
+// Builder is used to create a new token.
+type Builder struct {
 	signer Signer
 	header Header
 }
@@ -24,38 +22,29 @@ type BinaryMarshaler interface {
 
 // BuildBytes is used to create and encode JWT with a provided claims.
 func BuildBytes(signer Signer, claims BinaryMarshaler) ([]byte, error) {
-	return NewTokenBuilder(signer).BuildBytes(claims)
+	return NewBuilder(signer).BuildBytes(claims)
 }
 
 // Build is used to create and encode JWT with a provided claims.
 func Build(signer Signer, claims BinaryMarshaler) (*Token, error) {
-	return NewTokenBuilder(signer).Build(claims)
+	return NewBuilder(signer).Build(claims)
 }
 
-// BuildWithHeader is used to create and encode JWT with a provided claims.
-func BuildWithHeader(signer Signer, header Header, claims BinaryMarshaler) (*Token, error) {
-	b := &TokenBuilder{
-		signer: signer,
-		header: header,
-	}
-	return b.Build(claims)
-}
-
-// NewTokenBuilder returns new instance of TokenBuilder.
-func NewTokenBuilder(signer Signer) *TokenBuilder {
-	b := &TokenBuilder{
+// NewBuilder returns new instance of Builder.
+func NewBuilder(signer Signer) *Builder {
+	b := &Builder{
 		signer: signer,
 
 		header: Header{
-			Type:      "JWT",
 			Algorithm: signer.Algorithm(),
+			Type:      "JWT",
 		},
 	}
 	return b
 }
 
 // BuildBytes used to create and encode JWT with a provided claims.
-func (b *TokenBuilder) BuildBytes(claims BinaryMarshaler) ([]byte, error) {
+func (b *Builder) BuildBytes(claims BinaryMarshaler) ([]byte, error) {
 	token, err := b.Build(claims)
 	if err != nil {
 		return nil, err
@@ -64,7 +53,7 @@ func (b *TokenBuilder) BuildBytes(claims BinaryMarshaler) ([]byte, error) {
 }
 
 // Build used to create and encode JWT with a provided claims.
-func (b *TokenBuilder) Build(claims BinaryMarshaler) (*Token, error) {
+func (b *Builder) Build(claims BinaryMarshaler) (*Token, error) {
 	rawClaims, encodedClaims, err := encodeClaims(claims)
 	if err != nil {
 		return nil, err
@@ -80,10 +69,10 @@ func (b *TokenBuilder) Build(claims BinaryMarshaler) (*Token, error) {
 
 	token := &Token{
 		raw:       signed,
-		header:    b.header,
-		claims:    rawClaims,
 		payload:   payload,
 		signature: signature,
+		header:    b.header,
+		claims:    rawClaims,
 	}
 	return token, nil
 }
@@ -126,7 +115,7 @@ func signPayload(signer Signer, payload []byte) (signed, signature []byte, err e
 
 func concatParts(a, b []byte) []byte {
 	buf := make([]byte, len(a)+1+len(b))
-	buf[len(a)] = tokenSep
+	buf[len(a)] = '.'
 
 	copy(buf[:len(a)], a)
 	copy(buf[len(a)+1:], b)
