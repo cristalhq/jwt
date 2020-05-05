@@ -5,10 +5,11 @@ import (
 	"time"
 )
 
-// marshalTimePrecision
 const marshalTimePrecision = time.Second
 
-// NumericDate ...
+// NumericDate represents date for StandardClaims
+// See: https://tools.ietf.org/html/rfc7519#section-2
+//
 type NumericDate struct {
 	time.Time
 }
@@ -40,6 +41,7 @@ func (t *NumericDate) UnmarshalJSON(data []byte) error {
 
 // MarshalJSON implements the json.Marshaler interface.
 func (t *NumericDate) MarshalJSON() ([]byte, error) {
-	f := float64(t.Truncate(marshalTimePrecision).UnixNano()) / float64(time.Second)
+	ts := t.Truncate(marshalTimePrecision).UnixNano()
+	f := float64(ts) / float64(time.Second)
 	return json.Marshal(f)
 }

@@ -5,6 +5,13 @@ import (
 	_ "crypto/sha512" // to register a hash
 )
 
+// Signer used to sign and verify tokens.
+type Signer interface {
+	Algorithm() Algorithm
+	Sign(payload []byte) ([]byte, error)
+	Verify(payload, signature []byte) error
+}
+
 // Algorithm for signing and verifying.
 type Algorithm string
 

@@ -14,7 +14,7 @@ func TestBuild(t *testing.T) {
 			t.Error(err)
 		}
 
-		raw := string(token.InsecureString())
+		raw := string(token.String())
 		if raw != want {
 			t.Errorf("want %v, got %v", want, raw)
 		}
@@ -92,22 +92,6 @@ func TestBuildWithHeader(t *testing.T) {
 		getSigner(NewHS512(key)),
 		Header{Algorithm: Algorithm("UwU"), Type: "jit"},
 		`{"alg":"UwU","typ":"jit"}`,
-	)
-
-	f(
-		getSigner(NewHS512(key)),
-		Header{Algorithm: HS512, Type: "test-type", KeyID: "test-key"},
-		`{"alg":"HS512","typ":"test-type","kid":"test-key"}`,
-	)
-	f(
-		getSigner(NewHS512(key)),
-		Header{Algorithm: HS512, Type: "test-type", ContentType: "test-cty"},
-		`{"alg":"HS512","typ":"test-type","cty":"test-cty"}`,
-	)
-	f(
-		getSigner(NewHS512(key)),
-		Header{Algorithm: HS512, Type: "test-type", ContentType: "test-cty", KeyID: "test-key"},
-		`{"alg":"HS512","typ":"test-type","cty":"test-cty","kid":"test-key"}`,
 	)
 }
 

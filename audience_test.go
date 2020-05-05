@@ -26,13 +26,19 @@ func TestAudienceMarshal(t *testing.T) {
 }
 
 func TestAudienceUnmarshal(t *testing.T) {
-	f := func(got string, want Audience) {
+	f := func(got string, want Audience, wantErr bool) {
 		t.Helper()
 
 		var a Audience
 		err := json.Unmarshal([]byte(got), &a)
 		if err != nil {
-			t.Errorf("want no err, got: %v", err)
+			if !wantErr {
+				t.Errorf("want no err, got: %v", err)
+			}
+		} else {
+			if wantErr {
+				t.Errorf("want no err, got: %v", err)
+			}
 		}
 
 		if len(want) != len(a) {
@@ -45,9 +51,10 @@ func TestAudienceUnmarshal(t *testing.T) {
 		}
 	}
 
-	f(`[]`, Audience{})
-	f(`{}`, Audience{})
-	f(`"admin"`, Audience{"admin"})
-	f(`["admin"]`, Audience{"admin"})
-	f(`["admin","co-admin"]`, Audience{"admin", "co-admin"})
+	f(`abc12`, Audience{}, true)
+	f(`{}`, Audience{}, true)
+	f(`[]`, Audience{}, false)
+	f(`"admin"`, Audience{"admin"}, false)
+	f(`["admin"]`, Audience{"admin"}, false)
+	f(`["admin","co-admin"]`, Audience{"admin", "co-admin"}, false)
 }

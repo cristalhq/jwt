@@ -47,55 +47,6 @@ func TestMarshalHeader(t *testing.T) {
 		},
 		`{"alg":"RS256","typ":"JWT"}`,
 	)
-	f(
-		&Header{
-			Algorithm:   RS256,
-			Type:        "JWT",
-			ContentType: "json",
-		},
-		`{"alg":"RS256","typ":"JWT","cty":"json"}`,
-	)
-	f(
-		&Header{
-			Algorithm:   RS256,
-			Type:        "JWT",
-			ContentType: "json",
-			KeyID:       "test-id",
-		},
-		`{"alg":"RS256","typ":"JWT","cty":"json","kid":"test-id"}`,
-	)
-
-	f(
-		&Header{
-			Algorithm:   RS256,
-			ContentType: "json",
-			KeyID:       "test-id",
-		},
-		`{"alg":"RS256","cty":"json","kid":"test-id"}`,
-	)
-	f(
-		&Header{
-			Algorithm: RS256,
-			Type:      "JWT",
-			KeyID:     "test-id",
-		},
-		`{"alg":"RS256","typ":"JWT","kid":"test-id"}`,
-	)
-
-	f(
-		&Header{
-			Algorithm: RS256,
-			KeyID:     "test-id",
-		},
-		`{"alg":"RS256","kid":"test-id"}`,
-	)
-	f(
-		&Header{
-			Algorithm:   RS256,
-			ContentType: "json",
-		},
-		`{"alg":"RS256","cty":"json"}`,
-	)
 }
 
 func TestSecurePrint(t *testing.T) {
@@ -110,8 +61,8 @@ func TestSecurePrint(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	secure := token.String()
-	insecure := token.InsecureString()
+	secure := token.SecureString()
+	insecure := token.String()
 
 	pos := strings.Index(secure, `.<signature>`)
 

@@ -10,7 +10,7 @@ type Audience []string
 func (a Audience) MarshalJSON() ([]byte, error) {
 	switch len(a) {
 	case 0:
-		return json.Marshal("")
+		return []byte(`""`), nil
 	case 1:
 		return json.Marshal(a[0])
 	default:
@@ -34,6 +34,8 @@ func (a *Audience) UnmarshalJSON(b []byte) error {
 			aud[i] = v[i].(string)
 		}
 		*a = aud
+	default:
+		return ErrAudienceInvalidFormat
 	}
 	return nil
 }
