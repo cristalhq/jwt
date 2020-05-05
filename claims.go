@@ -38,7 +38,7 @@ type StandardClaims struct {
 // IsAudience reports whether token has a given audience.
 func (sc *StandardClaims) IsAudience(audience string) bool {
 	for _, aud := range sc.Audience {
-		if areEqual(aud, audience) {
+		if constTimeEqual(aud, audience) {
 			return true
 		}
 	}
@@ -47,17 +47,17 @@ func (sc *StandardClaims) IsAudience(audience string) bool {
 
 // IsIssuer reports whether token has a given issuer.
 func (sc *StandardClaims) IsIssuer(issuer string) bool {
-	return areEqual(sc.Issuer, issuer)
+	return constTimeEqual(sc.Issuer, issuer)
 }
 
 // IsSubject reports whether token has a given subject.
 func (sc *StandardClaims) IsSubject(subject string) bool {
-	return areEqual(sc.Subject, subject)
+	return constTimeEqual(sc.Subject, subject)
 }
 
 // IsID reports whether token has a given id.
 func (sc *StandardClaims) IsID(id string) bool {
-	return areEqual(sc.ID, id)
+	return constTimeEqual(sc.ID, id)
 }
 
 // IsValidExpiresAt reports whether a token isn't expired at a given time.
@@ -80,6 +80,6 @@ func (sc StandardClaims) IsValidAt(now time.Time) bool {
 	return sc.IsValidExpiresAt(now) && sc.IsValidNotBefore(now) && sc.IsValidIssuedAt(now)
 }
 
-func areEqual(a, b string) bool {
+func constTimeEqual(a, b string) bool {
 	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
 }
