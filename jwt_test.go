@@ -6,8 +6,18 @@ import (
 	"testing"
 )
 
-func mustSigner(s Signer, _ error) Signer {
+func mustSigner(s Signer, err error) Signer {
+	if err != nil {
+		panic(err)
+	}
 	return s
+}
+
+func mustVerifier(v Verifier, err error) Verifier {
+	if err != nil {
+		panic(err)
+	}
+	return v
 }
 
 type customClaims struct {
@@ -43,7 +53,7 @@ func TestMarshalHeader(t *testing.T) {
 }
 
 func TestSecurePrint(t *testing.T) {
-	sign, _ := NewHS256([]byte(`test-key`))
+	sign, _ := NewSignerHMAC(HS256, []byte(`test-key`))
 	claims := &StandardClaims{
 		ID:       "test-id",
 		Audience: Audience([]string{"test-user"}),

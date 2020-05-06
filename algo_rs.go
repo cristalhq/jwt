@@ -6,59 +6,56 @@ import (
 	"crypto/rsa"
 )
 
+// NewSignerRSA ...
+func NewSignerRSA(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
+	if key == nil {
+		return nil, ErrInvalidKey
+	}
+	hash, err := getHashRSA(alg)
+	if err != nil {
+		return nil, err
+	}
+	return &rsAlg{
+		alg:        alg,
+		hash:       hash,
+		privateKey: key,
+	}, nil
+}
+
+// NewVerifierRSA ...
+func NewVerifierRSA(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
+	if key == nil {
+		return nil, ErrInvalidKey
+	}
+	hash, err := getHashRSA(alg)
+	if err != nil {
+		return nil, err
+	}
+	return &rsAlg{
+		alg:       alg,
+		hash:      hash,
+		publickey: key,
+	}, nil
+}
+
+func getHashRSA(alg Algorithm) (crypto.Hash, error) {
+	switch alg {
+	case RS256:
+		return crypto.SHA256, nil
+	case RS384:
+		return crypto.SHA384, nil
+	case RS512:
+		return crypto.SHA512, nil
+	default:
+		return 0, ErrUnsupportedAlg
+	}
+}
+
 type rsAlg struct {
 	alg        Algorithm
 	hash       crypto.Hash
 	publickey  *rsa.PublicKey
 	privateKey *rsa.PrivateKey
-}
-
-// NewRS256 returns new RSA Signer using RSA and SHA256 hash.
-//
-// Both public and private keys must not be nil.
-//
-func NewRS256(publicKey *rsa.PublicKey, privateKey *rsa.PrivateKey) (Signer, error) {
-	if publicKey == nil || privateKey == nil {
-		return nil, ErrInvalidKey
-	}
-	return &rsAlg{
-		alg:        RS256,
-		hash:       crypto.SHA256,
-		publickey:  publicKey,
-		privateKey: privateKey,
-	}, nil
-}
-
-// NewRS384 returns new RSA Signer using RSA and SHA384 hash.
-//
-// Both public and private keys must not be nil.
-//
-func NewRS384(publicKey *rsa.PublicKey, privateKey *rsa.PrivateKey) (Signer, error) {
-	if publicKey == nil || privateKey == nil {
-		return nil, ErrInvalidKey
-	}
-	return &rsAlg{
-		alg:        RS384,
-		hash:       crypto.SHA384,
-		publickey:  publicKey,
-		privateKey: privateKey,
-	}, nil
-}
-
-// NewRS512 returns new RSA Signer using RSA and SHA512 hash.
-//
-// Both public and private keys must not be nil.
-//
-func NewRS512(publicKey *rsa.PublicKey, privateKey *rsa.PrivateKey) (Signer, error) {
-	if publicKey == nil || privateKey == nil {
-		return nil, ErrInvalidKey
-	}
-	return &rsAlg{
-		alg:        RS512,
-		hash:       crypto.SHA512,
-		publickey:  publicKey,
-		privateKey: privateKey,
-	}, nil
 }
 
 func (h rsAlg) Algorithm() Algorithm {

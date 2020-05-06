@@ -4,25 +4,32 @@ import (
 	"crypto/ed25519"
 )
 
-type edDSAAlg struct {
-	alg        Algorithm
-	publicKey  ed25519.PublicKey
-	privateKey ed25519.PrivateKey
-}
-
-// NewEdDSA returns new signer using EdDSA algorithm.
-//
-// Both public and private keys must not be nil.
-//
-func NewEdDSA(publicKey ed25519.PublicKey, privateKey ed25519.PrivateKey) (Signer, error) {
-	if len(publicKey) == 0 || len(privateKey) == 0 {
+// NewSignerEdDSA ...
+func NewSignerEdDSA(key ed25519.PrivateKey) (Signer, error) {
+	if key == nil {
 		return nil, ErrInvalidKey
 	}
 	return &edDSAAlg{
 		alg:        EdDSA,
-		publicKey:  publicKey,
-		privateKey: privateKey,
+		privateKey: key,
 	}, nil
+}
+
+// NewVerifierEdDSA ...
+func NewVerifierEdDSA(key ed25519.PublicKey) (Verifier, error) {
+	if key == nil {
+		return nil, ErrInvalidKey
+	}
+	return &edDSAAlg{
+		alg:       EdDSA,
+		publicKey: key,
+	}, nil
+}
+
+type edDSAAlg struct {
+	alg        Algorithm
+	publicKey  ed25519.PublicKey
+	privateKey ed25519.PrivateKey
 }
 
 func (h edDSAAlg) Algorithm() Algorithm {
