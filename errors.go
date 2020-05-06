@@ -20,6 +20,9 @@ const (
 	// ErrAudienceInvalidFormat indicates that audience format is invalid.
 	ErrAudienceInvalidFormat = Error("jwt: audience format is invalid")
 
-	// ErrInvalidSignature signature wasn't correct.
+	// ErrAlgorithmMissmatch indicates that token is signed by another algorithm
+	ErrAlgorithmMissmatch = Error("jwt: token is signed by another algorithm")
+
+	// ErrInvalidSignature indicates that signature is incorrect.
 	ErrInvalidSignature = Error("jwt: signature is invalid")
 )
