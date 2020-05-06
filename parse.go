@@ -47,10 +47,10 @@ func Parse(raw []byte) (*Token, error) {
 
 	token := &Token{
 		raw:       raw,
-		header:    header,
-		claims:    claims,
 		payload:   raw[:dot2],
 		signature: signature,
+		header:    header,
+		claims:    claims,
 	}
 	return token, nil
 }
