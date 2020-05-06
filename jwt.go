@@ -37,7 +37,7 @@ func (t Token) Header() Header {
 }
 
 // RawHeader returns token's header raw bytes.
-func (t *Token) RawHeader() []byte {
+func (t Token) RawHeader() []byte {
 	dot := bytes.IndexByte(t.raw, '.')
 	return t.raw[:dot]
 }
