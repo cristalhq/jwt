@@ -5,8 +5,6 @@ import (
 	"crypto/hmac"
 )
 
-var _ Signer = (*hsAlg)(nil)
-
 type hsAlg struct {
 	alg  Algorithm
 	hash crypto.Hash

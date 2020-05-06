@@ -4,8 +4,6 @@ import (
 	"crypto/ed25519"
 )
 
-var _ Signer = (*edDSAAlg)(nil)
-
 type edDSAAlg struct {
 	alg        Algorithm
 	publicKey  ed25519.PublicKey

@@ -23,8 +23,6 @@ var (
 	}
 )
 
-var _ Signer = (*psAlg)(nil)
-
 type psAlg struct {
 	alg        Algorithm
 	hash       crypto.Hash

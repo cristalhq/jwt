@@ -6,8 +6,6 @@ import (
 	"crypto/rsa"
 )
 
-var _ Signer = (*rsAlg)(nil)
-
 type rsAlg struct {
 	alg        Algorithm
 	hash       crypto.Hash

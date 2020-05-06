@@ -7,8 +7,6 @@ import (
 	"math/big"
 )
 
-var _ Signer = (*esAlg)(nil)
-
 type esAlg struct {
 	alg        Algorithm
 	hash       crypto.Hash
