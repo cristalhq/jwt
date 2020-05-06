@@ -47,26 +47,29 @@ func Parse(raw []byte) (*Token, error) {
 
 	token := &Token{
 		raw:       raw,
-		header:    header,
-		claims:    claims,
 		payload:   raw[:dot2],
 		signature: signature,
+		header:    header,
+		claims:    claims,
 	}
 	return token, nil
 }
 
-// ParseAndVerifyString decodes a token and verifies it's signature with a given signer.
-func ParseAndVerifyString(raw string, signer Signer) (*Token, error) {
-	return ParseAndVerify([]byte(raw), signer)
+// ParseAndVerifyString decodes a token and verifies it's signature.
+func ParseAndVerifyString(raw string, verifier Verifier) (*Token, error) {
+	return ParseAndVerify([]byte(raw), verifier)
 }
 
-// ParseAndVerify decodes a token and verifies it's signature with a given signer.
-func ParseAndVerify(raw []byte, signer Signer) (*Token, error) {
+// ParseAndVerify decodes a token and verifies it's signature.
+func ParseAndVerify(raw []byte, verifier Verifier) (*Token, error) {
 	token, err := Parse(raw)
 	if err != nil {
 		return nil, err
 	}
-	if err := signer.Verify(token.payload, token.signature); err != nil {
+	if token.Header().Algorithm != verifier.Algorithm() {
+		return nil, ErrAlgorithmMismatch
+	}
+	if err := verifier.Verify(token.payload, token.signature); err != nil {
 		return nil, err
 	}
 	return token, nil

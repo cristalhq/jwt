@@ -58,29 +58,19 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 	encodedHeader := encodeHeader(&b.header)
 	payload := concatParts(encodedHeader, encodedClaims)
 
-	signed, signature, err := signPayload(b.signer, payload)
+	raw, signature, err := signPayload(b.signer, payload)
 	if err != nil {
 		return nil, err
 	}
 
 	token := &Token{
-		raw:       signed,
+		raw:       raw,
 		payload:   payload,
 		signature: signature,
 		header:    b.header,
 		claims:    rawClaims,
 	}
 	return token, nil
-}
-
-func encodeHeader(header *Header) []byte {
-	// returned err is always nil, see *Header.MarshalJSON
-	buf, _ := header.MarshalJSON()
-
-	encoded := make([]byte, base64EncodedLen(len(buf)))
-	base64Encode(encoded, buf)
-
-	return encoded
 }
 
 func encodeClaims(claims interface{}) (raw, encoded []byte, err error) {
@@ -93,6 +83,16 @@ func encodeClaims(claims interface{}) (raw, encoded []byte, err error) {
 	base64Encode(encoded, raw)
 
 	return raw, encoded, nil
+}
+
+func encodeHeader(header *Header) []byte {
+	// returned err is always nil, see *Header.MarshalJSON
+	buf, _ := header.MarshalJSON()
+
+	encoded := make([]byte, base64EncodedLen(len(buf)))
+	base64Encode(encoded, buf)
+
+	return encoded
 }
 
 func signPayload(signer Signer, payload []byte) (signed, signature []byte, err error) {

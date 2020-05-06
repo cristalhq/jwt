@@ -2,7 +2,7 @@ package jwt
 
 import "testing"
 
-func TestCorrectAlgorithm(t *testing.T) {
+func TestSignerAlg(t *testing.T) {
 	f := func(s Signer, want Algorithm) {
 		t.Helper()
 		if alg := s.Algorithm(); alg != want {
@@ -11,26 +11,54 @@ func TestCorrectAlgorithm(t *testing.T) {
 	}
 
 	hmacKey := []byte("key")
-	f(mustSigner(NewHS256(hmacKey)), HS256)
-	f(mustSigner(NewHS384(hmacKey)), HS384)
-	f(mustSigner(NewHS512(hmacKey)), HS512)
+	f(mustSigner(NewSignerHS(HS256, hmacKey)), HS256)
+	f(mustSigner(NewSignerHS(HS384, hmacKey)), HS384)
+	f(mustSigner(NewSignerHS(HS512, hmacKey)), HS512)
 
-	rsaPub, rsaPriv := rsaPublicKey1, rsaPrivateKey1
-	f(mustSigner(NewRS256(rsaPub, rsaPriv)), RS256)
-	f(mustSigner(NewRS384(rsaPub, rsaPriv)), RS384)
-	f(mustSigner(NewRS512(rsaPub, rsaPriv)), RS512)
+	rsaPriv := rsaPrivateKey1
+	f(mustSigner(NewSignerRS(RS256, rsaPriv)), RS256)
+	f(mustSigner(NewSignerRS(RS384, rsaPriv)), RS384)
+	f(mustSigner(NewSignerRS(RS512, rsaPriv)), RS512)
 
-	f(mustSigner(NewPS256(rsaPub, rsaPriv)), PS256)
-	f(mustSigner(NewPS384(rsaPub, rsaPriv)), PS384)
-	f(mustSigner(NewPS512(rsaPub, rsaPriv)), PS512)
+	f(mustSigner(NewSignerPS(PS256, rsaPriv)), PS256)
+	f(mustSigner(NewSignerPS(PS384, rsaPriv)), PS384)
+	f(mustSigner(NewSignerPS(PS512, rsaPriv)), PS512)
 
-	// ecdsaPub, ecdsaPriv := nil, nil
-	// f(mustSigner(NewES256(ecdsaPub, ecdsaPriv)), ES256)
-	// f(mustSigner(NewES384(ecdsaPub, ecdsaPriv)), ES384)
-	// f(mustSigner(NewES512(ecdsaPub, ecdsaPriv)), ES512)
+	ecdsaPriv := ecdsaPrivateKey256
+	f(mustSigner(NewSignerES(ES256, ecdsaPriv)), ES256)
+	f(mustSigner(NewSignerES(ES384, ecdsaPriv)), ES384)
+	f(mustSigner(NewSignerES(ES512, ecdsaPriv)), ES512)
 }
 
-func TestPanicOnNilKey(t *testing.T) {
+func TestVerifierAlg(t *testing.T) {
+	f := func(v Verifier, want Algorithm) {
+		t.Helper()
+		if alg := v.Algorithm(); alg != want {
+			t.Errorf("got %#v, want %#v", alg, want)
+		}
+	}
+
+	hmacKey := []byte("key")
+	f(mustVerifier(NewVerifierHS(HS256, hmacKey)), HS256)
+	f(mustVerifier(NewVerifierHS(HS384, hmacKey)), HS384)
+	f(mustVerifier(NewVerifierHS(HS512, hmacKey)), HS512)
+
+	rsaPub := rsaPublicKey1
+	f(mustVerifier(NewVerifierRS(RS256, rsaPub)), RS256)
+	f(mustVerifier(NewVerifierRS(RS384, rsaPub)), RS384)
+	f(mustVerifier(NewVerifierRS(RS512, rsaPub)), RS512)
+
+	f(mustVerifier(NewVerifierPS(PS256, rsaPub)), PS256)
+	f(mustVerifier(NewVerifierPS(PS384, rsaPub)), PS384)
+	f(mustVerifier(NewVerifierPS(PS512, rsaPub)), PS512)
+
+	ecdsaPub := ecdsaPublicKey256
+	f(mustVerifier(NewVerifierES(ES256, ecdsaPub)), ES256)
+	f(mustVerifier(NewVerifierES(ES384, ecdsaPub)), ES384)
+	f(mustVerifier(NewVerifierES(ES512, ecdsaPub)), ES512)
+}
+
+func TestSignerErrOnNilKey(t *testing.T) {
 	f := func(_ Signer, err error) {
 		t.Helper()
 		if err == nil {
@@ -38,21 +66,48 @@ func TestPanicOnNilKey(t *testing.T) {
 		}
 	}
 
-	f(NewEdDSA(nil, nil))
+	f(NewSignerEdDSA(nil))
 
-	f(NewHS256(nil))
-	f(NewHS384(nil))
-	f(NewHS512(nil))
+	f(NewSignerHS(HS256, nil))
+	f(NewSignerHS(HS384, nil))
+	f(NewSignerHS(HS512, nil))
 
-	f(NewRS256(nil, nil))
-	f(NewRS384(nil, nil))
-	f(NewRS512(nil, nil))
+	f(NewSignerRS(RS256, nil))
+	f(NewSignerRS(RS384, nil))
+	f(NewSignerRS(RS512, nil))
 
-	f(NewES256(nil, nil))
-	f(NewES384(nil, nil))
-	f(NewES512(nil, nil))
+	f(NewSignerES(ES256, nil))
+	f(NewSignerES(ES384, nil))
+	f(NewSignerES(ES512, nil))
 
-	f(NewPS256(nil, nil))
-	f(NewPS384(nil, nil))
-	f(NewPS512(nil, nil))
+	f(NewSignerPS(PS256, nil))
+	f(NewSignerPS(PS384, nil))
+	f(NewSignerPS(PS512, nil))
+}
+
+func TestVerifierErrOnNilKey(t *testing.T) {
+	f := func(_ Verifier, err error) {
+		t.Helper()
+		if err == nil {
+			t.Error("should have an error")
+		}
+	}
+
+	f(NewVerifierEdDSA(nil))
+
+	f(NewVerifierHS(HS256, nil))
+	f(NewVerifierHS(HS384, nil))
+	f(NewVerifierHS(HS512, nil))
+
+	f(NewVerifierRS(RS256, nil))
+	f(NewVerifierRS(RS384, nil))
+	f(NewVerifierRS(RS512, nil))
+
+	f(NewVerifierES(ES256, nil))
+	f(NewVerifierES(ES384, nil))
+	f(NewVerifierES(ES512, nil))
+
+	f(NewVerifierPS(PS256, nil))
+	f(NewVerifierPS(PS384, nil))
+	f(NewVerifierPS(PS512, nil))
 }

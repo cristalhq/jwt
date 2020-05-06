@@ -44,6 +44,7 @@ func TestNumericDateUnmarshal(t *testing.T) {
 
 	f(`1588707274`, asNumericDate(1588707274))
 	f(`1588707274.3769999`, asNumericDate(1588707274))
+	f(`"12345"`, asNumericDate(12345))
 }
 
 func TestNumericDateUnmarshalMalformed(t *testing.T) {
@@ -59,12 +60,12 @@ func TestNumericDateUnmarshalMalformed(t *testing.T) {
 	}
 
 	f(``)
-	f(`abc12`)
 	f(`{}`)
 	f(`[{}]`)
+	f(`abc12`)
+	f(`"abc"`)
 	f(`["admin",{}]`)
 	f(`["admin",123]`)
-	f(`abc12`)
 	f(`{}`)
 	f(`[]`)
 }

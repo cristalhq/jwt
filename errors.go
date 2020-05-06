@@ -11,15 +11,21 @@ var _ error = (Error)("")
 
 // Build and parse errors.
 const (
-	// ErrInvalidKey indicates that key is invalid.
-	ErrInvalidKey = Error("jwt: key is invalid")
+	// ErrInvalidKey indicates that key is not valid.
+	ErrInvalidKey = Error("jwt: key is not valid")
 
-	// ErrInvalidFormat indicates that token format is invalid.
-	ErrInvalidFormat = Error("jwt: token format is invalid")
+	// ErrUnsupportedAlg indicates that given algorithm is not supported.
+	ErrUnsupportedAlg = Error("jwt: algorithm is not supported")
 
-	// ErrAudienceInvalidFormat indicates that audience format is invalid.
-	ErrAudienceInvalidFormat = Error("jwt: audience format is invalid")
+	// ErrInvalidFormat indicates that token format is not valid.
+	ErrInvalidFormat = Error("jwt: token format is not valid")
 
-	// ErrInvalidSignature signature wasn't correct.
-	ErrInvalidSignature = Error("jwt: signature is invalid")
+	// ErrAudienceInvalidFormat indicates that audience format is not valid.
+	ErrAudienceInvalidFormat = Error("jwt: audience format is not valid")
+
+	// ErrAlgorithmMismatch indicates that token is signed by another algorithm.
+	ErrAlgorithmMismatch = Error("jwt: token is signed by another algorithm")
+
+	// ErrInvalidSignature indicates that signature is not valid.
+	ErrInvalidSignature = Error("jwt: signature is not valid")
 )

@@ -5,7 +5,7 @@ import (
 )
 
 func TestHMAC(t *testing.T) {
-	f := func(signer Signer, claims interface{}) {
+	f := func(signer Signer, verifier Verifier, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)
@@ -14,38 +14,44 @@ func TestHMAC(t *testing.T) {
 			t.Errorf("want nil, got %#v", err)
 		}
 
-		err = signer.Verify(token.Payload(), token.Signature())
+		err = verifier.Verify(token.Payload(), token.Signature())
 		if err != nil {
 			t.Errorf("want no err, got: %#v", err)
 		}
 	}
 	f(
-		mustSigner(NewHS256([]byte("key1"))),
+		mustSigner(NewSignerHS(HS256, []byte("key1"))),
+		mustVerifier(NewVerifierHS(HS256, []byte("key1"))),
 		&StandardClaims{},
 	)
 	f(
-		mustSigner(NewHS384([]byte("key2"))),
+		mustSigner(NewSignerHS(HS384, []byte("key2"))),
+		mustVerifier(NewVerifierHS(HS384, []byte("key2"))),
 		&StandardClaims{},
 	)
 	f(
-		mustSigner(NewHS512([]byte("key3"))),
+		mustSigner(NewSignerHS(HS512, []byte("key3"))),
+		mustVerifier(NewVerifierHS(HS512, []byte("key3"))),
 		&StandardClaims{},
 	)
 
 	f(
-		mustSigner(NewHS256([]byte("key1"))),
+		mustSigner(NewSignerHS(HS256, []byte("key1"))),
+		mustVerifier(NewVerifierHS(HS256, []byte("key1"))),
 		&customClaims{
 			TestField: "foo",
 		},
 	)
 	f(
-		mustSigner(NewHS384([]byte("key2"))),
+		mustSigner(NewSignerHS(HS384, []byte("key2"))),
+		mustVerifier(NewVerifierHS(HS384, []byte("key2"))),
 		&customClaims{
 			TestField: "bar",
 		},
 	)
 	f(
-		mustSigner(NewHS512([]byte("key3"))),
+		mustSigner(NewSignerHS(HS512, []byte("key3"))),
+		mustVerifier(NewVerifierHS(HS512, []byte("key3"))),
 		&customClaims{
 			TestField: "baz",
 		},
@@ -53,7 +59,7 @@ func TestHMAC(t *testing.T) {
 }
 
 func TestHMAC_InvalidSignature(t *testing.T) {
-	f := func(signer, verifier Signer, claims interface{}) {
+	f := func(signer Signer, verifier Verifier, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)
@@ -68,38 +74,38 @@ func TestHMAC_InvalidSignature(t *testing.T) {
 		}
 	}
 	f(
-		mustSigner(NewHS256([]byte("key1"))),
-		mustSigner(NewHS256([]byte("1key"))),
+		mustSigner(NewSignerHS(HS256, []byte("key1"))),
+		mustVerifier(NewVerifierHS(HS256, []byte("1key"))),
 		&StandardClaims{},
 	)
 	f(
-		mustSigner(NewHS384([]byte("key2"))),
-		mustSigner(NewHS384([]byte("2key"))),
+		mustSigner(NewSignerHS(HS384, []byte("key2"))),
+		mustVerifier(NewVerifierHS(HS384, []byte("2key"))),
 		&StandardClaims{},
 	)
 	f(
-		mustSigner(NewHS512([]byte("key3"))),
-		mustSigner(NewHS512([]byte("3key"))),
+		mustSigner(NewSignerHS(HS512, []byte("key3"))),
+		mustVerifier(NewVerifierHS(HS512, []byte("3key"))),
 		&StandardClaims{},
 	)
 
 	f(
-		mustSigner(NewHS256([]byte("key1"))),
-		mustSigner(NewHS256([]byte("1key"))),
+		mustSigner(NewSignerHS(HS256, []byte("key1"))),
+		mustVerifier(NewVerifierHS(HS256, []byte("1key"))),
 		&customClaims{
 			TestField: "foo",
 		},
 	)
 	f(
-		mustSigner(NewHS384([]byte("key2"))),
-		mustSigner(NewHS384([]byte("2key"))),
+		mustSigner(NewSignerHS(HS384, []byte("key2"))),
+		mustVerifier(NewVerifierHS(HS384, []byte("2key"))),
 		&customClaims{
 			TestField: "bar",
 		},
 	)
 	f(
-		mustSigner(NewHS512([]byte("key3"))),
-		mustSigner(NewHS512([]byte("3key"))),
+		mustSigner(NewSignerHS(HS512, []byte("key3"))),
+		mustVerifier(NewVerifierHS(HS512, []byte("3key"))),
 		&customClaims{
 			TestField: "baz",
 		},

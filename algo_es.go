@@ -7,7 +7,54 @@ import (
 	"math/big"
 )
 
-var _ Signer = (*esAlg)(nil)
+// NewSignerES returns a new ECDSA-based signer.
+func NewSignerES(alg Algorithm, key *ecdsa.PrivateKey) (Signer, error) {
+	if key == nil {
+		return nil, ErrInvalidKey
+	}
+	hash, keySize, curveBits, err := getParamsES(alg)
+	if err != nil {
+		return nil, err
+	}
+	return &esAlg{
+		alg:        alg,
+		hash:       hash,
+		privateKey: key,
+		keySize:    keySize,
+		curveBits:  curveBits,
+	}, nil
+}
+
+// NewVerifierES returns a new ECDSA-based verifier.
+func NewVerifierES(alg Algorithm, key *ecdsa.PublicKey) (Verifier, error) {
+	if key == nil {
+		return nil, ErrInvalidKey
+	}
+	hash, keySize, curveBits, err := getParamsES(alg)
+	if err != nil {
+		return nil, err
+	}
+	return &esAlg{
+		alg:       alg,
+		hash:      hash,
+		publickey: key,
+		keySize:   keySize,
+		curveBits: curveBits,
+	}, nil
+}
+
+func getParamsES(alg Algorithm) (crypto.Hash, int, int, error) {
+	switch alg {
+	case ES256:
+		return crypto.SHA256, 32, 256, nil
+	case ES384:
+		return crypto.SHA384, 48, 384, nil
+	case ES512:
+		return crypto.SHA512, 66, 521, nil
+	default:
+		return 0, 0, 0, ErrUnsupportedAlg
+	}
+}
 
 type esAlg struct {
 	alg        Algorithm
@@ -16,69 +63,6 @@ type esAlg struct {
 	privateKey *ecdsa.PrivateKey
 	keySize    int
 	curveBits  int
-}
-
-// NewES256 returns new HMAC Signer using RSA and SHA256 hash.
-//
-// Both public and private keys must not be nil.
-//
-func NewES256(publicKey *ecdsa.PublicKey, privateKey *ecdsa.PrivateKey) (Signer, error) {
-	if publicKey == nil || privateKey == nil {
-		return nil, ErrInvalidKey
-	}
-	if privateKey.Curve.Params().BitSize != 256 {
-		return nil, ErrInvalidKey
-	}
-	return &esAlg{
-		alg:        PS256,
-		hash:       crypto.SHA256,
-		publickey:  publicKey,
-		privateKey: privateKey,
-		keySize:    32,
-		curveBits:  256,
-	}, nil
-}
-
-// NewES384 returns new HMAC Signer using RSA and SHA384 hash.
-//
-// Both public and private keys must not be nil.
-//
-func NewES384(publicKey *ecdsa.PublicKey, privateKey *ecdsa.PrivateKey) (Signer, error) {
-	if publicKey == nil || privateKey == nil {
-		return nil, ErrInvalidKey
-	}
-	if privateKey.Curve.Params().BitSize != 384 {
-		return nil, ErrInvalidKey
-	}
-	return &esAlg{
-		alg:        PS384,
-		hash:       crypto.SHA384,
-		publickey:  publicKey,
-		privateKey: privateKey,
-		keySize:    48,
-		curveBits:  384,
-	}, nil
-}
-
-// NewES512 returns new HMAC Signer using RSA and SHA512 hash.
-//
-// Both public and private keys must not be nil.
-//
-func NewES512(publicKey *ecdsa.PublicKey, privateKey *ecdsa.PrivateKey) (Signer, error) {
-	if publicKey == nil || privateKey == nil {
-		return nil, ErrInvalidKey
-	}
-	if privateKey.Curve.Params().BitSize != 521 {
-		return nil, ErrInvalidKey
-	}
-	return &esAlg{
-		alg:        PS512,
-		hash:       crypto.SHA512,
-		publickey:  publicKey,
-		privateKey: privateKey,
-		keySize:    66,
-		curveBits:  521,
-	}, nil
 }
 
 func (h esAlg) Algorithm() Algorithm {

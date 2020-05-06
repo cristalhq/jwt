@@ -6,6 +6,53 @@ import (
 	"crypto/rsa"
 )
 
+// NewSignerPS returns a new RSA-PSS-based signer.
+func NewSignerPS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
+	if key == nil {
+		return nil, ErrInvalidKey
+	}
+	hash, opts, err := getParamsPS(alg)
+	if err != nil {
+		return nil, err
+	}
+	return &psAlg{
+		alg:        alg,
+		hash:       hash,
+		privateKey: key,
+		opts:       opts,
+	}, nil
+}
+
+// NewVerifierPS returns a new RSA-PSS-based signer.
+func NewVerifierPS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
+	if key == nil {
+		return nil, ErrInvalidKey
+	}
+	hash, opts, err := getParamsPS(alg)
+	if err != nil {
+		return nil, err
+	}
+	return &psAlg{
+		alg:       alg,
+		hash:      hash,
+		publicKey: key,
+		opts:      opts,
+	}, nil
+}
+
+func getParamsPS(alg Algorithm) (crypto.Hash, *rsa.PSSOptions, error) {
+	switch alg {
+	case PS256:
+		return crypto.SHA256, optsPS256, nil
+	case PS384:
+		return crypto.SHA384, optsPS384, nil
+	case PS512:
+		return crypto.SHA512, optsPS512, nil
+	default:
+		return 0, nil, ErrUnsupportedAlg
+	}
+}
+
 var (
 	optsPS256 = &rsa.PSSOptions{
 		SaltLength: rsa.PSSSaltLengthAuto,
@@ -23,65 +70,12 @@ var (
 	}
 )
 
-var _ Signer = (*psAlg)(nil)
-
 type psAlg struct {
 	alg        Algorithm
 	hash       crypto.Hash
-	publickey  *rsa.PublicKey
+	publicKey  *rsa.PublicKey
 	privateKey *rsa.PrivateKey
 	opts       *rsa.PSSOptions
-}
-
-// NewPS256 returns new PS256 Signer using RSA PSS and SHA256 hash.
-//
-// Both public and private keys must not be nil.
-//
-func NewPS256(publicKey *rsa.PublicKey, privateKey *rsa.PrivateKey) (Signer, error) {
-	if publicKey == nil || privateKey == nil {
-		return nil, ErrInvalidKey
-	}
-	return &psAlg{
-		alg:        PS256,
-		hash:       crypto.SHA256,
-		publickey:  publicKey,
-		privateKey: privateKey,
-		opts:       optsPS256,
-	}, nil
-}
-
-// NewPS384 returns new PS384 Signer using RSA PSS and SHA384 hash.
-//
-// Both public and private keys must not be nil.
-//
-func NewPS384(publicKey *rsa.PublicKey, privateKey *rsa.PrivateKey) (Signer, error) {
-	if publicKey == nil || privateKey == nil {
-		return nil, ErrInvalidKey
-	}
-	return &psAlg{
-		alg:        PS384,
-		hash:       crypto.SHA384,
-		publickey:  publicKey,
-		privateKey: privateKey,
-		opts:       optsPS384,
-	}, nil
-}
-
-// NewPS512 returns new PS512 Signer using RSA PSS and SHA512 hash.
-//
-// Both public and private keys must not be nil.
-//
-func NewPS512(publicKey *rsa.PublicKey, privateKey *rsa.PrivateKey) (Signer, error) {
-	if publicKey == nil || privateKey == nil {
-		return nil, ErrInvalidKey
-	}
-	return &psAlg{
-		alg:        PS512,
-		hash:       crypto.SHA512,
-		publickey:  publicKey,
-		privateKey: privateKey,
-		opts:       optsPS512,
-	}, nil
 }
 
 func (h psAlg) Algorithm() Algorithm {
@@ -107,7 +101,7 @@ func (h psAlg) Verify(payload, signature []byte) error {
 		return err
 	}
 
-	err = rsa.VerifyPSS(h.publickey, h.hash, signed, signature, h.opts)
+	err = rsa.VerifyPSS(h.publicKey, h.hash, signed, signature, h.opts)
 	if err != nil {
 		return ErrInvalidSignature
 	}

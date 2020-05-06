@@ -42,45 +42,51 @@ func init() {
 }
 
 func TestES256_WithValidSignature(t *testing.T) {
-	f := func(signer Signer, claims interface{}) {
+	f := func(signer Signer, verifier Verifier, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)
 		token, _ := tokenBuilder.Build(claims)
 
-		err := signer.Verify(token.Payload(), token.Signature())
+		err := verifier.Verify(token.Payload(), token.Signature())
 		if err != nil {
 			t.Errorf("want no err, got: %#v", err)
 		}
 	}
 
 	f(
-		mustSigner(NewES256(ecdsaPublicKey256, ecdsaPrivateKey256)),
+		mustSigner(NewSignerES(ES256, ecdsaPrivateKey256)),
+		mustVerifier(NewVerifierES(ES256, ecdsaPublicKey256)),
 		&StandardClaims{},
 	)
 	f(
-		mustSigner(NewES384(ecdsaPublicKey384, ecdsaPrivateKey384)),
+		mustSigner(NewSignerES(ES384, ecdsaPrivateKey384)),
+		mustVerifier(NewVerifierES(ES384, ecdsaPublicKey384)),
 		&StandardClaims{},
 	)
 	f(
-		mustSigner(NewES512(ecdsaPublicKey521, ecdsaPrivateKey521)),
+		mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)),
+		mustVerifier(NewVerifierES(ES512, ecdsaPublicKey521)),
 		&StandardClaims{},
 	)
 
 	f(
-		mustSigner(NewES256(ecdsaPublicKey256, ecdsaPrivateKey256)),
+		mustSigner(NewSignerES(ES256, ecdsaPrivateKey256)),
+		mustVerifier(NewVerifierES(ES256, ecdsaPublicKey256)),
 		&customClaims{
 			TestField: "foo",
 		},
 	)
 	f(
-		mustSigner(NewES384(ecdsaPublicKey384, ecdsaPrivateKey384)),
+		mustSigner(NewSignerES(ES384, ecdsaPrivateKey384)),
+		mustVerifier(NewVerifierES(ES384, ecdsaPublicKey384)),
 		&customClaims{
 			TestField: "bar",
 		},
 	)
 	f(
-		mustSigner(NewES512(ecdsaPublicKey521, ecdsaPrivateKey521)),
+		mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)),
+		mustVerifier(NewVerifierES(ES512, ecdsaPublicKey521)),
 		&customClaims{
 			TestField: "baz",
 		},
@@ -88,7 +94,7 @@ func TestES256_WithValidSignature(t *testing.T) {
 }
 
 func TestES384_WithInvalidSignature(t *testing.T) {
-	f := func(signer, verifier Signer, claims interface{}) {
+	f := func(signer Signer, verifier Verifier, claims interface{}) {
 		t.Helper()
 
 		tokenBuilder := NewBuilder(signer)
@@ -100,38 +106,38 @@ func TestES384_WithInvalidSignature(t *testing.T) {
 		}
 	}
 	f(
-		mustSigner(NewES256(ecdsaPublicKey256, ecdsaPrivateKey256)),
-		mustSigner(NewES256(ecdsaOtherPublicKey256, ecdsaOtherPrivateKey256)),
+		mustSigner(NewSignerES(ES256, ecdsaPrivateKey256)),
+		mustVerifier(NewVerifierES(ES256, ecdsaOtherPublicKey256)),
 		&StandardClaims{},
 	)
 	f(
-		mustSigner(NewES384(ecdsaPublicKey384, ecdsaPrivateKey384)),
-		mustSigner(NewES384(ecdsaOtherPublicKey384, ecdsaOtherPrivateKey384)),
+		mustSigner(NewSignerES(ES384, ecdsaPrivateKey384)),
+		mustVerifier(NewVerifierES(ES384, ecdsaOtherPublicKey384)),
 		&StandardClaims{},
 	)
 	f(
-		mustSigner(NewES512(ecdsaPublicKey521, ecdsaPrivateKey521)),
-		mustSigner(NewES512(ecdsaOtherPublicKey521, ecdsaOtherPrivateKey521)),
+		mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)),
+		mustVerifier(NewVerifierES(ES512, ecdsaOtherPublicKey521)),
 		&StandardClaims{},
 	)
 
 	f(
-		mustSigner(NewES256(ecdsaPublicKey256, ecdsaPrivateKey256)),
-		mustSigner(NewES256(ecdsaOtherPublicKey256, ecdsaOtherPrivateKey256)),
+		mustSigner(NewSignerES(ES256, ecdsaPrivateKey256)),
+		mustVerifier(NewVerifierES(ES256, ecdsaOtherPublicKey256)),
 		&customClaims{
 			TestField: "foo",
 		},
 	)
 	f(
-		mustSigner(NewES384(ecdsaPublicKey384, ecdsaPrivateKey384)),
-		mustSigner(NewES384(ecdsaOtherPublicKey384, ecdsaOtherPrivateKey384)),
+		mustSigner(NewSignerES(ES384, ecdsaPrivateKey384)),
+		mustVerifier(NewVerifierES(ES384, ecdsaOtherPublicKey384)),
 		&customClaims{
 			TestField: "bar",
 		},
 	)
 	f(
-		mustSigner(NewES512(ecdsaPublicKey521, ecdsaPrivateKey521)),
-		mustSigner(NewES512(ecdsaOtherPublicKey521, ecdsaOtherPrivateKey521)),
+		mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)),
+		mustVerifier(NewVerifierES(ES512, ecdsaOtherPublicKey521)),
 		&customClaims{
 			TestField: "baz",
 		},

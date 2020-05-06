@@ -5,48 +5,55 @@ import (
 	"crypto/hmac"
 )
 
-var _ Signer = (*hsAlg)(nil)
+// NewSignerHS returns a new HMAC-based signer.
+func NewSignerHS(alg Algorithm, key []byte) (Signer, error) {
+	if len(key) == 0 {
+		return nil, ErrInvalidKey
+	}
+	hash, err := getHashHMAC(alg)
+	if err != nil {
+		return nil, err
+	}
+	return &hsAlg{
+		alg:  alg,
+		hash: hash,
+		key:  key,
+	}, nil
+}
+
+// NewVerifierHS returns a new HMAC-based verifier.
+func NewVerifierHS(alg Algorithm, key []byte) (Verifier, error) {
+	if len(key) == 0 {
+		return nil, ErrInvalidKey
+	}
+	hash, err := getHashHMAC(alg)
+	if err != nil {
+		return nil, err
+	}
+	return &hsAlg{
+		alg:  alg,
+		hash: hash,
+		key:  key,
+	}, nil
+}
+
+func getHashHMAC(alg Algorithm) (crypto.Hash, error) {
+	switch alg {
+	case HS256:
+		return crypto.SHA256, nil
+	case HS384:
+		return crypto.SHA384, nil
+	case HS512:
+		return crypto.SHA512, nil
+	default:
+		return 0, ErrUnsupportedAlg
+	}
+}
 
 type hsAlg struct {
 	alg  Algorithm
 	hash crypto.Hash
 	key  []byte
-}
-
-// NewHS256 returns new HMAC Signer using SHA256 hash.
-func NewHS256(key []byte) (Signer, error) {
-	if len(key) == 0 {
-		return nil, ErrInvalidKey
-	}
-	return &hsAlg{
-		alg:  HS256,
-		hash: crypto.SHA256,
-		key:  key,
-	}, nil
-}
-
-// NewHS384 returns new HMAC Signer using SHA384 hash.
-func NewHS384(key []byte) (Signer, error) {
-	if len(key) == 0 {
-		return nil, ErrInvalidKey
-	}
-	return &hsAlg{
-		alg:  HS384,
-		hash: crypto.SHA384,
-		key:  key,
-	}, nil
-}
-
-// NewHS512 returns new HMAC Signer using SHA512 hash.
-func NewHS512(key []byte) (Signer, error) {
-	if len(key) == 0 {
-		return nil, ErrInvalidKey
-	}
-	return &hsAlg{
-		alg:  HS512,
-		hash: crypto.SHA512,
-		key:  key,
-	}, nil
 }
 
 func (h hsAlg) Algorithm() Algorithm {

@@ -6,8 +6,18 @@ import (
 	"testing"
 )
 
-func mustSigner(s Signer, _ error) Signer {
+func mustSigner(s Signer, err error) Signer {
+	if err != nil {
+		panic(err)
+	}
 	return s
+}
+
+func mustVerifier(v Verifier, err error) Verifier {
+	if err != nil {
+		panic(err)
+	}
+	return v
 }
 
 type customClaims struct {
@@ -34,16 +44,28 @@ func TestMarshalHeader(t *testing.T) {
 
 	f(
 		&Header{Algorithm: RS256},
-		`{"alg":"RS256","typ":"JWT"}`,
+		`{"alg":"RS256"}`,
 	)
 	f(
 		&Header{Algorithm: RS256, Type: "JWT"},
 		`{"alg":"RS256","typ":"JWT"}`,
 	)
+	f(
+		&Header{Algorithm: RS256, ContentType: "token"},
+		`{"alg":"RS256","cty":"token"}`,
+	)
+	f(
+		&Header{Algorithm: RS256, Type: "JWT", ContentType: "token"},
+		`{"alg":"RS256","typ":"JWT","cty":"token"}`,
+	)
+	f(
+		&Header{Algorithm: RS256, Type: "JwT", ContentType: "token"},
+		`{"alg":"RS256","typ":"JwT","cty":"token"}`,
+	)
 }
 
 func TestSecurePrint(t *testing.T) {
-	sign, _ := NewHS256([]byte(`test-key`))
+	sign, _ := NewSignerHS(HS256, []byte(`test-key`))
 	claims := &StandardClaims{
 		ID:       "test-id",
 		Audience: Audience([]string{"test-user"}),
