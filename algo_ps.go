@@ -6,7 +6,7 @@ import (
 	"crypto/rsa"
 )
 
-// NewSignerPS ...
+// NewSignerPS returns a new RSA-PSS-based signer.
 func NewSignerPS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 	if key == nil {
 		return nil, ErrInvalidKey
@@ -23,7 +23,7 @@ func NewSignerPS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 	}, nil
 }
 
-// NewVerifierPS ...
+// NewVerifierPS returns a new RSA-PSS-based signer.
 func NewVerifierPS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
 	if key == nil {
 		return nil, ErrInvalidKey

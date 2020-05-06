@@ -7,7 +7,7 @@ import (
 	"math/big"
 )
 
-// NewSignerES ...
+// NewSignerES returns a new ECDSA-based signer.
 func NewSignerES(alg Algorithm, key *ecdsa.PrivateKey) (Signer, error) {
 	if key == nil {
 		return nil, ErrInvalidKey
@@ -25,7 +25,7 @@ func NewSignerES(alg Algorithm, key *ecdsa.PrivateKey) (Signer, error) {
 	}, nil
 }
 
-// NewVerifierES ...
+// NewVerifierES returns a new ECDSA-based verifier.
 func NewVerifierES(alg Algorithm, key *ecdsa.PublicKey) (Verifier, error) {
 	if key == nil {
 		return nil, ErrInvalidKey

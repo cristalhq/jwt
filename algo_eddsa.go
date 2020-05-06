@@ -4,7 +4,7 @@ import (
 	"crypto/ed25519"
 )
 
-// NewSignerEdDSA ...
+// NewSignerEdDSA returns a new ed25519-based signer.
 func NewSignerEdDSA(key ed25519.PrivateKey) (Signer, error) {
 	if key == nil {
 		return nil, ErrInvalidKey
@@ -15,7 +15,7 @@ func NewSignerEdDSA(key ed25519.PrivateKey) (Signer, error) {
 	}, nil
 }
 
-// NewVerifierEdDSA ...
+// NewVerifierEdDSA returns a new ed25519-based verifier.
 func NewVerifierEdDSA(key ed25519.PublicKey) (Verifier, error) {
 	if key == nil {
 		return nil, ErrInvalidKey
