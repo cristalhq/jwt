@@ -65,7 +65,7 @@ func TestMarshalHeader(t *testing.T) {
 }
 
 func TestSecurePrint(t *testing.T) {
-	sign, _ := NewSignerHMAC(HS256, []byte(`test-key`))
+	sign, _ := NewSignerHS(HS256, []byte(`test-key`))
 	claims := &StandardClaims{
 		ID:       "test-id",
 		Audience: Audience([]string{"test-user"}),

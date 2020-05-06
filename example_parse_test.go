@@ -30,7 +30,7 @@ func Example_Parse() {
 
 func Example_ParseAndVerify() {
 	key := []byte(`secret`)
-	verifier, _ := jwt.NewVerifierHMAC(jwt.HS256, key)
+	verifier, _ := jwt.NewVerifierHS(jwt.HS256, key)
 
 	t := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs`
 

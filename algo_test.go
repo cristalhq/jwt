@@ -11,14 +11,14 @@ func TestSignerAlg(t *testing.T) {
 	}
 
 	hmacKey := []byte("key")
-	f(mustSigner(NewSignerHMAC(HS256, hmacKey)), HS256)
-	f(mustSigner(NewSignerHMAC(HS384, hmacKey)), HS384)
-	f(mustSigner(NewSignerHMAC(HS512, hmacKey)), HS512)
+	f(mustSigner(NewSignerHS(HS256, hmacKey)), HS256)
+	f(mustSigner(NewSignerHS(HS384, hmacKey)), HS384)
+	f(mustSigner(NewSignerHS(HS512, hmacKey)), HS512)
 
 	rsaPriv := rsaPrivateKey1
-	f(mustSigner(NewSignerRSA(RS256, rsaPriv)), RS256)
-	f(mustSigner(NewSignerRSA(RS384, rsaPriv)), RS384)
-	f(mustSigner(NewSignerRSA(RS512, rsaPriv)), RS512)
+	f(mustSigner(NewSignerRS(RS256, rsaPriv)), RS256)
+	f(mustSigner(NewSignerRS(RS384, rsaPriv)), RS384)
+	f(mustSigner(NewSignerRS(RS512, rsaPriv)), RS512)
 
 	f(mustSigner(NewSignerPS(PS256, rsaPriv)), PS256)
 	f(mustSigner(NewSignerPS(PS384, rsaPriv)), PS384)
@@ -39,14 +39,14 @@ func TestVerifierAlg(t *testing.T) {
 	}
 
 	hmacKey := []byte("key")
-	f(mustVerifier(NewVerifierHMAC(HS256, hmacKey)), HS256)
-	f(mustVerifier(NewVerifierHMAC(HS384, hmacKey)), HS384)
-	f(mustVerifier(NewVerifierHMAC(HS512, hmacKey)), HS512)
+	f(mustVerifier(NewVerifierHS(HS256, hmacKey)), HS256)
+	f(mustVerifier(NewVerifierHS(HS384, hmacKey)), HS384)
+	f(mustVerifier(NewVerifierHS(HS512, hmacKey)), HS512)
 
 	rsaPub := rsaPublicKey1
-	f(mustVerifier(NewVerifierRSA(RS256, rsaPub)), RS256)
-	f(mustVerifier(NewVerifierRSA(RS384, rsaPub)), RS384)
-	f(mustVerifier(NewVerifierRSA(RS512, rsaPub)), RS512)
+	f(mustVerifier(NewVerifierRS(RS256, rsaPub)), RS256)
+	f(mustVerifier(NewVerifierRS(RS384, rsaPub)), RS384)
+	f(mustVerifier(NewVerifierRS(RS512, rsaPub)), RS512)
 
 	f(mustVerifier(NewVerifierPS(PS256, rsaPub)), PS256)
 	f(mustVerifier(NewVerifierPS(PS384, rsaPub)), PS384)
@@ -68,13 +68,13 @@ func TestSignerErrOnNilKey(t *testing.T) {
 
 	f(NewSignerEdDSA(nil))
 
-	f(NewSignerHMAC(HS256, nil))
-	f(NewSignerHMAC(HS384, nil))
-	f(NewSignerHMAC(HS512, nil))
+	f(NewSignerHS(HS256, nil))
+	f(NewSignerHS(HS384, nil))
+	f(NewSignerHS(HS512, nil))
 
-	f(NewSignerRSA(RS256, nil))
-	f(NewSignerRSA(RS384, nil))
-	f(NewSignerRSA(RS512, nil))
+	f(NewSignerRS(RS256, nil))
+	f(NewSignerRS(RS384, nil))
+	f(NewSignerRS(RS512, nil))
 
 	f(NewSignerES(ES256, nil))
 	f(NewSignerES(ES384, nil))
@@ -95,13 +95,13 @@ func TestVerifierErrOnNilKey(t *testing.T) {
 
 	f(NewVerifierEdDSA(nil))
 
-	f(NewVerifierHMAC(HS256, nil))
-	f(NewVerifierHMAC(HS384, nil))
-	f(NewVerifierHMAC(HS512, nil))
+	f(NewVerifierHS(HS256, nil))
+	f(NewVerifierHS(HS384, nil))
+	f(NewVerifierHS(HS512, nil))
 
-	f(NewVerifierRSA(RS256, nil))
-	f(NewVerifierRSA(RS384, nil))
-	f(NewVerifierRSA(RS512, nil))
+	f(NewVerifierRS(RS256, nil))
+	f(NewVerifierRS(RS384, nil))
+	f(NewVerifierRS(RS512, nil))
 
 	f(NewVerifierES(ES256, nil))
 	f(NewVerifierES(ES384, nil))

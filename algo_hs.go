@@ -5,8 +5,8 @@ import (
 	"crypto/hmac"
 )
 
-// NewSignerHMAC returns a new HMAC-based signer.
-func NewSignerHMAC(alg Algorithm, key []byte) (Signer, error) {
+// NewSignerHS returns a new HMAC-based signer.
+func NewSignerHS(alg Algorithm, key []byte) (Signer, error) {
 	if len(key) == 0 {
 		return nil, ErrInvalidKey
 	}
@@ -21,8 +21,8 @@ func NewSignerHMAC(alg Algorithm, key []byte) (Signer, error) {
 	}, nil
 }
 
-// NewVerifierHMAC returns a new HMAC-based verifier.
-func NewVerifierHMAC(alg Algorithm, key []byte) (Verifier, error) {
+// NewVerifierHS returns a new HMAC-based verifier.
+func NewVerifierHS(alg Algorithm, key []byte) (Verifier, error) {
 	if len(key) == 0 {
 		return nil, ErrInvalidKey
 	}

@@ -6,8 +6,8 @@ import (
 	"crypto/rsa"
 )
 
-// NewSignerRSA returns a new RSA-based signer.
-func NewSignerRSA(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
+// NewSignerRS returns a new RSA-based signer.
+func NewSignerRS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 	if key == nil {
 		return nil, ErrInvalidKey
 	}
@@ -22,8 +22,8 @@ func NewSignerRSA(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 	}, nil
 }
 
-// NewVerifierRSA returns a new RSA-based verifier.
-func NewVerifierRSA(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
+// NewVerifierRS returns a new RSA-based verifier.
+func NewVerifierRS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
 	if key == nil {
 		return nil, ErrInvalidKey
 	}
