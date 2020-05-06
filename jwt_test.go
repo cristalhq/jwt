@@ -44,11 +44,23 @@ func TestMarshalHeader(t *testing.T) {
 
 	f(
 		&Header{Algorithm: RS256},
-		`{"alg":"RS256","typ":"JWT"}`,
+		`{"alg":"RS256"}`,
 	)
 	f(
 		&Header{Algorithm: RS256, Type: "JWT"},
 		`{"alg":"RS256","typ":"JWT"}`,
+	)
+	f(
+		&Header{Algorithm: RS256, ContentType: "token"},
+		`{"alg":"RS256","cty":"token"}`,
+	)
+	f(
+		&Header{Algorithm: RS256, Type: "JWT", ContentType: "token"},
+		`{"alg":"RS256","typ":"JWT","cty":"token"}`,
+	)
+	f(
+		&Header{Algorithm: RS256, Type: "JwT", ContentType: "token"},
+		`{"alg":"RS256","typ":"JwT","cty":"token"}`,
 	)
 }
 

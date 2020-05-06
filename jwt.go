@@ -61,12 +61,26 @@ func (t Token) Signature() []byte {
 // See: https://tools.ietf.org/html/rfc7519#section-5
 //
 type Header struct {
-	Algorithm Algorithm `json:"alg"`
-	Type      string    `json:"typ,omitempty"` // only "JWT" can be here
+	Algorithm   Algorithm `json:"alg"`
+	Type        string    `json:"typ,omitempty"` // only "JWT" can be here
+	ContentType string    `json:"cty,omitempty"`
 }
 
 // MarshalJSON implements the json.Marshaler interface.
 func (h Header) MarshalJSON() (data []byte, err error) {
-	buf := []byte(`{"alg":"` + h.Algorithm + `","typ":"JWT"}`)
-	return buf, nil
+	buf := bytes.Buffer{}
+	buf.WriteString(`{"alg":"`)
+	buf.WriteString(string(h.Algorithm))
+
+	if h.Type != "" {
+		buf.WriteString(`","typ":"`)
+		buf.WriteString(h.Type)
+	}
+	if h.ContentType != "" {
+		buf.WriteString(`","cty":"`)
+		buf.WriteString(h.ContentType)
+	}
+	buf.WriteString(`"}`)
+
+	return buf.Bytes(), nil
 }
