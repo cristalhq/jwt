@@ -39,10 +39,10 @@ var ed25519Public = ed25519.PublicKey([]byte{
 })
 
 func TestEdDSA(t *testing.T) {
-	f := func(signer Signer, claims BinaryMarshaler) {
+	f := func(signer Signer, claims interface{}) {
 		t.Helper()
 
-		tokenBuilder := NewTokenBuilder(signer)
+		tokenBuilder := NewBuilder(signer)
 		token, err := tokenBuilder.Build(claims)
 		if err != nil {
 			t.Errorf("want nil, got %#v", err)
@@ -50,17 +50,17 @@ func TestEdDSA(t *testing.T) {
 
 		err = signer.Verify(token.Payload(), token.Signature())
 		if err != nil {
-			t.Errorf("want no err, got: `%v`", err)
+			t.Errorf("want no err, got: %#v", err)
 		}
 	}
 
 	f(
-		getSigner(NewEdDSA(ed25519Public, ed25519Private)),
+		mustSigner(NewEdDSA(ed25519Public, ed25519Private)),
 		&StandardClaims{},
 	)
 
 	f(
-		getSigner(NewEdDSA(ed25519Public, ed25519Private)),
+		mustSigner(NewEdDSA(ed25519Public, ed25519Private)),
 		&customClaims{
 			TestField: "foo",
 		},
@@ -68,10 +68,10 @@ func TestEdDSA(t *testing.T) {
 }
 
 func TestEdDSA_InvalidSignature(t *testing.T) {
-	f := func(signer, verifier Signer, claims BinaryMarshaler) {
+	f := func(signer, verifier Signer, claims interface{}) {
 		t.Helper()
 
-		tokenBuilder := NewTokenBuilder(signer)
+		tokenBuilder := NewBuilder(signer)
 		token, err := tokenBuilder.Build(claims)
 		if err != nil {
 			t.Errorf("want nil, got %#v", err)
@@ -84,14 +84,14 @@ func TestEdDSA_InvalidSignature(t *testing.T) {
 	}
 
 	f(
-		getSigner(NewEdDSA(ed25519Public, ed25519Private2)),
-		getSigner(NewEdDSA(ed25519Public, ed25519Private)),
+		mustSigner(NewEdDSA(ed25519Public, ed25519Private2)),
+		mustSigner(NewEdDSA(ed25519Public, ed25519Private)),
 		&StandardClaims{},
 	)
 
 	f(
-		getSigner(NewEdDSA(ed25519Public, ed25519Private2)),
-		getSigner(NewEdDSA(ed25519Public, ed25519Private)),
+		mustSigner(NewEdDSA(ed25519Public, ed25519Private2)),
+		mustSigner(NewEdDSA(ed25519Public, ed25519Private)),
 		&customClaims{
 			TestField: "foo",
 		},

@@ -45,45 +45,45 @@ func init() {
 }
 
 func TestRSA(t *testing.T) {
-	f := func(signer Signer, claims BinaryMarshaler) {
+	f := func(signer Signer, claims interface{}) {
 		t.Helper()
 
-		tokenBuilder := NewTokenBuilder(signer)
+		tokenBuilder := NewBuilder(signer)
 		token, _ := tokenBuilder.Build(claims)
 
 		err := signer.Verify(token.Payload(), token.Signature())
 		if err != nil {
-			t.Errorf("want no err, got: `%v`", err)
+			t.Errorf("want no err, got: %#v", err)
 		}
 	}
 
 	f(
-		getSigner(NewRS256(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS256(rsaPublicKey1, rsaPrivateKey1)),
 		&StandardClaims{},
 	)
 	f(
-		getSigner(NewRS384(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS384(rsaPublicKey1, rsaPrivateKey1)),
 		&StandardClaims{},
 	)
 	f(
-		getSigner(NewRS512(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS512(rsaPublicKey1, rsaPrivateKey1)),
 		&StandardClaims{},
 	)
 
 	f(
-		getSigner(NewRS256(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS256(rsaPublicKey1, rsaPrivateKey1)),
 		&customClaims{
 			TestField: "foo",
 		},
 	)
 	f(
-		getSigner(NewRS384(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS384(rsaPublicKey1, rsaPrivateKey1)),
 		&customClaims{
 			TestField: "bar",
 		},
 	)
 	f(
-		getSigner(NewRS512(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS512(rsaPublicKey1, rsaPrivateKey1)),
 		&customClaims{
 			TestField: "baz",
 		},
@@ -91,10 +91,10 @@ func TestRSA(t *testing.T) {
 }
 
 func TestRSA_InvalidSignature(t *testing.T) {
-	f := func(signer, verifier Signer, claims BinaryMarshaler) {
+	f := func(signer, verifier Signer, claims interface{}) {
 		t.Helper()
 
-		tokenBuilder := NewTokenBuilder(signer)
+		tokenBuilder := NewBuilder(signer)
 		token, _ := tokenBuilder.Build(claims)
 
 		err := verifier.Verify(token.Payload(), token.Signature())
@@ -103,38 +103,38 @@ func TestRSA_InvalidSignature(t *testing.T) {
 		}
 	}
 	f(
-		getSigner(NewRS256(rsaPublicKey1, rsaPrivateKey1)),
-		getSigner(NewRS256(rsaPublicKey2, rsaPrivateKey2)),
+		mustSigner(NewRS256(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS256(rsaPublicKey2, rsaPrivateKey2)),
 		&StandardClaims{},
 	)
 	f(
-		getSigner(NewRS384(rsaPublicKey1, rsaPrivateKey1)),
-		getSigner(NewRS384(rsaPublicKey2, rsaPrivateKey2)),
+		mustSigner(NewRS384(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS384(rsaPublicKey2, rsaPrivateKey2)),
 		&StandardClaims{},
 	)
 	f(
-		getSigner(NewRS512(rsaPublicKey1, rsaPrivateKey1)),
-		getSigner(NewRS512(rsaPublicKey2, rsaPrivateKey2)),
+		mustSigner(NewRS512(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS512(rsaPublicKey2, rsaPrivateKey2)),
 		&StandardClaims{},
 	)
 
 	f(
-		getSigner(NewRS256(rsaPublicKey1, rsaPrivateKey1)),
-		getSigner(NewRS256(rsaPublicKey2, rsaPrivateKey2)),
+		mustSigner(NewRS256(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS256(rsaPublicKey2, rsaPrivateKey2)),
 		&customClaims{
 			TestField: "foo",
 		},
 	)
 	f(
-		getSigner(NewRS384(rsaPublicKey1, rsaPrivateKey1)),
-		getSigner(NewRS384(rsaPublicKey2, rsaPrivateKey2)),
+		mustSigner(NewRS384(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS384(rsaPublicKey2, rsaPrivateKey2)),
 		&customClaims{
 			TestField: "bar",
 		},
 	)
 	f(
-		getSigner(NewRS512(rsaPublicKey1, rsaPrivateKey1)),
-		getSigner(NewRS512(rsaPublicKey2, rsaPrivateKey2)),
+		mustSigner(NewRS512(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS512(rsaPublicKey2, rsaPrivateKey2)),
 		&customClaims{
 			TestField: "baz",
 		},

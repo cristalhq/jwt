@@ -11,11 +11,11 @@ func TestAudienceMarshal(t *testing.T) {
 
 		raw, err := json.Marshal(got)
 		if err != nil {
-			t.Errorf("want no err, got: %v", err)
+			t.Errorf("want no err, got: %#v", err)
 		}
 
 		if string(raw) != want {
-			t.Errorf("want `%v`, got: `%v`", want, string(raw))
+			t.Errorf("want %#v, got: %#v", want, string(raw))
 		}
 	}
 
@@ -32,22 +32,42 @@ func TestAudienceUnmarshal(t *testing.T) {
 		var a Audience
 		err := json.Unmarshal([]byte(got), &a)
 		if err != nil {
-			t.Errorf("want no err, got: %v", err)
+			t.Errorf("want no err, got: %#v", err)
 		}
 
 		if len(want) != len(a) {
-			t.Errorf("want `%v`, got: `%v`", len(want), len(a))
+			t.Errorf("want %#v, got: %#v", len(want), len(a))
 		}
 		for i := range a {
 			if a[i] != want[i] {
-				t.Errorf("want `%v`, got: `%v`", want[i], a[i])
+				t.Errorf("want %#v, got: %#v", want[i], a[i])
 			}
 		}
 	}
 
 	f(`[]`, Audience{})
-	f(`{}`, Audience{})
 	f(`"admin"`, Audience{"admin"})
 	f(`["admin"]`, Audience{"admin"})
 	f(`["admin","co-admin"]`, Audience{"admin", "co-admin"})
+}
+
+func TestAudienceUnmarshalMalformed(t *testing.T) {
+	f := func(got string) {
+		t.Helper()
+
+		var a Audience
+		err := json.Unmarshal([]byte(got), &a)
+		if err == nil {
+			t.Error("want err")
+		}
+
+	}
+
+	f(``)
+	f(`abc12`)
+	f(`123`)
+	f(`{}`)
+	f(`[{}]`)
+	f(`["admin",{}]`)
+	f(`["admin",123]`)
 }

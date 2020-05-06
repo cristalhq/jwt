@@ -2,99 +2,86 @@ package jwt
 
 import (
 	"crypto/subtle"
-	"encoding/json"
 	"time"
 )
 
-// StandardClaims https://tools.ietf.org/html/rfc7519#section-4.1
+// StandardClaims represents claims for JWT.
+// See: https://tools.ietf.org/html/rfc7519#section-4.1
+//
 type StandardClaims struct {
-	// Audience claim identifies the recipients that the JWT is intended for.
-	Audience Audience `json:"aud,omitempty"`
-
-	// ExpiresAt claim identifies the expiration time on or after which the JWT MUST NOT be accepted for processing.
-	// Use of this claim is OPTIONAL.
-	ExpiresAt Timestamp `json:"exp,omitempty"`
-
 	// ID claim provides a unique identifier for the JWT.
 	ID string `json:"jti,omitempty"`
 
-	// IssuedAt claim identifies the time at which the JWT was issued.
-	// This claim can be used to determine the age of the JWT.
-	// Use of this claim is OPTIONAL.
-	IssuedAt Timestamp `json:"iat,omitempty"`
+	// Audience claim identifies the recipients that the JWT is intended for.
+	Audience Audience `json:"aud,omitempty"`
 
 	// Issuer claim identifies the principal that issued the JWT.
 	// Use of this claim is OPTIONAL.
 	Issuer string `json:"iss,omitempty"`
 
-	// NotBefore claim identifies the time before which the JWT MUST NOT be accepted for processing.
-	// Use of this claim is OPTIONAL.
-	NotBefore Timestamp `json:"nbf,omitempty"`
-
 	// Subject claim identifies the principal that is the subject of the JWT.
 	// Use of this claim is OPTIONAL.
 	Subject string `json:"sub,omitempty"`
+
+	// ExpiresAt claim identifies the expiration time on or after which the JWT MUST NOT be accepted for processing.
+	// Use of this claim is OPTIONAL.
+	ExpiresAt *NumericDate `json:"exp,omitempty"`
+
+	// IssuedAt claim identifies the time at which the JWT was issued.
+	// This claim can be used to determine the age of the JWT.
+	// Use of this claim is OPTIONAL.
+	IssuedAt *NumericDate `json:"iat,omitempty"`
+
+	// NotBefore claim identifies the time before which the JWT MUST NOT be accepted for processing.
+	// Use of this claim is OPTIONAL.
+	NotBefore *NumericDate `json:"nbf,omitempty"`
 }
 
-// MarshalBinary default marshaling to JSON.
-func (sc StandardClaims) MarshalBinary() (data []byte, err error) {
-	return json.Marshal(sc)
-}
-
-// IsPermittedFor returns true if claims is allowed to be used by the audience.
-func (sc StandardClaims) IsPermittedFor(audience string) bool {
+// IsForAudience reports whether token has a given audience.
+func (sc *StandardClaims) IsForAudience(audience string) bool {
 	for _, aud := range sc.Audience {
-		if areEqual(aud, audience) {
+		if constTimeEqual(aud, audience) {
 			return true
 		}
 	}
 	return false
 }
 
-// IsExpired returns true if the token is expired.
-func (sc StandardClaims) IsExpired(now time.Time) bool {
-	if sc.ExpiresAt == 0 {
-		return false
-	}
-	return sc.ExpiresAt.Time().Before(now)
+// IsIssuer reports whether token has a given issuer.
+func (sc *StandardClaims) IsIssuer(issuer string) bool {
+	return constTimeEqual(sc.Issuer, issuer)
 }
 
-// IsID returns true if claims has the given id.
-func (sc StandardClaims) IsID(id string) bool {
-	return areEqual(sc.ID, id)
+// IsSubject reports whether token has a given subject.
+func (sc *StandardClaims) IsSubject(subject string) bool {
+	return constTimeEqual(sc.Subject, subject)
 }
 
-// IsIssuedBefore returns true if the token was issued before of given time.
-func (sc StandardClaims) IsIssuedBefore(now time.Time) bool {
-	if sc.IssuedAt == 0 {
-		return false
-	}
-	return sc.IssuedAt.Time().Before(now)
+// IsID reports whether token has a given id.
+func (sc *StandardClaims) IsID(id string) bool {
+	return constTimeEqual(sc.ID, id)
 }
 
-// IsIssuedBy returns true if the token was issued by any of given issuers.
-func (sc StandardClaims) IsIssuedBy(issuers ...string) bool {
-	for _, issuer := range issuers {
-		if areEqual(sc.Issuer, issuer) {
-			return true
-		}
-	}
-	return false
+// IsValidExpiresAt reports whether a token isn't expired at a given time.
+func (sc *StandardClaims) IsValidExpiresAt(now time.Time) bool {
+	return sc.ExpiresAt == nil || sc.ExpiresAt.After(now)
 }
 
-// HasPassedNotBefore returns true if the token activation is used after the given time.
-func (sc StandardClaims) HasPassedNotBefore(now time.Time) bool {
-	if sc.NotBefore == 0 {
-		return true
-	}
-	return sc.NotBefore.Time().Before(now)
+// IsValidNotBefore reports whether a token isn't used before a given time.
+func (sc *StandardClaims) IsValidNotBefore(now time.Time) bool {
+	return sc.NotBefore == nil || sc.NotBefore.Before(now)
 }
 
-// IsSubject returns true if claims has the given subject.
-func (sc StandardClaims) IsSubject(subject string) bool {
-	return areEqual(sc.Subject, subject)
+// IsValidIssuedAt reports whether a token was created before a given time.
+func (sc *StandardClaims) IsValidIssuedAt(now time.Time) bool {
+	return sc.IssuedAt == nil || sc.IssuedAt.Before(now)
 }
 
-func areEqual(a, b string) bool {
+// IsValidAt reports whether a token is valid at a given time.
+func (sc StandardClaims) IsValidAt(now time.Time) bool {
+	return sc.IsValidExpiresAt(now) && sc.IsValidNotBefore(now) && sc.IsValidIssuedAt(now)
+}
+
+func constTimeEqual(a, b string) bool {
 	return subtle.ConstantTimeCompare([]byte(a), []byte(b)) == 1
 }

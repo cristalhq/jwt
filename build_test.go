@@ -2,112 +2,32 @@ package jwt
 
 import (
 	"encoding/base64"
+	"errors"
 	"testing"
 )
 
 func TestBuild(t *testing.T) {
-	f := func(signer Signer, claims BinaryMarshaler, want string) {
+	f := func(signer Signer, claims interface{}, want string) {
 		t.Helper()
 
-		token, err := NewTokenBuilder(signer).Build(claims)
+		token, err := BuildBytes(signer, claims)
 		if err != nil {
 			t.Error(err)
 		}
 
-		raw := string(token.InsecureString())
+		raw := string(token)
 		if raw != want {
 			t.Errorf("want %v, got %v", want, raw)
 		}
 	}
 
 	f(
-		NewNoEncrypt(),
+		mustSigner(NewHS256([]byte("test-key-256"))),
 		&StandardClaims{
 			ID:       "just an id",
 			Audience: Audience([]string{"audience"}),
 		},
-		`eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0.eyJhdWQiOiJhdWRpZW5jZSIsImp0aSI6Imp1c3QgYW4gaWQifQ.ZXlKaGJHY2lPaUp1YjI1bElpd2lkSGx3SWpvaVNsZFVJbjAuZXlKaGRXUWlPaUpoZFdScFpXNWpaU0lzSW1wMGFTSTZJbXAxYzNRZ1lXNGdhV1FpZlE`,
-	)
-
-	f(
-		getSigner(NewHS256([]byte("test-key-256"))),
-		&StandardClaims{
-			ID:       "just an id",
-			Audience: Audience([]string{"audience"}),
-		},
-		`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWRpZW5jZSIsImp0aSI6Imp1c3QgYW4gaWQifQ.6EWV4IFTyCqCUn-_R1AFRgJptvmV09Os57WAejPcf7Q`,
-	)
-	f(
-		getSigner(NewHS384([]byte("test-key-384"))),
-		&StandardClaims{
-			ID:       "just an id",
-			Audience: Audience([]string{"audience"}),
-		},
-		`eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWRpZW5jZSIsImp0aSI6Imp1c3QgYW4gaWQifQ.aWImRb5WxBvJCPlQcWxg6YXH2jriPBd4Z7vjBn0MjYY8ZBpdJXw8kgbkn6_9yeo6`,
-	)
-	f(
-		getSigner(NewHS512([]byte("test-key-512"))),
-		&StandardClaims{
-			ID:       "just an id",
-			Audience: Audience([]string{"audience"}),
-		},
-		`eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhdWRpZW5jZSIsImp0aSI6Imp1c3QgYW4gaWQifQ.cLQPM2tE9toJdvxN4HlAZXm7c3FTHMgTMw5M0Ba1AxRsU6-z_Ftiqik1IcscAXmi5v3bNRCan6qFNm1NKiDmJQ`,
-	)
-
-}
-
-func TestBuildWithHeader(t *testing.T) {
-	f := func(signer Signer, header Header, want string) {
-		t.Helper()
-
-		token, err := BuildWithHeader(signer, header, &StandardClaims{})
-		if err != nil {
-			t.Error(err)
-		}
-
-		want = toBase64(want)
-		raw := string(token.RawHeader())
-		if raw != want {
-			t.Errorf("want %v, got %v", want, raw)
-		}
-	}
-
-	key := []byte("key")
-	f(
-		getSigner(NewHS256(key)),
-		Header{Algorithm: HS256, Type: "JWT"},
-		`{"alg":"HS256","typ":"JWT"}`,
-	)
-	f(
-		getSigner(NewHS512(key)),
-		Header{Algorithm: HS512, Type: "jit"},
-		`{"alg":"HS512","typ":"jit"}`,
-	)
-	f(
-		getSigner(NewHS512(key)),
-		Header{Algorithm: Algorithm("OwO"), Type: "JWT"},
-		`{"alg":"OwO","typ":"JWT"}`,
-	)
-	f(
-		getSigner(NewHS512(key)),
-		Header{Algorithm: Algorithm("UwU"), Type: "jit"},
-		`{"alg":"UwU","typ":"jit"}`,
-	)
-
-	f(
-		getSigner(NewHS512(key)),
-		Header{Algorithm: HS512, Type: "test-type", KeyID: "test-key"},
-		`{"alg":"HS512","typ":"test-type","kid":"test-key"}`,
-	)
-	f(
-		getSigner(NewHS512(key)),
-		Header{Algorithm: HS512, Type: "test-type", ContentType: "test-cty"},
-		`{"alg":"HS512","typ":"test-type","cty":"test-cty"}`,
-	)
-	f(
-		getSigner(NewHS512(key)),
-		Header{Algorithm: HS512, Type: "test-type", ContentType: "test-cty", KeyID: "test-key"},
-		`{"alg":"HS512","typ":"test-type","cty":"test-cty","kid":"test-key"}`,
+		`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`,
 	)
 }
 
@@ -115,7 +35,7 @@ func TestBuildHeader(t *testing.T) {
 	f := func(signer Signer, header Header, want string) {
 		t.Helper()
 
-		token, err := NewTokenBuilder(signer).Build(&StandardClaims{})
+		token, err := NewBuilder(signer).Build(&StandardClaims{})
 		if err != nil {
 			t.Error(err)
 		}
@@ -127,43 +47,57 @@ func TestBuildHeader(t *testing.T) {
 		}
 	}
 
-	f(
-		NewNoEncrypt(),
-		Header{Algorithm: NoEncryption, Type: "JWT"},
-		`{"alg":"none","typ":"JWT"}`,
-	)
-
 	key := []byte("key")
 	f(
-		getSigner(NewHS256(key)),
+		mustSigner(NewHS256(key)),
 		Header{Algorithm: HS256, Type: "JWT"},
 		`{"alg":"HS256","typ":"JWT"}`,
 	)
 	f(
-		getSigner(NewHS384(key)),
+		mustSigner(NewHS384(key)),
 		Header{Algorithm: HS384, Type: "JWT"},
 		`{"alg":"HS384","typ":"JWT"}`,
 	)
 	f(
-		getSigner(NewHS512(key)),
+		mustSigner(NewHS512(key)),
 		Header{Algorithm: HS512, Type: "JWT"},
 		`{"alg":"HS512","typ":"JWT"}`,
 	)
 
 	f(
-		getSigner(NewRS256(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS256(rsaPublicKey1, rsaPrivateKey1)),
 		Header{Algorithm: RS256, Type: "JWT"},
 		`{"alg":"RS256","typ":"JWT"}`,
 	)
 	f(
-		getSigner(NewRS384(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS384(rsaPublicKey1, rsaPrivateKey1)),
 		Header{Algorithm: RS384, Type: "JWT"},
 		`{"alg":"RS384","typ":"JWT"}`,
 	)
 	f(
-		getSigner(NewRS512(rsaPublicKey1, rsaPrivateKey1)),
+		mustSigner(NewRS512(rsaPublicKey1, rsaPrivateKey1)),
 		Header{Algorithm: RS512, Type: "JWT"},
 		`{"alg":"RS512","typ":"JWT"}`,
+	)
+}
+
+func TestBuildMalformed(t *testing.T) {
+	f := func(signer Signer, claims interface{}) {
+		t.Helper()
+
+		_, err := BuildBytes(signer, claims)
+		if err == nil {
+			t.Error("want err, got nil")
+		}
+	}
+
+	f(
+		badSigner{},
+		nil,
+	)
+	f(
+		mustSigner(NewHS256([]byte("test-key"))),
+		badSigner.Algorithm,
 	)
 }
 
@@ -171,4 +105,18 @@ func toBase64(s string) string {
 	buf := make([]byte, base64EncodedLen(len(s)))
 	base64.RawURLEncoding.Encode(buf, []byte(s))
 	return string(buf)
+}
+
+var _ Signer = badSigner{}
+
+type badSigner struct{}
+
+func (badSigner) Algorithm() Algorithm {
+	return "bad"
+}
+func (badSigner) Sign(payload []byte) ([]byte, error) {
+	return nil, errors.New("error by design")
+}
+func (badSigner) Verify(payload, signature []byte) error {
+	return errors.New("error by design")
 }

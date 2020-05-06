@@ -3,7 +3,7 @@ package jwt_test
 import (
 	"fmt"
 
-	"github.com/cristalhq/jwt"
+	"github.com/cristalhq/jwt/v2"
 )
 
 func Example_Parse() {

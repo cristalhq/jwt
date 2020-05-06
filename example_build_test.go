@@ -4,13 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cristalhq/jwt"
+	"github.com/cristalhq/jwt/v2"
 )
 
 func Example_BuildSimple() {
 	key := []byte(`secret`)
 	signer, _ := jwt.NewHS256(key)
-	builder := jwt.NewTokenBuilder(signer)
+	builder := jwt.NewBuilder(signer)
 
 	claims := &jwt.StandardClaims{
 		Audience: []string{"admin"},
@@ -30,9 +30,9 @@ func Example_BuildSimple() {
 	// Output:
 	// Algorithm HS256
 	// Type      JWT
-	// Claims    {"aud":"admin","jti":"random-unique-string"}
-	// Payload   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0
-	// Token     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs
+	// Claims    {"jti":"random-unique-string","aud":"admin"}
+	// Payload   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0
+	// Token     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0.uNaqGEggmy02lZq8FM7KoUKXhOy-zrSF7inYuzIET9o
 }
 
 type userClaims struct {
@@ -49,7 +49,7 @@ func (u *userClaims) MarshalBinary() ([]byte, error) {
 func Example_BuildUserClaims() {
 	key := []byte(`secret`)
 	signer, _ := jwt.NewHS256(key)
-	builder := jwt.NewTokenBuilder(signer)
+	builder := jwt.NewBuilder(signer)
 
 	claims := &userClaims{
 		StandardClaims: jwt.StandardClaims{
@@ -69,9 +69,9 @@ func Example_BuildUserClaims() {
 	fmt.Printf("Token     %v\n", string(token.Raw()))
 
 	// Output:
-	// Claims    {"aud":"admin","jti":"random-unique-string","is_admin":true,"email":"foo@bar.baz"}
-	// Payload   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIiwiaXNfYWRtaW4iOnRydWUsImVtYWlsIjoiZm9vQGJhci5iYXoifQ
-	// Token     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIiwiaXNfYWRtaW4iOnRydWUsImVtYWlsIjoiZm9vQGJhci5iYXoifQ.Km2HO5sXMXfrIJMTCA6xf7wamjUABB_glFW3gCGWJCI
+	// Claims    {"jti":"random-unique-string","aud":"admin","is_admin":true,"email":"foo@bar.baz"}
+	// Payload   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIiwiaXNfYWRtaW4iOnRydWUsImVtYWlsIjoiZm9vQGJhci5iYXoifQ
+	// Token     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIiwiaXNfYWRtaW4iOnRydWUsImVtYWlsIjoiZm9vQGJhci5iYXoifQ.oKE62_k3bqAlKwdBJDBJq5DQ_0FvpNv6e1u6hF_ShQs
 }
 
 type dummyClaims map[string]interface{}
@@ -83,7 +83,7 @@ func (d *dummyClaims) MarshalBinary() ([]byte, error) {
 func Example_DummyClaims() {
 	key := []byte(`secret`)
 	signer, _ := jwt.NewHS256(key)
-	builder := jwt.NewTokenBuilder(signer)
+	builder := jwt.NewBuilder(signer)
 
 	claims := dummyClaims(map[string]interface{}{
 		"aUdIeNcE": "@everyone",
