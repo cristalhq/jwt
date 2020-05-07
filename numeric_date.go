@@ -33,11 +33,11 @@ func (t NumericDate) MarshalJSON() ([]byte, error) {
 func (t *NumericDate) UnmarshalJSON(data []byte) error {
 	var value json.Number
 	if err := json.Unmarshal(data, &value); err != nil {
-		return err
+		return ErrDateInvalidFormat
 	}
 	f, err := value.Float64()
 	if err != nil {
-		return err
+		return ErrDateInvalidFormat
 	}
 	sec, dec := math.Modf(f)
 	ts := time.Unix(int64(sec), int64(dec*1e9))

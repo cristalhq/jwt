@@ -16,44 +16,44 @@ type Token struct {
 	claims    json.RawMessage
 }
 
-func (t Token) String() string {
+func (t *Token) String() string {
 	return string(t.raw)
 }
 
 // SecureString returns token without a signature (replaced with `.<signature>`).
-func (t Token) SecureString() string {
+func (t *Token) SecureString() string {
 	dot := bytes.LastIndexByte(t.raw, '.')
 	return string(t.raw[:dot]) + `.<signature>`
 }
 
 // Raw returns token's raw bytes.
-func (t Token) Raw() []byte {
+func (t *Token) Raw() []byte {
 	return t.raw
 }
 
 // Header returns token's header.
-func (t Token) Header() Header {
+func (t *Token) Header() Header {
 	return t.header
 }
 
 // RawHeader returns token's header raw bytes.
-func (t Token) RawHeader() []byte {
+func (t *Token) RawHeader() []byte {
 	dot := bytes.IndexByte(t.raw, '.')
 	return t.raw[:dot]
 }
 
 // RawClaims returns token's claims as a raw bytes.
-func (t Token) RawClaims() []byte {
+func (t *Token) RawClaims() []byte {
 	return t.claims
 }
 
 // Payload returns token's payload.
-func (t Token) Payload() []byte {
+func (t *Token) Payload() []byte {
 	return t.payload
 }
 
 // Signature returns token's signature.
-func (t Token) Signature() []byte {
+func (t *Token) Signature() []byte {
 	return t.signature
 }
 
@@ -67,7 +67,7 @@ type Header struct {
 }
 
 // MarshalJSON implements the json.Marshaler interface.
-func (h Header) MarshalJSON() (data []byte, err error) {
+func (h *Header) MarshalJSON() (data []byte, err error) {
 	buf := bytes.Buffer{}
 	buf.WriteString(`{"alg":"`)
 	buf.WriteString(string(h.Algorithm))
