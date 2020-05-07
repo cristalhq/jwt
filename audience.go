@@ -22,7 +22,7 @@ func (a Audience) MarshalJSON() ([]byte, error) {
 func (a *Audience) UnmarshalJSON(b []byte) error {
 	var v interface{}
 	if err := json.Unmarshal(b, &v); err != nil {
-		return err
+		return ErrAudienceInvalidFormat
 	}
 
 	switch v := v.(type) {

@@ -56,7 +56,6 @@ func TestNumericDateUnmarshalMalformed(t *testing.T) {
 		if err == nil {
 			t.Error("want err")
 		}
-
 	}
 
 	f(``)

@@ -22,8 +22,6 @@ type Algorithm string
 
 // Algorithm names for signing and verifying.
 const (
-	NoEncryption Algorithm = "none"
-
 	EdDSA Algorithm = "EdDSA"
 
 	HS256 Algorithm = "HS256"
