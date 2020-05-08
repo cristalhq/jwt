@@ -158,11 +158,6 @@ func runSignerBench(b *testing.B, builder *jwt.Builder) {
 }
 
 func runVerifyBench(b *testing.B, builder *jwt.Builder, verifier jwt.Verifier) {
-	builder.Build(jwt.StandardClaims{
-		ID:       "id",
-		Issuer:   "sdf",
-		IssuedAt: jwt.NewNumericDate(time.Now()),
-	})
 	tokensCount := 32
 	tokens := make([]*jwt.Token, 0, tokensCount)
 	for i := 0; i < tokensCount; i++ {
