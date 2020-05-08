@@ -36,7 +36,7 @@ func NewBuilder(signer Signer) *Builder {
 			Type:      "JWT",
 		},
 	}
-	b.headerRaw = encodeHeaderPrec(&b.header)
+	b.headerRaw = encodeHeader(&b.header)
 	return b
 }
 
@@ -58,7 +58,7 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 
 	lenH := len(b.headerRaw)
 	lenP := base64EncodedLen(len(rawClaims))
-	lenS := 500
+	lenS := 400 //b.signer.SignSize()
 	raw := make([]byte, lenH+1+lenP+1+lenS)
 
 	idx := 0
@@ -98,7 +98,7 @@ func encodeClaims(claims interface{}) ([]byte, error) {
 	}
 }
 
-func encodeHeaderPrec(header *Header) string {
+func encodeHeader(header *Header) string {
 	if header.Type == "JWT" && header.ContentType == "" {
 		switch header.Algorithm {
 		case EdDSA:
@@ -144,7 +144,7 @@ func encodeHeaderPrec(header *Header) string {
 	return string(encoded)
 }
 
-var (
+const (
 	encHeaderEdDSA = "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9"
 
 	encHeaderHS256 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
