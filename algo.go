@@ -8,6 +8,7 @@ import (
 // Signer is used to sign tokens.
 type Signer interface {
 	Algorithm() Algorithm
+	SignSize() int
 	Sign(payload []byte) ([]byte, error)
 }
 

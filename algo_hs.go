@@ -60,6 +60,10 @@ func (h hsAlg) Algorithm() Algorithm {
 	return h.alg
 }
 
+func (h hsAlg) SignSize() int {
+	return h.hash.Size()
+}
+
 func (h hsAlg) Sign(payload []byte) ([]byte, error) {
 	return h.sign(payload)
 }

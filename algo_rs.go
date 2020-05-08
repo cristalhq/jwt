@@ -58,6 +58,10 @@ type rsAlg struct {
 	privateKey *rsa.PrivateKey
 }
 
+func (h rsAlg) SignSize() int {
+	return h.hash.Size()
+}
+
 func (h rsAlg) Algorithm() Algorithm {
 	return h.alg
 }
