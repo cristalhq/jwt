@@ -9,7 +9,6 @@ import (
 	mathRand "math/rand"
 	"testing"
 	"time"
-	"unsafe"
 
 	"github.com/cristalhq/jwt/v2"
 )
@@ -140,7 +139,7 @@ func BenchmarkHS(b *testing.B) {
 func runSignerBench(b *testing.B, builder *jwt.Builder) {
 	b.ReportAllocs()
 
-	sink := uintptr(0)
+	sink := int(0)
 	for i := 0; i < b.N; i++ {
 		token, tokenErr := builder.Build(jwt.StandardClaims{
 			ID:       "id",
@@ -150,7 +149,7 @@ func runSignerBench(b *testing.B, builder *jwt.Builder) {
 		if tokenErr != nil {
 			b.Fatal(tokenErr)
 		}
-		sink += uintptr(unsafe.Pointer(token))
+		sink += int(token.Payload()[0])
 	}
 
 	if mathRand.Intn(10000) > 9999 {
@@ -164,22 +163,28 @@ func runVerifyBench(b *testing.B, builder *jwt.Builder, verifier jwt.Verifier) {
 		Issuer:   "sdf",
 		IssuedAt: jwt.NewNumericDate(time.Now()),
 	})
-	token, tokenErr := builder.Build(jwt.StandardClaims{
-		ID:       "id",
-		Issuer:   "sdf",
-		IssuedAt: jwt.NewNumericDate(time.Now()),
-	})
-	if tokenErr != nil {
-		b.Fatal(tokenErr)
+	tokensCount := 32
+	tokens := make([]*jwt.Token, 0, tokensCount)
+	for i := 0; i < tokensCount; i++ {
+		token, tokenErr := builder.Build(jwt.StandardClaims{
+			ID:       "id",
+			Issuer:   "sdf",
+			IssuedAt: jwt.NewNumericDate(time.Now()),
+		})
+		if tokenErr != nil {
+			b.Fatal(tokenErr)
+		}
+		tokens = append(tokens, token)
 	}
 
 	b.ReportAllocs()
 	sink := uintptr(0)
-	for i := 0; i < b.N; i++ {
-		verificationErr := verifier.Verify(token.Payload(), token.Signature())
-		sink += uintptr(unsafe.Pointer(&verificationErr))
-		if verificationErr != nil {
-			b.Fatal(verificationErr)
+	for i := 0; i < b.N/tokensCount; i++ {
+		for _, token := range tokens {
+			verificationErr := verifier.Verify(token.Payload(), token.Signature())
+			if verificationErr != nil {
+				b.Fatal(verificationErr)
+			}
 		}
 	}
 
