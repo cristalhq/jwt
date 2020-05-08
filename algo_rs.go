@@ -4,6 +4,7 @@ import (
 	"crypto"
 	"crypto/rand"
 	"crypto/rsa"
+	"hash"
 )
 
 // NewSignerRS returns a new RSA-based signer.
@@ -19,6 +20,7 @@ func NewSignerRS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 		alg:        alg,
 		hash:       hash,
 		privateKey: key,
+		hashPool:   newHashPool(),
 	}, nil
 }
 
@@ -35,6 +37,7 @@ func NewVerifierRS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
 		alg:       alg,
 		hash:      hash,
 		publickey: key,
+		hashPool:  newHashPool(),
 	}, nil
 }
 
@@ -56,6 +59,7 @@ type rsAlg struct {
 	hash       crypto.Hash
 	publickey  *rsa.PublicKey
 	privateKey *rsa.PrivateKey
+	hashPool   *hashPool
 }
 
 func (h rsAlg) Algorithm() Algorithm {
@@ -89,7 +93,10 @@ func (h rsAlg) Verify(payload, signature []byte) error {
 }
 
 func (h rsAlg) sign(payload []byte) ([]byte, error) {
-	hasher := h.hash.New()
+	hasher := h.hashPool.getHash(func() hash.Hash {
+		return h.hash.New()
+	})
+	defer h.hashPool.putHash(hasher)
 
 	_, err := hasher.Write(payload)
 	if err != nil {

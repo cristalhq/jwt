@@ -4,6 +4,7 @@ import (
 	"crypto"
 	"crypto/ecdsa"
 	"crypto/rand"
+	"hash"
 	"math/big"
 )
 
@@ -22,6 +23,7 @@ func NewSignerES(alg Algorithm, key *ecdsa.PrivateKey) (Signer, error) {
 		privateKey: key,
 		keySize:    keySize,
 		curveBits:  curveBits,
+		hashPool:   newHashPool(),
 	}, nil
 }
 
@@ -40,6 +42,7 @@ func NewVerifierES(alg Algorithm, key *ecdsa.PublicKey) (Verifier, error) {
 		publickey: key,
 		keySize:   keySize,
 		curveBits: curveBits,
+		hashPool:  newHashPool(),
 	}, nil
 }
 
@@ -63,6 +66,7 @@ type esAlg struct {
 	privateKey *ecdsa.PrivateKey
 	keySize    int
 	curveBits  int
+	hashPool   *hashPool
 }
 
 func (h esAlg) Algorithm() Algorithm {
@@ -120,7 +124,10 @@ func (h esAlg) Verify(payload, signature []byte) error {
 }
 
 func (h esAlg) sign(payload []byte) ([]byte, error) {
-	hasher := h.hash.New()
+	hasher := h.hashPool.getHash(func() hash.Hash {
+		return h.hash.New()
+	})
+	defer h.hashPool.putHash(hasher)
 
 	_, err := hasher.Write(payload)
 	if err != nil {
