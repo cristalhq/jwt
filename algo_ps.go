@@ -95,6 +95,10 @@ func (h psAlg) Sign(payload []byte) ([]byte, error) {
 	return signature, nil
 }
 
+func (h psAlg) SignatureSize() int {
+	return h.hash.Size()
+}
+
 func (h psAlg) Verify(payload, signature []byte) error {
 	signed, err := h.sign(payload)
 	if err != nil {

@@ -46,3 +46,7 @@ func (h edDSAAlg) Verify(payload, signature []byte) error {
 	}
 	return nil
 }
+
+func (h edDSAAlg) SignatureSize() int {
+	return ed25519.SignatureSize
+}

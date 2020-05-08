@@ -50,15 +50,14 @@ func (b *Builder) BuildBytes(claims interface{}) ([]byte, error) {
 
 // Build used to create and encode JWT with a provided claims.
 func (b *Builder) Build(claims interface{}) (*Token, error) {
-	rawClaims, encodedClaims, err := encodeClaims(claims)
+	jsonClaims, err := encodeClaims(claims)
 	if err != nil {
 		return nil, err
 	}
 
-	encodedHeader := encodeHeader(&b.header)
-	payload := concatParts(encodedHeader, encodedClaims)
+	jsonHeader := encodeHeader(&b.header)
 
-	raw, signature, err := signPayload(b.signer, payload)
+	payload, raw, signature, err := sign(b.signer, jsonClaims, jsonHeader)
 	if err != nil {
 		return nil, err
 	}
@@ -68,45 +67,50 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 		payload:   payload,
 		signature: signature,
 		header:    b.header,
-		claims:    rawClaims,
+		claims:    jsonClaims,
 	}
 	return token, nil
 }
 
-func encodeClaims(claims interface{}) (raw, encoded []byte, err error) {
+func encodeClaims(claims interface{}) (raw []byte, err error) {
 	raw, err = json.Marshal(claims)
 	if err != nil {
-		return nil, nil, err
+		return nil, err
 	}
 
-	encoded = make([]byte, base64EncodedLen(len(raw)))
-	base64Encode(encoded, raw)
-
-	return raw, encoded, nil
+	return raw, nil
 }
 
 func encodeHeader(header *Header) []byte {
 	// returned err is always nil, see *Header.MarshalJSON
 	buf, _ := header.MarshalJSON()
 
-	encoded := make([]byte, base64EncodedLen(len(buf)))
-	base64Encode(encoded, buf)
-
-	return encoded
+	return buf
 }
 
-func signPayload(signer Signer, payload []byte) (signed, signature []byte, err error) {
-	signature, err = signer.Sign(payload)
+func sign(signer Signer, jsonClaims, jsonHeader []byte) (payload, signed, signature []byte, err error) {
+
+	//payload := make([]byte, 0, 64)
+
+	lh := base64EncodedLen(len(jsonHeader))
+	lc := base64EncodedLen(len(jsonClaims))
+	ls := base64EncodedLen(signer.SignatureSize())
+
+	pp := make([]byte, lc+lh+ls+2)
+
+	base64Encode(pp[:lh], jsonHeader)
+	pp[lh] = '.'
+	base64Encode(pp[lh+1:lc+lh+2], jsonClaims)
+	pp[lc+lh+1] = '.'
+
+	signature, err = signer.Sign(pp[:lc+lh+1])
 	if err != nil {
-		return nil, nil, err
+		return nil, nil, nil, err
 	}
 
-	encodedSignature := make([]byte, base64EncodedLen(len(signature)))
-	base64Encode(encodedSignature, signature)
+	base64Encode(pp[lc+lh+2:], signature)
 
-	signed = concatParts(payload, encodedSignature)
-
-	return signed, signature, nil
+	return pp[:lc+lh+1], pp, signature, nil
 }
 
 func concatParts(a, b []byte) []byte {

@@ -100,6 +100,10 @@ func (h esAlg) Sign(payload []byte) ([]byte, error) {
 	return out, nil
 }
 
+func (h esAlg) SignatureSize() int {
+	return h.hash.Size()
+}
+
 func (h esAlg) Verify(payload, signature []byte) error {
 	if len(signature) != 2*h.keySize {
 		return ErrInvalidSignature

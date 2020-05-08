@@ -9,6 +9,7 @@ import (
 type Signer interface {
 	Algorithm() Algorithm
 	Sign(payload []byte) ([]byte, error)
+	SignatureSize() int
 }
 
 // Verifier is used to verify tokens.

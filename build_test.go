@@ -118,3 +118,38 @@ func (badSigner) Sign(payload []byte) ([]byte, error) {
 func (badSigner) Verify(payload, signature []byte) error {
 	return errors.New("error by design")
 }
+
+func (badSigner) SignatureSize() int {
+	return 0
+}
+
+var sink *Token
+
+func BenchmarkBuild(b *testing.B) {
+	key := []byte("123456")
+	signer, _ := NewSignerHS(HS512, key)
+	builder := NewBuilder(signer)
+
+	b.ReportAllocs()
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		var err error
+		sink, err = builder.Build(StandardClaims{
+			ID:        "long-id",
+			Audience:  nil,
+			Issuer:    "perf-test-run",
+			Subject:   "token",
+			ExpiresAt: nil,
+			IssuedAt:  nil,
+			NotBefore: nil,
+		})
+		if err != nil {
+			b.Fatal(err)
+		}
+	}
+
+	_ = sink
+
+	b.Logf("%s %v", sink.raw, sink.signature)
+}
