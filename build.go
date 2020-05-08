@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 )
 
+const delimiter = '.'
+
 var (
 	base64Encode     = base64.RawURLEncoding.Encode
 	base64EncodedLen = base64.RawURLEncoding.EncodedLen
@@ -57,14 +59,27 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 
 	jsonHeader := encodeHeader(&b.header)
 
-	payload, raw, signature, err := sign(b.signer, jsonClaims, jsonHeader)
+	headerLen := base64EncodedLen(len(jsonHeader))
+	claimsLen := base64EncodedLen(len(jsonClaims))
+	singatureLen := base64EncodedLen(b.signer.SignatureSize())
+
+	payload := make([]byte, claimsLen+headerLen+singatureLen+2)
+
+	delimiterIdx := claimsLen + headerLen + 1
+	payload[headerLen] = delimiter
+	payload[delimiterIdx] = delimiter
+
+	base64Encode(payload[:headerLen], jsonHeader)
+	base64Encode(payload[headerLen+1:delimiterIdx+1], jsonClaims)
+
+	signature, err := sign(b.signer, payload, delimiterIdx)
 	if err != nil {
 		return nil, err
 	}
 
 	token := &Token{
-		raw:       raw,
-		payload:   payload,
+		raw:       payload,
+		payload:   payload[:delimiterIdx],
 		signature: signature,
 		header:    b.header,
 		claims:    jsonClaims,
@@ -88,37 +103,14 @@ func encodeHeader(header *Header) []byte {
 	return buf
 }
 
-func sign(signer Signer, jsonClaims, jsonHeader []byte) (payload, signed, signature []byte, err error) {
+func sign(signer Signer, payload []byte, delimiter int) (signature []byte, err error) {
 
-	//payload := make([]byte, 0, 64)
-
-	lh := base64EncodedLen(len(jsonHeader))
-	lc := base64EncodedLen(len(jsonClaims))
-	ls := base64EncodedLen(signer.SignatureSize())
-
-	pp := make([]byte, lc+lh+ls+2)
-
-	base64Encode(pp[:lh], jsonHeader)
-	pp[lh] = '.'
-	base64Encode(pp[lh+1:lc+lh+2], jsonClaims)
-	pp[lc+lh+1] = '.'
-
-	signature, err = signer.Sign(pp[:lc+lh+1])
+	signature, err = signer.Sign(payload[:delimiter])
 	if err != nil {
-		return nil, nil, nil, err
+		return nil, err
 	}
 
-	base64Encode(pp[lc+lh+2:], signature)
+	base64Encode(payload[delimiter+1:], signature)
 
-	return pp[:lc+lh+1], pp, signature, nil
-}
-
-func concatParts(a, b []byte) []byte {
-	buf := make([]byte, len(a)+1+len(b))
-	buf[len(a)] = '.'
-
-	copy(buf[:len(a)], a)
-	copy(buf[len(a)+1:], b)
-
-	return buf
+	return signature, nil
 }

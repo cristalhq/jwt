@@ -150,6 +150,4 @@ func BenchmarkBuild(b *testing.B) {
 	}
 
 	_ = sink
-
-	b.Logf("%s %v", sink.raw, sink.signature)
 }
