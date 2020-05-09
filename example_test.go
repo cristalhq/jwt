@@ -3,6 +3,7 @@ package jwt_test
 import (
 	"encoding/json"
 	"fmt"
+	"time"
 
 	"github.com/cristalhq/jwt/v3"
 )
