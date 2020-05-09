@@ -72,7 +72,7 @@ Also see examples: [this above](https://github.com/cristalhq/jwt/blob/master/exa
 
 ## Documentation
 
-See [these docs](https://godoc.org/github.com/cristalhq/jwt/v3).
+See [these docs][doc-url].
 
 ## License
 
