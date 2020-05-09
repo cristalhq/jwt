@@ -18,32 +18,61 @@ JSON Web Tokens for Go
 Go version 1.13
 
 ```
-go get github.com/cristalhq/jwt
+go get github.com/cristalhq/jwt/v3
 ```
 
 ## Example
 
 ```go
+// 1. create a signer & a verifier
 key := []byte(`secret`)
-signer, errSigner := jwt.NewHS256(key)
-builder := jwt.NewBuilder(signer)
+signer, err := jwt.NewSignerHS(jwt.HS256, key)
+checkErr(err)
+verifier, err := jwt.NewVerifierHS(jwt.HS256, key)
+checkErr(err)
 
+// 2. create q standard claims
+// (you can create your own, see: Example_BuildUserClaims)
 claims := &jwt.StandardClaims{
     Audience: []string{"admin"},
     ID:       "random-unique-string",
 }
-token, errBuild := builder.Build(claims)
 
-raw := token.Raw() // JWT signed token
+// 3. create a builder
+builder := jwt.NewBuilder(signer)
 
-errVerify := signer.Verify(token.Payload(), token.Signature())
+// 4. and build a token
+token, err := builder.Build(claims)
+
+// 5. here is your token  :)
+var _ []byte = token.Raw() // or just token.String() for string
+
+// 6. parse a token (by example received from a request)
+tokenStr := token.String()
+newToken, errParse := jwt.ParseString(tokenStr)
+checkErr(errParse)
+
+// 7. and verify it's signature
+errVerify := verifier.Verify(newToken.Payload(), newToken.Signature())
+checkErr(errVerify)
+
+// 8. also you can parse and verify in 1 operation
+newToken, err = jwt.ParseAndVerifyString(tokenStr, verifier)
+checkErr(err)
+
+// 9. get standard claims
+var newClaims jwt.StandardClaims
+errClaims := json.Unmarshal(newToken.RawClaims(), &newClaims)
+checkErr(errClaims)
+
+// 10. see docs for more methods
 ```
 
-Also see examples: [build](https://github.com/cristalhq/jwt/blob/master/example_build_test.go), [parse](https://github.com/cristalhq/jwt/blob/master/example_parse_test.go).
+Also see examples: [this above](https://github.com/cristalhq/jwt/blob/master/example_test.go), [build](https://github.com/cristalhq/jwt/blob/master/example_build_test.go), [parse](https://github.com/cristalhq/jwt/blob/master/example_parse_test.go).
 
 ## Documentation
 
-See [these docs](https://godoc.org/github.com/cristalhq/jwt).
+See [these docs](https://godoc.org/github.com/cristalhq/jwt/v3).
 
 ## License
 
@@ -52,7 +81,7 @@ See [these docs](https://godoc.org/github.com/cristalhq/jwt).
 [build-img]: https://github.com/cristalhq/jwt/workflows/build/badge.svg
 [build-url]: https://github.com/cristalhq/jwt/actions
 [doc-img]: https://godoc.org/github.com/cristalhq/jwt?status.svg
-[doc-url]: https://godoc.org/github.com/cristalhq/jwt
+[doc-url]: https://pkg.go.dev/github.com/cristalhq/jwt/v3
 [reportcard-img]: https://goreportcard.com/badge/cristalhq/jwt
 [reportcard-url]: https://goreportcard.com/report/cristalhq/jwt
 [coverage-img]: https://codecov.io/gh/cristalhq/jwt/branch/master/graph/badge.svg

@@ -1,10 +1,9 @@
 package jwt_test
 
 import (
-	"encoding/json"
 	"fmt"
 
-	"github.com/cristalhq/jwt/v2"
+	"github.com/cristalhq/jwt/v3"
 )
 
 func Example_BuildSimple() {
@@ -16,10 +15,8 @@ func Example_BuildSimple() {
 		Audience: []string{"admin"},
 		ID:       "random-unique-string",
 	}
-	token, errBuild := builder.Build(claims)
-	if errBuild != nil {
-		panic(errBuild)
-	}
+	token, err := builder.Build(claims)
+	checkErr(err)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
@@ -37,13 +34,8 @@ func Example_BuildSimple() {
 
 type userClaims struct {
 	jwt.StandardClaims
-
 	IsAdministrator bool   `json:"is_admin"`
 	Email           string `json:"email"`
-}
-
-func (u *userClaims) MarshalBinary() ([]byte, error) {
-	return json.Marshal(u)
 }
 
 func Example_BuildUserClaims() {
@@ -59,10 +51,8 @@ func Example_BuildUserClaims() {
 		IsAdministrator: true,
 		Email:           "foo@bar.baz",
 	}
-	token, errBuild := builder.Build(claims)
-	if errBuild != nil {
-		panic(errBuild)
-	}
+	token, err := builder.Build(claims)
+	checkErr(err)
 
 	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
 	fmt.Printf("Payload   %v\n", string(token.Payload()))
@@ -76,10 +66,6 @@ func Example_BuildUserClaims() {
 
 type dummyClaims map[string]interface{}
 
-func (d *dummyClaims) MarshalBinary() ([]byte, error) {
-	return json.Marshal(d)
-}
-
 func Example_DummyClaims() {
 	key := []byte(`secret`)
 	signer, _ := jwt.NewSignerHS(jwt.HS256, key)
@@ -89,10 +75,8 @@ func Example_DummyClaims() {
 		"aUdIeNcE": "@everyone",
 		"well":     "well-well-well",
 	})
-	token, errBuild := builder.Build(&claims)
-	if errBuild != nil {
-		panic(errBuild)
-	}
+	token, err := builder.Build(&claims)
+	checkErr(err)
 
 	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
 	fmt.Printf("Payload   %v\n", string(token.Payload()))

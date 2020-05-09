@@ -25,10 +25,6 @@ type customClaims struct {
 	TestField string `json:"test_field"`
 }
 
-func (cs *customClaims) MarshalBinary() (data []byte, err error) {
-	return json.Marshal(cs)
-}
-
 func TestMarshalHeader(t *testing.T) {
 	f := func(h *Header, want string) {
 		t.Helper()
