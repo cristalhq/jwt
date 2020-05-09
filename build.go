@@ -14,7 +14,7 @@ var (
 type Builder struct {
 	signer    Signer
 	header    Header
-	headerRaw string
+	headerRaw []byte
 }
 
 // BuildBytes is used to create and encode JWT with a provided claims.
@@ -65,7 +65,8 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 	raw := make([]byte, lenH+1+lenC+1+lenS)
 	idx := 0
 	idx += copy(raw[idx:], b.headerRaw)
-	idx += copy(raw[idx:], ".")
+	raw[idx] = '.'
+	idx++
 	base64Encode(raw[idx:], rawClaims)
 	idx += lenC
 
@@ -73,7 +74,8 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	idx += copy(raw[idx:], ".")
+	raw[idx] = '.'
+	idx++
 	base64Encode(raw[idx:], signature)
 	idx += lenS
 
@@ -96,39 +98,39 @@ func encodeClaims(claims interface{}) ([]byte, error) {
 	}
 }
 
-func encodeHeader(header *Header) string {
+func encodeHeader(header *Header) []byte {
 	if header.Type == "JWT" && header.ContentType == "" {
 		switch header.Algorithm {
 		case EdDSA:
-			return encHeaderEdDSA
+			return []byte(encHeaderEdDSA)
 
 		case HS256:
-			return encHeaderHS256
+			return []byte(encHeaderHS256)
 		case HS384:
-			return encHeaderHS384
+			return []byte(encHeaderHS384)
 		case HS512:
-			return encHeaderHS512
+			return []byte(encHeaderHS512)
 
 		case RS256:
-			return encHeaderRS256
+			return []byte(encHeaderRS256)
 		case RS384:
-			return encHeaderRS384
+			return []byte(encHeaderRS384)
 		case RS512:
-			return encHeaderRS512
+			return []byte(encHeaderRS512)
 
 		case ES256:
-			return encHeaderES256
+			return []byte(encHeaderES256)
 		case ES384:
-			return encHeaderES384
+			return []byte(encHeaderES384)
 		case ES512:
-			return encHeaderES512
+			return []byte(encHeaderES512)
 
 		case PS256:
-			return encHeaderPS256
+			return []byte(encHeaderPS256)
 		case PS384:
-			return encHeaderPS384
+			return []byte(encHeaderPS384)
 		case PS512:
-			return encHeaderPS512
+			return []byte(encHeaderPS512)
 
 		default:
 			// another algorithm? encode below
@@ -139,7 +141,7 @@ func encodeHeader(header *Header) string {
 
 	encoded := make([]byte, base64EncodedLen(len(buf)))
 	base64Encode(encoded, buf)
-	return string(encoded)
+	return encoded
 }
 
 const (
