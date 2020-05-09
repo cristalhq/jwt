@@ -70,7 +70,7 @@ func (h esAlg) Algorithm() Algorithm {
 }
 
 func (h esAlg) SignSize() int {
-	return (h.privateKey.Curve.Params().BitSize + 7) / 8 * 2
+	return 2 * h.curveBits
 }
 
 func (h esAlg) Sign(payload []byte) ([]byte, error) {
