@@ -1,7 +1,6 @@
 package jwt_test
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/cristalhq/jwt/v3"
@@ -35,13 +34,8 @@ func Example_BuildSimple() {
 
 type userClaims struct {
 	jwt.StandardClaims
-
 	IsAdministrator bool   `json:"is_admin"`
 	Email           string `json:"email"`
-}
-
-func (u *userClaims) MarshalBinary() ([]byte, error) {
-	return json.Marshal(u)
 }
 
 func Example_BuildUserClaims() {
@@ -71,10 +65,6 @@ func Example_BuildUserClaims() {
 }
 
 type dummyClaims map[string]interface{}
-
-func (d *dummyClaims) MarshalBinary() ([]byte, error) {
-	return json.Marshal(d)
-}
 
 func Example_DummyClaims() {
 	key := []byte(`secret`)
