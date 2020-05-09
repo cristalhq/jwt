@@ -3,16 +3,14 @@ package jwt_test
 import (
 	"fmt"
 
-	"github.com/cristalhq/jwt/v2"
+	"github.com/cristalhq/jwt/v3"
 )
 
 func Example_Parse() {
 	t := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs`
 
-	token, errParse := jwt.Parse([]byte(t))
-	if errParse != nil {
-		panic(errParse)
-	}
+	token, err := jwt.Parse([]byte(t))
+	checkErr(err)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
@@ -34,10 +32,8 @@ func Example_ParseAndVerify() {
 
 	t := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs`
 
-	token, errParse := jwt.ParseAndVerify([]byte(t), verifier)
-	if errParse != nil {
-		panic(errParse)
-	}
+	token, err := jwt.ParseAndVerify([]byte(t), verifier)
+	checkErr(err)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)

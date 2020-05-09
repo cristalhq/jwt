@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/cristalhq/jwt/v2"
+	"github.com/cristalhq/jwt/v3"
 )
 
 func Example_BuildSimple() {
@@ -16,10 +16,8 @@ func Example_BuildSimple() {
 		Audience: []string{"admin"},
 		ID:       "random-unique-string",
 	}
-	token, errBuild := builder.Build(claims)
-	if errBuild != nil {
-		panic(errBuild)
-	}
+	token, err := builder.Build(claims)
+	checkErr(err)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
@@ -59,10 +57,8 @@ func Example_BuildUserClaims() {
 		IsAdministrator: true,
 		Email:           "foo@bar.baz",
 	}
-	token, errBuild := builder.Build(claims)
-	if errBuild != nil {
-		panic(errBuild)
-	}
+	token, err := builder.Build(claims)
+	checkErr(err)
 
 	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
 	fmt.Printf("Payload   %v\n", string(token.Payload()))
@@ -89,10 +85,8 @@ func Example_DummyClaims() {
 		"aUdIeNcE": "@everyone",
 		"well":     "well-well-well",
 	})
-	token, errBuild := builder.Build(&claims)
-	if errBuild != nil {
-		panic(errBuild)
-	}
+	token, err := builder.Build(&claims)
+	checkErr(err)
 
 	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
 	fmt.Printf("Payload   %v\n", string(token.Payload()))
