@@ -59,31 +59,27 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 	}
 
 	lenH := len(b.headerRaw)
-	lenP := base64EncodedLen(len(rawClaims))
+	lenC := base64EncodedLen(len(rawClaims))
 	lenS := base64EncodedLen(b.signer.SignSize())
 
-	raw := make([]byte, lenH+1+lenP+1+lenS)
+	raw := make([]byte, lenH+1+lenC+1+lenS)
 	idx := 0
 	idx += copy(raw[idx:], b.headerRaw)
 	idx += copy(raw[idx:], ".")
-
 	base64Encode(raw[idx:], rawClaims)
-	idx += base64EncodedLen(len(rawClaims))
+	idx += lenC
 
 	signature, err := b.signer.Sign(raw[:idx])
 	if err != nil {
 		return nil, err
 	}
-
 	idx += copy(raw[idx:], ".")
 	base64Encode(raw[idx:], signature)
-	idx += base64EncodedLen(len(signature))
-
-	raw = raw[:idx]
+	idx += lenS
 
 	token := &Token{
 		raw:       raw,
-		payload:   raw[:lenH+1+lenP],
+		payload:   raw[:lenH+1+lenC],
 		signature: signature,
 		header:    b.header,
 		claims:    rawClaims,
