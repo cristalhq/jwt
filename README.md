@@ -5,17 +5,27 @@
 [![Go Report Card][reportcard-img]][reportcard-url]
 [![Coverage][coverage-img]][coverage-url]
 
-JSON Web Tokens for Go
+JSON Web Token for Go [RFC 7519](https://tools.ietf.org/html/rfc7519), also see [jwt.io](https://jwt.io) for more.
+
+The latest version is `v3`.
 
 ## Features
 
 * Simple API.
+* Clean and tested code.
 * Optimized for speed.
 * Dependency-free.
+* All sign methods supported
+  * HMAS (HS)
+  * RSA (RS)
+  * RSA-PSS (PS)
+  * ECDSA (ES)
+  * EdDSA (EdDSA)
+  * or your own!
 
 ## Install
 
-Go version 1.13
+Go version 1.13+
 
 ```
 go get github.com/cristalhq/jwt/v3
@@ -65,7 +75,9 @@ var newClaims jwt.StandardClaims
 errClaims := json.Unmarshal(newToken.RawClaims(), &newClaims)
 checkErr(errClaims)
 
-// 10. see docs for more methods
+// 10. verify claims
+var _ bool = newClaims.IsForAudience("admin")
+var _ bool = newClaims.IsValidAt(time.Now())
 ```
 
 Also see examples: [this above](https://github.com/cristalhq/jwt/blob/master/example_test.go), [build](https://github.com/cristalhq/jwt/blob/master/example_build_test.go), [parse](https://github.com/cristalhq/jwt/blob/master/example_parse_test.go).
