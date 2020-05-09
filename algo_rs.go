@@ -58,12 +58,12 @@ type rsAlg struct {
 	privateKey *rsa.PrivateKey
 }
 
-func (h rsAlg) SignSize() int {
-	return h.hash.Size()
-}
-
 func (h rsAlg) Algorithm() Algorithm {
 	return h.alg
+}
+
+func (h rsAlg) SignSize() int {
+	return h.privateKey.Size()
 }
 
 func (h rsAlg) Sign(payload []byte) ([]byte, error) {

@@ -79,7 +79,7 @@ type psAlg struct {
 }
 
 func (h psAlg) SignSize() int {
-	return h.opts.Hash.Size()
+	return h.privateKey.Size()
 }
 
 func (h psAlg) Algorithm() Algorithm {

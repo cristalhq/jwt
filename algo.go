@@ -21,6 +21,8 @@ type Verifier interface {
 // Algorithm for signing and verifying.
 type Algorithm string
 
+func (a Algorithm) String() string { return string(a) }
+
 // Algorithm names for signing and verifying.
 const (
 	EdDSA Algorithm = "EdDSA"

@@ -32,12 +32,12 @@ type edDSAAlg struct {
 	privateKey ed25519.PrivateKey
 }
 
-func (h edDSAAlg) SignSize() int {
-	return ed25519.SignatureSize
-}
-
 func (h edDSAAlg) Algorithm() Algorithm {
 	return h.alg
+}
+
+func (h edDSAAlg) SignSize() int {
+	return ed25519.SignatureSize
 }
 
 func (h edDSAAlg) Sign(payload []byte) ([]byte, error) {

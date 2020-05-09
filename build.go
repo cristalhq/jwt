@@ -58,9 +58,9 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 
 	lenH := len(b.headerRaw)
 	lenP := base64EncodedLen(len(rawClaims))
-	lenS := 400 //b.signer.SignSize()
-	raw := make([]byte, lenH+1+lenP+1+lenS)
+	lenS := base64EncodedLen(b.signer.SignSize())
 
+	raw := make([]byte, lenH+1+lenP+1+lenS)
 	idx := 0
 	idx += copy(raw[idx:], b.headerRaw)
 	idx += copy(raw[idx:], ".")
