@@ -50,6 +50,8 @@ func (b *Builder) BuildBytes(claims interface{}) ([]byte, error) {
 }
 
 // Build used to create and encode JWT with a provided claims.
+// If claims param is of type []byte then we treat it as a marshaled JSON.
+// In other words you can pass already marshaled claims.
 func (b *Builder) Build(claims interface{}) (*Token, error) {
 	rawClaims, err := encodeClaims(claims)
 	if err != nil {
