@@ -25,7 +25,7 @@ jobs:
       run: go build .
 
     - name: Test
-      run: go test -v .
+      run: go test -v ./...
 
     - name: Generate Coverage
       run: go test -coverprofile=coverage.txt
