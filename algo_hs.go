@@ -3,6 +3,8 @@ package jwt
 import (
 	"crypto"
 	"crypto/hmac"
+	"hash"
+	"sync"
 )
 
 // NewSignerHS returns a new HMAC-based signer.
@@ -18,6 +20,9 @@ func NewSignerHS(alg Algorithm, key []byte) (Signer, error) {
 		alg:  alg,
 		hash: hash,
 		key:  key,
+		hashPool: &sync.Pool{New: func() interface{} {
+			return hmac.New(hash.New, key)
+		}},
 	}, nil
 }
 
@@ -34,6 +39,9 @@ func NewVerifierHS(alg Algorithm, key []byte) (Verifier, error) {
 		alg:  alg,
 		hash: hash,
 		key:  key,
+		hashPool: &sync.Pool{New: func() interface{} {
+			return hmac.New(hash.New, key)
+		}},
 	}, nil
 }
 
@@ -51,9 +59,10 @@ func getHashHMAC(alg Algorithm) (crypto.Hash, error) {
 }
 
 type hsAlg struct {
-	alg  Algorithm
-	hash crypto.Hash
-	key  []byte
+	alg      Algorithm
+	hash     crypto.Hash
+	key      []byte
+	hashPool *sync.Pool
 }
 
 func (h hsAlg) Algorithm() Algorithm {
@@ -76,7 +85,11 @@ func (h hsAlg) Verify(payload, signature []byte) error {
 }
 
 func (h hsAlg) sign(payload []byte) ([]byte, error) {
-	hasher := hmac.New(h.hash.New, h.key)
+	hasher := h.hashPool.Get().(hash.Hash)
+	defer func() {
+		hasher.Reset()
+		h.hashPool.Put(hasher)
+	}()
 
 	_, err := hasher.Write(payload)
 	if err != nil {
