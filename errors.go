@@ -23,6 +23,9 @@ const (
 	// ErrAudienceInvalidFormat indicates that audience format is not valid.
 	ErrAudienceInvalidFormat = Error("jwt: audience format is not valid")
 
+	// ErrDateInvalidFormat indicates that date format is not valid.
+	ErrDateInvalidFormat = Error("jwt: date is not valid")
+
 	// ErrAlgorithmMismatch indicates that token is signed by another algorithm.
 	ErrAlgorithmMismatch = Error("jwt: token is signed by another algorithm")
 
