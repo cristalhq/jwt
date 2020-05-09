@@ -13,7 +13,7 @@ import (
 	"github.com/cristalhq/jwt/v2"
 )
 
-func BenchmarkEDSA(b *testing.B) {
+func BenchmarkAlgEDSA(b *testing.B) {
 	pubKey, privKey, keyErr := ed25519.GenerateKey(rand.Reader)
 	if keyErr != nil {
 		b.Fatal(keyErr)
@@ -35,7 +35,7 @@ func BenchmarkEDSA(b *testing.B) {
 	})
 }
 
-func BenchmarkES(b *testing.B) {
+func BenchmarkAlgES(b *testing.B) {
 	esAlgos := map[jwt.Algorithm]elliptic.Curve{
 		jwt.ES256: elliptic.P256(),
 		jwt.ES384: elliptic.P384(),
@@ -64,7 +64,7 @@ func BenchmarkES(b *testing.B) {
 	}
 }
 
-func BenchmarkPS(b *testing.B) {
+func BenchmarkAlgPS(b *testing.B) {
 	psAlgos := []jwt.Algorithm{jwt.PS256, jwt.PS384, jwt.PS512}
 	for _, algo := range psAlgos {
 		key, keyErr := rsa.GenerateKey(rand.Reader, 2048)
@@ -89,7 +89,7 @@ func BenchmarkPS(b *testing.B) {
 	}
 }
 
-func BenchmarkRS(b *testing.B) {
+func BenchmarkAlgRS(b *testing.B) {
 	rsAlgos := []jwt.Algorithm{jwt.RS256, jwt.RS384, jwt.RS512}
 	for _, algo := range rsAlgos {
 		key, keyErr := rsa.GenerateKey(rand.Reader, 2048)
@@ -114,7 +114,7 @@ func BenchmarkRS(b *testing.B) {
 	}
 }
 
-func BenchmarkHS(b *testing.B) {
+func BenchmarkAlgHS(b *testing.B) {
 	key := []byte("12345")
 	hsAlgos := []jwt.Algorithm{jwt.HS256, jwt.HS384, jwt.HS512}
 	for _, algo := range hsAlgos {
