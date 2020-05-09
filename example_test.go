@@ -49,7 +49,9 @@ func Example_JWT() {
 	errClaims := json.Unmarshal(newToken.RawClaims(), &newClaims)
 	checkErr(errClaims)
 
-	// 10. see docs for more methods
+	// 10. verify claims
+	var _ bool = newClaims.IsForAudience("admin")
+	var _ bool = newClaims.IsValidAt(time.Now())
 
 	fmt.Printf("Algorithm %v\n", newToken.Header().Algorithm)
 	fmt.Printf("Type      %v\n", newToken.Header().Type)
