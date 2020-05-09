@@ -69,6 +69,10 @@ func (h esAlg) Algorithm() Algorithm {
 	return h.alg
 }
 
+func (h esAlg) SignSize() int {
+	return 2 * h.curveBits
+}
+
 func (h esAlg) Sign(payload []byte) ([]byte, error) {
 	signed, err := h.sign(payload)
 	if err != nil {

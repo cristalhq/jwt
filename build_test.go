@@ -17,7 +17,7 @@ func TestBuild(t *testing.T) {
 
 		raw := string(token)
 		if raw != want {
-			t.Errorf("want %v, got %v", want, raw)
+			t.Errorf("want %v,\n got %v", want, raw)
 		}
 	}
 
@@ -43,7 +43,7 @@ func TestBuildHeader(t *testing.T) {
 		want = toBase64(want)
 		raw := string(token.RawHeader())
 		if raw != want {
-			t.Errorf("want %v, got %v", want, raw)
+			t.Errorf("\nwant %v,\n got %v", want, raw)
 		}
 	}
 
@@ -109,6 +109,9 @@ func toBase64(s string) string {
 
 type badSigner struct{}
 
+func (badSigner) SignSize() int {
+	return 0
+}
 func (badSigner) Algorithm() Algorithm {
 	return "bad"
 }
