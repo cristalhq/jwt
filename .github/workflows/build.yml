@@ -31,7 +31,8 @@ jobs:
       run: go test -coverprofile=coverage.txt
 
     - name: Upload Coverage
-      uses: codecov/codecov-action@v1.0.3
+      uses: codecov/codecov-action@v1
       with:
         token: ${{secrets.CODECOV_TOKEN}}
         file: ./coverage.txt
+        fail_ci_if_error: false
