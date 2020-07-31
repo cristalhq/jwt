@@ -70,7 +70,7 @@ func (h esAlg) Algorithm() Algorithm {
 }
 
 func (h esAlg) SignSize() int {
-	return 2 * h.curveBits
+	return (h.privateKey.Curve.Params().BitSize + 7) / 4
 }
 
 func (h esAlg) Sign(payload []byte) ([]byte, error) {
@@ -84,11 +84,7 @@ func (h esAlg) Sign(payload []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	curveBits := h.privateKey.Curve.Params().BitSize
-	keyBytes := curveBits / 8
-	if curveBits%8 > 0 {
-		keyBytes++
-	}
+	keyBytes := h.SignSize() / 2
 
 	rBytes, sBytes := r.Bytes(), s.Bytes()
 	signature := make([]byte, keyBytes*2)
