@@ -27,7 +27,8 @@ func Example_JWT() {
 	builder := jwt.NewBuilder(signer)
 
 	// 4. and build a token
-	token, err := builder.Build(claims)
+	token, errBuild := builder.Build(claims)
+	checkErr(errBuild)
 
 	// 5. here is your token  :)
 	var _ []byte = token.Raw() // or just token.String() for string
