@@ -12,9 +12,9 @@ func NewSignerES(alg Algorithm, key *ecdsa.PrivateKey) (Signer, error) {
 	if key == nil {
 		return nil, ErrInvalidKey
 	}
-	hash, err := getParamsES(alg)
-	if err != nil {
-		return nil, err
+	hash, ok := getParamsES(alg)
+	if !ok {
+		return nil, ErrUnsupportedAlg
 	}
 	return &esAlg{
 		alg:        alg,
@@ -29,9 +29,9 @@ func NewVerifierES(alg Algorithm, key *ecdsa.PublicKey) (Verifier, error) {
 	if key == nil {
 		return nil, ErrInvalidKey
 	}
-	hash, err := getParamsES(alg)
-	if err != nil {
-		return nil, err
+	hash, ok := getParamsES(alg)
+	if !ok {
+		return nil, ErrUnsupportedAlg
 	}
 	return &esAlg{
 		alg:       alg,
@@ -41,16 +41,16 @@ func NewVerifierES(alg Algorithm, key *ecdsa.PublicKey) (Verifier, error) {
 	}, nil
 }
 
-func getParamsES(alg Algorithm) (crypto.Hash, error) {
+func getParamsES(alg Algorithm) (crypto.Hash, bool) {
 	switch alg {
 	case ES256:
-		return crypto.SHA256, nil
+		return crypto.SHA256, true
 	case ES384:
-		return crypto.SHA384, nil
+		return crypto.SHA384, true
 	case ES512:
-		return crypto.SHA512, nil
+		return crypto.SHA512, true
 	default:
-		return 0, ErrUnsupportedAlg
+		return 0, false
 	}
 }
 

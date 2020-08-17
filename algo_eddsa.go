@@ -6,7 +6,7 @@ import (
 
 // NewSignerEdDSA returns a new ed25519-based signer.
 func NewSignerEdDSA(key ed25519.PrivateKey) (Signer, error) {
-	if key == nil {
+	if len(key) == 0 {
 		return nil, ErrInvalidKey
 	}
 	return &edDSAAlg{
@@ -17,7 +17,7 @@ func NewSignerEdDSA(key ed25519.PrivateKey) (Signer, error) {
 
 // NewVerifierEdDSA returns a new ed25519-based verifier.
 func NewVerifierEdDSA(key ed25519.PublicKey) (Verifier, error) {
-	if key == nil {
+	if len(key) == 0 {
 		return nil, ErrInvalidKey
 	}
 	return &edDSAAlg{

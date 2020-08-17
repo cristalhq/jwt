@@ -12,9 +12,9 @@ func NewSignerHS(alg Algorithm, key []byte) (Signer, error) {
 	if len(key) == 0 {
 		return nil, ErrInvalidKey
 	}
-	hash, err := getHashHMAC(alg)
-	if err != nil {
-		return nil, err
+	hash, ok := getHashHMAC(alg)
+	if !ok {
+		return nil, ErrUnsupportedAlg
 	}
 	return &hsAlg{
 		alg:  alg,
@@ -31,9 +31,9 @@ func NewVerifierHS(alg Algorithm, key []byte) (Verifier, error) {
 	if len(key) == 0 {
 		return nil, ErrInvalidKey
 	}
-	hash, err := getHashHMAC(alg)
-	if err != nil {
-		return nil, err
+	hash, ok := getHashHMAC(alg)
+	if !ok {
+		return nil, ErrUnsupportedAlg
 	}
 	return &hsAlg{
 		alg:  alg,
@@ -45,16 +45,16 @@ func NewVerifierHS(alg Algorithm, key []byte) (Verifier, error) {
 	}, nil
 }
 
-func getHashHMAC(alg Algorithm) (crypto.Hash, error) {
+func getHashHMAC(alg Algorithm) (crypto.Hash, bool) {
 	switch alg {
 	case HS256:
-		return crypto.SHA256, nil
+		return crypto.SHA256, true
 	case HS384:
-		return crypto.SHA384, nil
+		return crypto.SHA384, true
 	case HS512:
-		return crypto.SHA512, nil
+		return crypto.SHA512, true
 	default:
-		return 0, ErrUnsupportedAlg
+		return 0, false
 	}
 }
 
