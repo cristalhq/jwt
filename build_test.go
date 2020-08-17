@@ -1,9 +1,14 @@
 package jwt
 
 import (
+	"crypto/ecdsa"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/json"
+	"encoding/pem"
 	"errors"
 	"testing"
+	"time"
 )
 
 func TestBuild(t *testing.T) {
@@ -100,6 +105,87 @@ func TestBuildMalformed(t *testing.T) {
 		badSigner.Algorithm,
 	)
 }
+
+var tests = []struct {
+	key *ecdsa.PrivateKey
+	alg Algorithm
+}{
+	{testKeyEC256, ES256},
+	{testKeyEC384, ES384},
+	{testKeyEC521, ES512},
+}
+
+var mybenchClaims = &struct {
+	StandardClaims
+}{
+	StandardClaims: StandardClaims{
+		Issuer:   "benchmark",
+		IssuedAt: NewNumericDate(time.Now()),
+	},
+}
+
+func Test_Two_ECDSA(t *testing.T) {
+	for _, test := range tests {
+		signer, err := NewSignerES(test.alg, test.key)
+		if err != nil {
+			t.Fatal(err)
+		}
+		bui := NewBuilder(signer)
+		token, err := bui.BuildBytes(mybenchClaims)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		verifier, err := NewVerifierES(test.alg, &test.key.PublicKey)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Run("check-"+test.alg.String(), func(t *testing.T) {
+			obj, err := ParseAndVerify(token, verifier)
+			if err != nil {
+				t.Fatal(err)
+			}
+			err = json.Unmarshal(obj.RawClaims(), new(map[string]interface{}))
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
+
+func mustParseECKey(s string) *ecdsa.PrivateKey {
+	block, _ := pem.Decode([]byte(s))
+	if block == nil {
+		panic("invalid PEM")
+	}
+
+	key, err := x509.ParseECPrivateKey(block.Bytes)
+	if err != nil {
+		panic(err)
+	}
+	return key
+}
+
+var testKeyEC256 = mustParseECKey(`-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIBOm12aaXvqSzysOSGV2yL/xKY3kCtaOfAPY1KQN2sTJoAoGCCqGSM49
+AwEHoUQDQgAEX0iTLAcGqlWeGIRtIk0G2PRgpf/6gLxOTyMAdriP4NLRkuu+9Idt
+y3qmEizRC0N81j84E213/LuqLqnsrgfyiw==
+-----END EC PRIVATE KEY-----`)
+
+var testKeyEC384 = mustParseECKey(`-----BEGIN EC PRIVATE KEY-----
+MIGkAgEBBDBluSyfK9BEPc9y944ZLahd4xHRVse64iCeEC5gBQ4UM1961bsEthUC
+NKXyTGTBuW2gBwYFK4EEACKhZANiAAR3Il6V61OwAnb6oYm4hQ4TVVaGQ2QGzrSi
+eYGoRewNhAaZ8wfemWX4fww7yNi6AmUzWV8Su5Qq3dtN3nLpKUEaJrTvfjtowrr/
+ZtU1fZxzI/agEpG2+uLFW6JNdYzp67w=
+-----END EC PRIVATE KEY-----`)
+
+var testKeyEC521 = mustParseECKey(`-----BEGIN EC PRIVATE KEY-----
+MIHcAgEBBEIBH31vhkSH+x+J8C/xf/PRj81u3MCqgiaGdW1S1jcjEuikczbbX689
+9ETHGCPtHEWw/Il1RAFaKMvndmfDVd/YapmgBwYFK4EEACOhgYkDgYYABAGNpBDA
+Lx6rKQXWdWQR581uw9dTuV8zjmkSpLZ3k0qLHVlOqt00AfEL4NO+E7fxh4SuAZPb
+RDMu2lx4lWOM2EyFvgFIyu8xlA9lEg5GKq+A7+y5r99RLughiDd52vGnudMspHEy
+x6IpwXzTZR/T8TkluL3jDWtVNFxGBf/aEErnpeLfRQ==
+-----END EC PRIVATE KEY-----`)
 
 func toBase64(s string) string {
 	buf := make([]byte, base64EncodedLen(len(s)))
