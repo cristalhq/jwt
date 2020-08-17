@@ -65,26 +65,26 @@ type esAlg struct {
 	curveBits  int
 }
 
-func (h esAlg) Algorithm() Algorithm {
-	return h.alg
+func (es esAlg) Algorithm() Algorithm {
+	return es.alg
 }
 
-func (h esAlg) SignSize() int {
-	return (h.privateKey.Curve.Params().BitSize + 7) / 4
+func (es esAlg) SignSize() int {
+	return (es.privateKey.Curve.Params().BitSize + 7) / 4
 }
 
-func (h esAlg) Sign(payload []byte) ([]byte, error) {
-	signed, err := h.sign(payload)
+func (es esAlg) Sign(payload []byte) ([]byte, error) {
+	signed, err := es.sign(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	r, s, err := ecdsa.Sign(rand.Reader, h.privateKey, signed)
+	r, s, err := ecdsa.Sign(rand.Reader, es.privateKey, signed)
 	if err != nil {
 		return nil, err
 	}
 
-	keyBytes := h.SignSize() / 2
+	keyBytes := es.SignSize() / 2
 
 	rBytes, sBytes := r.Bytes(), s.Bytes()
 	signature := make([]byte, keyBytes*2)
@@ -93,27 +93,27 @@ func (h esAlg) Sign(payload []byte) ([]byte, error) {
 	return signature, nil
 }
 
-func (h esAlg) Verify(payload, signature []byte) error {
-	if len(signature) != 2*h.keySize {
+func (es esAlg) Verify(payload, signature []byte) error {
+	if len(signature) != 2*es.keySize {
 		return ErrInvalidSignature
 	}
 
-	signed, err := h.sign(payload)
+	signed, err := es.sign(payload)
 	if err != nil {
 		return err
 	}
 
-	r := big.NewInt(0).SetBytes(signature[:h.keySize])
-	s := big.NewInt(0).SetBytes(signature[h.keySize:])
+	r := big.NewInt(0).SetBytes(signature[:es.keySize])
+	s := big.NewInt(0).SetBytes(signature[es.keySize:])
 
-	if !ecdsa.Verify(h.publickey, signed, r, s) {
+	if !ecdsa.Verify(es.publickey, signed, r, s) {
 		return ErrInvalidSignature
 	}
 	return nil
 }
 
-func (h esAlg) sign(payload []byte) ([]byte, error) {
-	hasher := h.hash.New()
+func (es esAlg) sign(payload []byte) ([]byte, error) {
+	hasher := es.hash.New()
 
 	_, err := hasher.Write(payload)
 	if err != nil {

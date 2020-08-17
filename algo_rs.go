@@ -58,42 +58,42 @@ type rsAlg struct {
 	privateKey *rsa.PrivateKey
 }
 
-func (h rsAlg) Algorithm() Algorithm {
-	return h.alg
+func (rs rsAlg) Algorithm() Algorithm {
+	return rs.alg
 }
 
-func (h rsAlg) SignSize() int {
-	return h.privateKey.Size()
+func (rs rsAlg) SignSize() int {
+	return rs.privateKey.Size()
 }
 
-func (h rsAlg) Sign(payload []byte) ([]byte, error) {
-	signed, err := h.sign(payload)
+func (rs rsAlg) Sign(payload []byte) ([]byte, error) {
+	signed, err := rs.sign(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	signature, err := rsa.SignPKCS1v15(rand.Reader, h.privateKey, h.hash, signed)
+	signature, err := rsa.SignPKCS1v15(rand.Reader, rs.privateKey, rs.hash, signed)
 	if err != nil {
 		return nil, err
 	}
 	return signature, nil
 }
 
-func (h rsAlg) Verify(payload, signature []byte) error {
-	signed, err := h.sign(payload)
+func (rs rsAlg) Verify(payload, signature []byte) error {
+	signed, err := rs.sign(payload)
 	if err != nil {
 		return err
 	}
 
-	err = rsa.VerifyPKCS1v15(h.publickey, h.hash, signed, signature)
+	err = rsa.VerifyPKCS1v15(rs.publickey, rs.hash, signed, signature)
 	if err != nil {
 		return ErrInvalidSignature
 	}
 	return nil
 }
 
-func (h rsAlg) sign(payload []byte) ([]byte, error) {
-	hasher := h.hash.New()
+func (rs rsAlg) sign(payload []byte) ([]byte, error) {
+	hasher := rs.hash.New()
 
 	_, err := hasher.Write(payload)
 	if err != nil {

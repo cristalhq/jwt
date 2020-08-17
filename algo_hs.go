@@ -65,20 +65,20 @@ type hsAlg struct {
 	hashPool *sync.Pool
 }
 
-func (h hsAlg) Algorithm() Algorithm {
-	return h.alg
+func (hs hsAlg) Algorithm() Algorithm {
+	return hs.alg
 }
 
-func (h hsAlg) SignSize() int {
-	return h.hash.Size()
+func (hs hsAlg) SignSize() int {
+	return hs.hash.Size()
 }
 
-func (h hsAlg) Sign(payload []byte) ([]byte, error) {
-	return h.sign(payload)
+func (hs hsAlg) Sign(payload []byte) ([]byte, error) {
+	return hs.sign(payload)
 }
 
-func (h hsAlg) Verify(payload, signature []byte) error {
-	signed, err := h.sign(payload)
+func (hs hsAlg) Verify(payload, signature []byte) error {
+	signed, err := hs.sign(payload)
 	if err != nil {
 		return err
 	}
@@ -88,11 +88,11 @@ func (h hsAlg) Verify(payload, signature []byte) error {
 	return nil
 }
 
-func (h hsAlg) sign(payload []byte) ([]byte, error) {
-	hasher := h.hashPool.Get().(hash.Hash)
+func (hs hsAlg) sign(payload []byte) ([]byte, error) {
+	hasher := hs.hashPool.Get().(hash.Hash)
 	defer func() {
 		hasher.Reset()
-		h.hashPool.Put(hasher)
+		hs.hashPool.Put(hasher)
 	}()
 
 	_, err := hasher.Write(payload)

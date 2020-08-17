@@ -78,42 +78,42 @@ type psAlg struct {
 	opts       *rsa.PSSOptions
 }
 
-func (h psAlg) SignSize() int {
-	return h.privateKey.Size()
+func (ps psAlg) SignSize() int {
+	return ps.privateKey.Size()
 }
 
-func (h psAlg) Algorithm() Algorithm {
-	return h.alg
+func (ps psAlg) Algorithm() Algorithm {
+	return ps.alg
 }
 
-func (h psAlg) Sign(payload []byte) ([]byte, error) {
-	signed, err := h.sign(payload)
+func (ps psAlg) Sign(payload []byte) ([]byte, error) {
+	signed, err := ps.sign(payload)
 	if err != nil {
 		return nil, err
 	}
 
-	signature, err := rsa.SignPSS(rand.Reader, h.privateKey, h.hash, signed, h.opts)
+	signature, err := rsa.SignPSS(rand.Reader, ps.privateKey, ps.hash, signed, ps.opts)
 	if err != nil {
 		return nil, err
 	}
 	return signature, nil
 }
 
-func (h psAlg) Verify(payload, signature []byte) error {
-	signed, err := h.sign(payload)
+func (ps psAlg) Verify(payload, signature []byte) error {
+	signed, err := ps.sign(payload)
 	if err != nil {
 		return err
 	}
 
-	err = rsa.VerifyPSS(h.publicKey, h.hash, signed, signature, h.opts)
+	err = rsa.VerifyPSS(ps.publicKey, ps.hash, signed, signature, ps.opts)
 	if err != nil {
 		return ErrInvalidSignature
 	}
 	return nil
 }
 
-func (h psAlg) sign(payload []byte) ([]byte, error) {
-	hasher := h.hash.New()
+func (ps psAlg) sign(payload []byte) ([]byte, error) {
+	hasher := ps.hash.New()
 
 	_, err := hasher.Write(payload)
 	if err != nil {
