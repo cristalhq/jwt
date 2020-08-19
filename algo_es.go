@@ -71,7 +71,7 @@ func (es esAlg) SignSize() int {
 }
 
 func (es esAlg) Sign(payload []byte) ([]byte, error) {
-	signed, err := es.sign(payload)
+	signed, err := hashPayload(es.hash, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -95,7 +95,7 @@ func (es esAlg) Verify(payload, signature []byte) error {
 		return ErrInvalidSignature
 	}
 
-	signed, err := es.sign(payload)
+	signed, err := hashPayload(es.hash, payload)
 	if err != nil {
 		return err
 	}
@@ -108,17 +108,6 @@ func (es esAlg) Verify(payload, signature []byte) error {
 		return ErrInvalidSignature
 	}
 	return nil
-}
-
-func (es esAlg) sign(payload []byte) ([]byte, error) {
-	hasher := es.hash.New()
-
-	_, err := hasher.Write(payload)
-	if err != nil {
-		return nil, err
-	}
-	signed := hasher.Sum(nil)
-	return signed, nil
 }
 
 func roundBytes(n int) int {
