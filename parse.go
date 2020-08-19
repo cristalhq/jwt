@@ -27,6 +27,10 @@ func Parse(raw []byte) (*Token, error) {
 	if err != nil {
 		return nil, ErrInvalidFormat
 	}
+	var header Header
+	if err := json.Unmarshal(buf[:headerN], &header); err != nil {
+		return nil, ErrInvalidFormat
+	}
 
 	claimsN, err := base64Decode(buf[headerN:], raw[dot1+1:dot2])
 	if err != nil {
@@ -40,14 +44,10 @@ func Parse(raw []byte) (*Token, error) {
 	}
 	signature := buf[headerN+claimsN : headerN+claimsN+signN]
 
-	var header Header
-	if err := json.Unmarshal(buf[:headerN], &header); err != nil {
-		return nil, ErrInvalidFormat
-	}
-
 	token := &Token{
 		raw:       raw,
-		payload:   raw[:dot2],
+		dot1:      dot1,
+		dot2:      dot2,
 		signature: signature,
 		header:    header,
 		claims:    claims,
