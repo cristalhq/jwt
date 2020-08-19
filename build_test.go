@@ -188,7 +188,7 @@ x6IpwXzTZR/T8TkluL3jDWtVNFxGBf/aEErnpeLfRQ==
 -----END EC PRIVATE KEY-----`)
 
 func toBase64(s string) string {
-	buf := make([]byte, base64EncodedLen(len(s)))
+	buf := make([]byte, b64EncodedLen(len(s)))
 	base64.RawURLEncoding.Encode(buf, []byte(s))
 	return string(buf)
 }
