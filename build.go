@@ -99,8 +99,8 @@ func encodeClaims(claims interface{}) ([]byte, error) {
 
 func encodeHeader(header Header) []byte {
 	if header.Type == "JWT" && header.ContentType == "" {
-		if h := getPredefinedHeader(header); h != nil {
-			return h
+		if h := getPredefinedHeader(header); h != "" {
+			return []byte(h)
 		}
 		// another algorithm? encode below
 	}
@@ -112,60 +112,40 @@ func encodeHeader(header Header) []byte {
 	return encoded
 }
 
-func getPredefinedHeader(header Header) []byte {
+func getPredefinedHeader(header Header) string {
 	switch header.Algorithm {
 	case EdDSA:
-		return []byte(encHeaderEdDSA)
+		return "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9"
 
 	case HS256:
-		return []byte(encHeaderHS256)
+		return "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
 	case HS384:
-		return []byte(encHeaderHS384)
+		return "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9"
 	case HS512:
-		return []byte(encHeaderHS512)
+		return "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9"
 
 	case RS256:
-		return []byte(encHeaderRS256)
+		return "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
 	case RS384:
-		return []byte(encHeaderRS384)
+		return "eyJhbGciOiJSUzM4NCIsInR5cCI6IkpXVCJ9"
 	case RS512:
-		return []byte(encHeaderRS512)
+		return "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9"
 
 	case ES256:
-		return []byte(encHeaderES256)
+		return "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9"
 	case ES384:
-		return []byte(encHeaderES384)
+		return "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9"
 	case ES512:
-		return []byte(encHeaderES512)
+		return "eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9"
 
 	case PS256:
-		return []byte(encHeaderPS256)
+		return "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9"
 	case PS384:
-		return []byte(encHeaderPS384)
+		return "eyJhbGciOiJQUzM4NCIsInR5cCI6IkpXVCJ9"
 	case PS512:
-		return []byte(encHeaderPS512)
+		return "eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9"
 
 	default:
-		return nil
+		return ""
 	}
 }
-
-const (
-	encHeaderEdDSA = "eyJhbGciOiJFZERTQSIsInR5cCI6IkpXVCJ9"
-
-	encHeaderHS256 = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9"
-	encHeaderHS384 = "eyJhbGciOiJIUzM4NCIsInR5cCI6IkpXVCJ9"
-	encHeaderHS512 = "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCJ9"
-
-	encHeaderRS256 = "eyJhbGciOiJSUzI1NiIsInR5cCI6IkpXVCJ9"
-	encHeaderRS384 = "eyJhbGciOiJSUzM4NCIsInR5cCI6IkpXVCJ9"
-	encHeaderRS512 = "eyJhbGciOiJSUzUxMiIsInR5cCI6IkpXVCJ9"
-
-	encHeaderES256 = "eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9"
-	encHeaderES384 = "eyJhbGciOiJFUzM4NCIsInR5cCI6IkpXVCJ9"
-	encHeaderES512 = "eyJhbGciOiJFUzUxMiIsInR5cCI6IkpXVCJ9"
-
-	encHeaderPS256 = "eyJhbGciOiJQUzI1NiIsInR5cCI6IkpXVCJ9"
-	encHeaderPS384 = "eyJhbGciOiJQUzM4NCIsInR5cCI6IkpXVCJ9"
-	encHeaderPS512 = "eyJhbGciOiJQUzUxMiIsInR5cCI6IkpXVCJ9"
-)
