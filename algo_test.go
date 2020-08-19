@@ -1,6 +1,8 @@
 package jwt
 
-import "testing"
+import (
+	"testing"
+)
 
 func TestSignerAlg(t *testing.T) {
 	f := func(s Signer, want Algorithm) {
@@ -58,7 +60,7 @@ func TestVerifierAlg(t *testing.T) {
 	f(mustVerifier(NewVerifierES(ES512, ecdsaPub)), ES512)
 }
 
-func TestSignerErrOnNilKey(t *testing.T) {
+func TestSignerBadParams(t *testing.T) {
 	f := func(_ Signer, err error) {
 		t.Helper()
 		if err == nil {
@@ -67,25 +69,22 @@ func TestSignerErrOnNilKey(t *testing.T) {
 	}
 
 	f(NewSignerEdDSA(nil))
+	f(NewSignerEdDSA([]byte{}))
 
 	f(NewSignerHS(HS256, nil))
-	f(NewSignerHS(HS384, nil))
-	f(NewSignerHS(HS512, nil))
+	f(NewSignerHS(HS256, []byte{}))
 
 	f(NewSignerRS(RS256, nil))
-	f(NewSignerRS(RS384, nil))
-	f(NewSignerRS(RS512, nil))
-
-	f(NewSignerES(ES256, nil))
-	f(NewSignerES(ES384, nil))
-	f(NewSignerES(ES512, nil))
-
 	f(NewSignerPS(PS256, nil))
-	f(NewSignerPS(PS384, nil))
-	f(NewSignerPS(PS512, nil))
+	f(NewSignerES(ES256, nil))
+
+	f(NewSignerHS("xxx", []byte("key")))
+	f(NewSignerRS("xxx", rsaPrivateKey1))
+	f(NewSignerPS("xxx", rsaPrivateKey1))
+	f(NewSignerES("xxx", ecdsaPrivateKey256))
 }
 
-func TestVerifierErrOnNilKey(t *testing.T) {
+func TestVerifierBadParams(t *testing.T) {
 	f := func(_ Verifier, err error) {
 		t.Helper()
 		if err == nil {
@@ -94,20 +93,17 @@ func TestVerifierErrOnNilKey(t *testing.T) {
 	}
 
 	f(NewVerifierEdDSA(nil))
+	f(NewVerifierEdDSA([]byte{}))
 
 	f(NewVerifierHS(HS256, nil))
-	f(NewVerifierHS(HS384, nil))
-	f(NewVerifierHS(HS512, nil))
+	f(NewVerifierHS(HS256, []byte{}))
 
 	f(NewVerifierRS(RS256, nil))
-	f(NewVerifierRS(RS384, nil))
-	f(NewVerifierRS(RS512, nil))
-
-	f(NewVerifierES(ES256, nil))
-	f(NewVerifierES(ES384, nil))
-	f(NewVerifierES(ES512, nil))
-
 	f(NewVerifierPS(PS256, nil))
-	f(NewVerifierPS(PS384, nil))
-	f(NewVerifierPS(PS512, nil))
+	f(NewVerifierES(ES256, nil))
+
+	f(NewVerifierHS("xxx", []byte("key")))
+	f(NewVerifierRS("xxx", rsaPublicKey1))
+	f(NewVerifierPS("xxx", rsaPublicKey1))
+	f(NewVerifierES("xxx", ecdsaPublicKey256))
 }
