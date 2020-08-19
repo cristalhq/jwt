@@ -87,7 +87,7 @@ func (ps psAlg) Algorithm() Algorithm {
 }
 
 func (ps psAlg) Sign(payload []byte) ([]byte, error) {
-	signed, err := ps.sign(payload)
+	signed, err := hashPayload(ps.hash, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -100,7 +100,7 @@ func (ps psAlg) Sign(payload []byte) ([]byte, error) {
 }
 
 func (ps psAlg) Verify(payload, signature []byte) error {
-	signed, err := ps.sign(payload)
+	signed, err := hashPayload(ps.hash, payload)
 	if err != nil {
 		return err
 	}
@@ -110,15 +110,4 @@ func (ps psAlg) Verify(payload, signature []byte) error {
 		return ErrInvalidSignature
 	}
 	return nil
-}
-
-func (ps psAlg) sign(payload []byte) ([]byte, error) {
-	hasher := ps.hash.New()
-
-	_, err := hasher.Write(payload)
-	if err != nil {
-		return nil, err
-	}
-	signed := hasher.Sum(nil)
-	return signed, nil
 }

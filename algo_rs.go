@@ -67,7 +67,7 @@ func (rs rsAlg) SignSize() int {
 }
 
 func (rs rsAlg) Sign(payload []byte) ([]byte, error) {
-	signed, err := rs.sign(payload)
+	signed, err := hashPayload(rs.hash, payload)
 	if err != nil {
 		return nil, err
 	}
@@ -80,7 +80,7 @@ func (rs rsAlg) Sign(payload []byte) ([]byte, error) {
 }
 
 func (rs rsAlg) Verify(payload, signature []byte) error {
-	signed, err := rs.sign(payload)
+	signed, err := hashPayload(rs.hash, payload)
 	if err != nil {
 		return err
 	}
@@ -90,15 +90,4 @@ func (rs rsAlg) Verify(payload, signature []byte) error {
 		return ErrInvalidSignature
 	}
 	return nil
-}
-
-func (rs rsAlg) sign(payload []byte) ([]byte, error) {
-	hasher := rs.hash.New()
-
-	_, err := hasher.Write(payload)
-	if err != nil {
-		return nil, err
-	}
-	signed := hasher.Sum(nil)
-	return signed, nil
 }
