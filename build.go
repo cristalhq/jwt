@@ -6,8 +6,8 @@ import (
 )
 
 var (
-	base64Encode     = base64.RawURLEncoding.Encode
-	base64EncodedLen = base64.RawURLEncoding.EncodedLen
+	b64Encode     = base64.RawURLEncoding.Encode
+	b64EncodedLen = base64.RawURLEncoding.EncodedLen
 )
 
 // Builder is used to create a new token.
@@ -50,43 +50,49 @@ func (b *Builder) BuildBytes(claims interface{}) ([]byte, error) {
 }
 
 // Build used to create and encode JWT with a provided claims.
-// If claims param is of type []byte then we treat it as a marshaled JSON.
+// If claims param is of type []byte then it's treated as a marshaled JSON.
 // In other words you can pass already marshaled claims.
+//
 func (b *Builder) Build(claims interface{}) (*Token, error) {
-	rawClaims, err := encodeClaims(claims)
-	if err != nil {
-		return nil, err
+	rawClaims, errClaims := encodeClaims(claims)
+	if errClaims != nil {
+		return nil, errClaims
 	}
 
 	lenH := len(b.headerRaw)
-	lenC := base64EncodedLen(len(rawClaims))
-	lenS := base64EncodedLen(b.signer.SignSize())
+	lenC := b64EncodedLen(len(rawClaims))
+	lenS := b64EncodedLen(b.signer.SignSize())
 
-	raw := make([]byte, lenH+1+lenC+1+lenS)
+	token := make([]byte, lenH+1+lenC+1+lenS)
 	idx := 0
-	idx += copy(raw[idx:], b.headerRaw)
-	raw[idx] = '.'
+	idx = copy(token[idx:], b.headerRaw)
+
+	// add '.' and append encoded claims
+	token[idx] = '.'
 	idx++
-	base64Encode(raw[idx:], rawClaims)
+	b64Encode(token[idx:], rawClaims)
 	idx += lenC
 
-	signature, err := b.signer.Sign(raw[:idx])
-	if err != nil {
-		return nil, err
+	// calculate signature of already written 'header.claims'
+	signature, errSign := b.signer.Sign(token[:idx])
+	if errSign != nil {
+		return nil, errSign
 	}
-	raw[idx] = '.'
-	idx++
-	base64Encode(raw[idx:], signature)
 
-	token := &Token{
-		raw:       raw,
+	// add '.' and append encoded signature
+	token[idx] = '.'
+	idx++
+	b64Encode(token[idx:], signature)
+
+	t := &Token{
+		raw:       token,
 		dot1:      lenH,
 		dot2:      lenH + 1 + lenC,
 		signature: signature,
 		header:    b.header,
 		claims:    rawClaims,
 	}
-	return token, nil
+	return t, nil
 }
 
 func encodeClaims(claims interface{}) ([]byte, error) {
@@ -108,8 +114,8 @@ func encodeHeader(header Header) []byte {
 	// returned err is always nil, see *Header.MarshalJSON
 	buf, _ := json.Marshal(header)
 
-	encoded := make([]byte, base64EncodedLen(len(buf)))
-	base64Encode(encoded, buf)
+	encoded := make([]byte, b64EncodedLen(len(buf)))
+	b64Encode(encoded, buf)
 	return encoded
 }
 
