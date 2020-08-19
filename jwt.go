@@ -10,7 +10,8 @@ import (
 //
 type Token struct {
 	raw       []byte
-	payload   []byte
+	dot1      int
+	dot2      int
 	signature []byte
 	header    Header
 	claims    json.RawMessage
@@ -38,8 +39,7 @@ func (t *Token) Header() Header {
 
 // RawHeader returns token's header raw bytes.
 func (t *Token) RawHeader() []byte {
-	dot := bytes.IndexByte(t.raw, '.')
-	return t.raw[:dot]
+	return t.raw[:t.dot1]
 }
 
 // RawClaims returns token's claims as a raw bytes.
@@ -49,7 +49,7 @@ func (t *Token) RawClaims() []byte {
 
 // Payload returns token's payload.
 func (t *Token) Payload() []byte {
-	return t.payload
+	return t.raw[:t.dot2]
 }
 
 // Signature returns token's signature.

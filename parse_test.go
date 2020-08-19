@@ -60,6 +60,7 @@ func TestParseMalformed(t *testing.T) {
 	}
 
 	f(`xyz.xyz`)
+	f(`xyz.xyz.xyz.xyz`)
 	f(`a.xyz.xyz`)
 	f(`xyz.ab/c.xyz`)
 	f(`xyz.abc.x/yz`)

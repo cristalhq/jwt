@@ -80,7 +80,8 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 
 	token := &Token{
 		raw:       raw,
-		payload:   raw[:lenH+1+lenC],
+		dot1:      lenH,
+		dot2:      lenH + 1 + lenC,
 		signature: signature,
 		header:    b.header,
 		claims:    rawClaims,
