@@ -87,26 +87,26 @@ func (ps psAlg) Algorithm() Algorithm {
 }
 
 func (ps psAlg) Sign(payload []byte) ([]byte, error) {
-	signed, err := hashPayload(ps.hash, payload)
+	digest, err := hashPayload(ps.hash, payload)
 	if err != nil {
 		return nil, err
 	}
 
-	signature, err := rsa.SignPSS(rand.Reader, ps.privateKey, ps.hash, signed, ps.opts)
-	if err != nil {
-		return nil, err
+	signature, errSign := rsa.SignPSS(rand.Reader, ps.privateKey, ps.hash, digest, ps.opts)
+	if errSign != nil {
+		return nil, errSign
 	}
 	return signature, nil
 }
 
 func (ps psAlg) Verify(payload, signature []byte) error {
-	signed, err := hashPayload(ps.hash, payload)
+	digest, err := hashPayload(ps.hash, payload)
 	if err != nil {
 		return err
 	}
 
-	err = rsa.VerifyPSS(ps.publicKey, ps.hash, signed, signature, ps.opts)
-	if err != nil {
+	errVerify := rsa.VerifyPSS(ps.publicKey, ps.hash, digest, signature, ps.opts)
+	if errVerify != nil {
 		return ErrInvalidSignature
 	}
 	return nil

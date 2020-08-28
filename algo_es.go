@@ -71,14 +71,14 @@ func (es esAlg) SignSize() int {
 }
 
 func (es esAlg) Sign(payload []byte) ([]byte, error) {
-	signed, err := hashPayload(es.hash, payload)
+	digest, err := hashPayload(es.hash, payload)
 	if err != nil {
 		return nil, err
 	}
 
-	r, s, err := ecdsa.Sign(rand.Reader, es.privateKey, signed)
+	r, s, errSign := ecdsa.Sign(rand.Reader, es.privateKey, digest)
 	if err != nil {
-		return nil, err
+		return nil, errSign
 	}
 
 	pivot := es.SignSize() / 2
@@ -95,7 +95,7 @@ func (es esAlg) Verify(payload, signature []byte) error {
 		return ErrInvalidSignature
 	}
 
-	signed, err := hashPayload(es.hash, payload)
+	digest, err := hashPayload(es.hash, payload)
 	if err != nil {
 		return err
 	}
@@ -104,7 +104,7 @@ func (es esAlg) Verify(payload, signature []byte) error {
 	r := big.NewInt(0).SetBytes(signature[:pivot])
 	s := big.NewInt(0).SetBytes(signature[pivot:])
 
-	if !ecdsa.Verify(es.publickey, signed, r, s) {
+	if !ecdsa.Verify(es.publickey, digest, r, s) {
 		return ErrInvalidSignature
 	}
 	return nil

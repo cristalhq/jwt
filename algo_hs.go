@@ -78,11 +78,11 @@ func (hs hsAlg) Sign(payload []byte) ([]byte, error) {
 }
 
 func (hs hsAlg) Verify(payload, signature []byte) error {
-	signed, err := hs.sign(payload)
+	digest, err := hs.sign(payload)
 	if err != nil {
 		return err
 	}
-	if !hmac.Equal(signature, signed) {
+	if !hmac.Equal(signature, digest) {
 		return ErrInvalidSignature
 	}
 	return nil

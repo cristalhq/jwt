@@ -67,26 +67,26 @@ func (rs rsAlg) SignSize() int {
 }
 
 func (rs rsAlg) Sign(payload []byte) ([]byte, error) {
-	signed, err := hashPayload(rs.hash, payload)
+	digest, err := hashPayload(rs.hash, payload)
 	if err != nil {
 		return nil, err
 	}
 
-	signature, err := rsa.SignPKCS1v15(rand.Reader, rs.privateKey, rs.hash, signed)
-	if err != nil {
-		return nil, err
+	signature, errSign := rsa.SignPKCS1v15(rand.Reader, rs.privateKey, rs.hash, digest)
+	if errSign != nil {
+		return nil, errSign
 	}
 	return signature, nil
 }
 
 func (rs rsAlg) Verify(payload, signature []byte) error {
-	signed, err := hashPayload(rs.hash, payload)
+	digest, err := hashPayload(rs.hash, payload)
 	if err != nil {
 		return err
 	}
 
-	err = rsa.VerifyPKCS1v15(rs.publickey, rs.hash, signed, signature)
-	if err != nil {
+	errVerify := rsa.VerifyPKCS1v15(rs.publickey, rs.hash, digest, signature)
+	if errVerify != nil {
 		return ErrInvalidSignature
 	}
 	return nil
