@@ -16,7 +16,7 @@ The latest version is `v3`.
 * Optimized for speed.
 * Dependency-free.
 * All sign methods supported
-  * HMAS (HS)
+  * HMAC (HS)
   * RSA (RS)
   * RSA-PSS (PS)
   * ECDSA (ES)
