@@ -15,7 +15,8 @@ func TestBuild(t *testing.T) {
 	f := func(signer Signer, claims interface{}, want string) {
 		t.Helper()
 
-		token, err := BuildBytes(signer, claims)
+		builder := NewBuilder(signer)
+		token, err := builder.BuildBytes(claims)
 		if err != nil {
 			t.Error(err)
 		}
@@ -90,7 +91,8 @@ func TestBuildMalformed(t *testing.T) {
 	f := func(signer Signer, claims interface{}) {
 		t.Helper()
 
-		_, err := BuildBytes(signer, claims)
+		builder := NewBuilder(signer)
+		_, err := builder.BuildBytes(claims)
 		if err == nil {
 			t.Error("want err, got nil")
 		}
