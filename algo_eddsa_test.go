@@ -57,7 +57,7 @@ func TestEdDSA(t *testing.T) {
 	f(
 		mustSigner(NewSignerEdDSA(ed25519Private)),
 		mustVerifier(NewVerifierEdDSA(ed25519Public)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 
 	f(
@@ -88,7 +88,7 @@ func TestEdDSA_InvalidSignature(t *testing.T) {
 	f(
 		mustSigner(NewSignerEdDSA(ed25519Private2)),
 		mustVerifier(NewVerifierEdDSA(ed25519Public)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 
 	f(

@@ -22,17 +22,17 @@ func TestHMAC(t *testing.T) {
 	f(
 		mustSigner(NewSignerHS(HS256, []byte("key1"))),
 		mustVerifier(NewVerifierHS(HS256, []byte("key1"))),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerHS(HS384, []byte("key2"))),
 		mustVerifier(NewVerifierHS(HS384, []byte("key2"))),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerHS(HS512, []byte("key3"))),
 		mustVerifier(NewVerifierHS(HS512, []byte("key3"))),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 
 	f(
@@ -76,17 +76,17 @@ func TestHMAC_InvalidSignature(t *testing.T) {
 	f(
 		mustSigner(NewSignerHS(HS256, []byte("key1"))),
 		mustVerifier(NewVerifierHS(HS256, []byte("1key"))),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerHS(HS384, []byte("key2"))),
 		mustVerifier(NewVerifierHS(HS384, []byte("2key"))),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerHS(HS512, []byte("key3"))),
 		mustVerifier(NewVerifierHS(HS512, []byte("3key"))),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 
 	f(

@@ -11,7 +11,7 @@ func Example_BuildSimple() {
 	signer, _ := jwt.NewSignerHS(jwt.HS256, key)
 	builder := jwt.NewBuilder(signer)
 
-	claims := &jwt.StandardClaims{
+	claims := &jwt.RegisteredClaims{
 		Audience: []string{"admin"},
 		ID:       "random-unique-string",
 	}
@@ -33,7 +33,7 @@ func Example_BuildSimple() {
 }
 
 type userClaims struct {
-	jwt.StandardClaims
+	jwt.RegisteredClaims
 	IsAdministrator bool   `json:"is_admin"`
 	Email           string `json:"email"`
 }
@@ -44,7 +44,7 @@ func Example_BuildUserClaims() {
 	builder := jwt.NewBuilder(signer)
 
 	claims := &userClaims{
-		StandardClaims: jwt.StandardClaims{
+		RegisteredClaims: jwt.RegisteredClaims{
 			Audience: []string{"admin"},
 			ID:       "random-unique-string",
 		},
