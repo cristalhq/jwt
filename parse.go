@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 )
 
-var base64Decode = base64.RawURLEncoding.Decode
+var b64Decode = base64.RawURLEncoding.Decode
 
 // ParseString decodes a token.
 func ParseString(raw string) (*Token, error) {
@@ -23,7 +23,7 @@ func Parse(raw []byte) (*Token, error) {
 
 	buf := make([]byte, len(raw))
 
-	headerN, err := base64Decode(buf, raw[:dot1])
+	headerN, err := b64Decode(buf, raw[:dot1])
 	if err != nil {
 		return nil, ErrInvalidFormat
 	}
@@ -32,13 +32,13 @@ func Parse(raw []byte) (*Token, error) {
 		return nil, ErrInvalidFormat
 	}
 
-	claimsN, err := base64Decode(buf[headerN:], raw[dot1+1:dot2])
+	claimsN, err := b64Decode(buf[headerN:], raw[dot1+1:dot2])
 	if err != nil {
 		return nil, ErrInvalidFormat
 	}
 	claims := buf[headerN : headerN+claimsN]
 
-	signN, err := base64Decode(buf[headerN+claimsN:], raw[dot2+1:])
+	signN, err := b64Decode(buf[headerN+claimsN:], raw[dot2+1:])
 	if err != nil {
 		return nil, ErrInvalidFormat
 	}
