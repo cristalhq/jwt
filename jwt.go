@@ -6,6 +6,8 @@ import (
 	"encoding/json"
 )
 
+var b64DecodeStr = base64.RawURLEncoding.DecodeString
+
 // Token represents a JWT token.
 // See: https://tools.ietf.org/html/rfc7519
 //
@@ -14,8 +16,6 @@ type Token struct {
 	dot1   int
 	dot2   int
 	header Header
-	// signature []byte
-	// claims    json.RawMessage
 }
 
 func (t Token) String() string {
@@ -54,12 +54,12 @@ func (t Token) DecodeClaims(into interface{}) error {
 
 // DecodeClaims into the given container.
 func (t Token) DecodedClaims() ([]byte, error) {
-	return base64.StdEncoding.DecodeString(string(t.ClaimsPart()))
+	return b64DecodeStr(string(t.ClaimsPart()))
 }
 
 // DecodeSignature into the given container.
 func (t Token) DecodedSignature() ([]byte, error) {
-	return base64.StdEncoding.DecodeString(string(t.SignaturePart()))
+	return b64DecodeStr(string(t.SignaturePart()))
 }
 
 // SecureString returns token without a signature (replaced with `.<signature>`).
@@ -84,7 +84,10 @@ func (t *Token) RawHeader() []byte {
 // RawClaims returns token's claims as a raw bytes.
 // Deprecated: will be removed in v4
 func (t *Token) RawClaims() []byte {
-	c, _ := t.DecodedClaims()
+	c, err := t.DecodedClaims()
+	if err != nil {
+		panic(err)
+	}
 	return c
 }
 
@@ -96,7 +99,10 @@ func (t *Token) Payload() []byte {
 // Signature returns token's signature.
 // Deprecated: will be removed in v4
 func (t *Token) Signature() []byte {
-	s, _ := t.DecodedSignature()
+	s, err := t.DecodedSignature()
+	if err != nil {
+		panic(err)
+	}
 	return s
 }
 

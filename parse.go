@@ -36,21 +36,17 @@ func Parse(raw []byte) (*Token, error) {
 	if err != nil {
 		return nil, ErrInvalidFormat
 	}
-	// claims := buf[headerN : headerN+claimsN]
 
 	_, err = b64Decode(buf[headerN+claimsN:], raw[dot2+1:])
 	if err != nil {
 		return nil, ErrInvalidFormat
 	}
-	// signature := buf[headerN+claimsN : headerN+claimsN+signN]
 
 	token := &Token{
 		raw:    raw,
 		dot1:   dot1,
 		dot2:   dot2,
 		header: header,
-		// signature: signature,
-		// claims:    claims,
 	}
 	return token, nil
 }
