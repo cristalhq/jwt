@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/json"
 )
 
@@ -9,42 +10,82 @@ import (
 // See: https://tools.ietf.org/html/rfc7519
 //
 type Token struct {
-	raw       []byte
-	dot1      int
-	dot2      int
-	signature []byte
-	header    Header
-	claims    json.RawMessage
+	raw    []byte
+	dot1   int
+	dot2   int
+	header Header
+	// signature []byte
+	// claims    json.RawMessage
 }
 
-func (t *Token) String() string {
+func (t Token) String() string {
 	return string(t.raw)
 }
 
+// Bytes representation of the token.
+func (t Token) Bytes() []byte {
+	return t.raw
+}
+
+// HeaderPart of the token (base64 encoded).
+func (t Token) HeaderPart() []byte {
+	return t.raw[:t.dot1]
+}
+
+// ClaimsPart of the token (base64 encoded).
+func (t Token) ClaimsPart() []byte {
+	return t.raw[t.dot1+1 : t.dot2]
+}
+
+// SignaturePart of the token (base64 encoded).
+func (t Token) SignaturePart() []byte {
+	return t.raw[t.dot2+1:]
+}
+
+// Header returns token's header.
+func (t Token) Header() Header {
+	return t.header
+}
+
+// DecodeClaims into the given container.
+func (t Token) DecodeClaims(into interface{}) error {
+	return json.Unmarshal(t.ClaimsPart(), into)
+}
+
+// DecodeClaims into the given container.
+func (t Token) DecodedClaims() ([]byte, error) {
+	return base64.StdEncoding.DecodeString(string(t.ClaimsPart()))
+}
+
+// DecodeSignature into the given container.
+func (t Token) DecodedSignature() ([]byte, error) {
+	return base64.StdEncoding.DecodeString(string(t.SignaturePart()))
+}
+
 // SecureString returns token without a signature (replaced with `.<signature>`).
+// Deprecated: will be removed in v4
 func (t *Token) SecureString() string {
 	dot := bytes.LastIndexByte(t.raw, '.')
 	return string(t.raw[:dot]) + `.<signature>`
 }
 
 // Raw returns token's raw bytes.
+// Deprecated: will be removed in v4
 func (t *Token) Raw() []byte {
 	return t.raw
 }
 
-// Header returns token's header.
-func (t *Token) Header() Header {
-	return t.header
-}
-
 // RawHeader returns token's header raw bytes.
+// Deprecated: will be removed in v4
 func (t *Token) RawHeader() []byte {
 	return t.raw[:t.dot1]
 }
 
 // RawClaims returns token's claims as a raw bytes.
+// Deprecated: will be removed in v4
 func (t *Token) RawClaims() []byte {
-	return t.claims
+	c, _ := t.DecodedClaims()
+	return c
 }
 
 // Payload returns token's payload.
@@ -53,11 +94,13 @@ func (t *Token) Payload() []byte {
 }
 
 // Signature returns token's signature.
+// Deprecated: will be removed in v4
 func (t *Token) Signature() []byte {
-	return t.signature
+	s, _ := t.DecodedSignature()
+	return s
 }
 
-// Header representa JWT header data.
+// Header is a JWT header.
 // See: https://tools.ietf.org/html/rfc7519#section-5
 //
 type Header struct {

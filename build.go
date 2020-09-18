@@ -75,12 +75,12 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 	b64Encode(token[idx:], signature)
 
 	t := &Token{
-		raw:       token,
-		dot1:      lenH,
-		dot2:      lenH + 1 + lenC,
-		signature: signature,
-		header:    b.header,
-		claims:    rawClaims,
+		raw:    token,
+		dot1:   lenH,
+		dot2:   lenH + 1 + lenC,
+		header: b.header,
+		// signature: signature,
+		// claims: rawClaims,
 	}
 	return t, nil
 }
