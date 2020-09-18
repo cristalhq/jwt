@@ -9,25 +9,23 @@ import (
 
 // NewSignerHS returns a new HMAC-based signer.
 func NewSignerHS(alg Algorithm, key []byte) (Signer, error) {
-	if len(key) == 0 {
-		return nil, ErrInvalidKey
-	}
-	hash, ok := getHashHMAC(alg)
-	if !ok {
-		return nil, ErrUnsupportedAlg
-	}
-	return &hsAlg{
-		alg:  alg,
-		hash: hash,
-		key:  key,
-		hashPool: &sync.Pool{New: func() interface{} {
-			return hmac.New(hash.New, key)
-		}},
-	}, nil
+	return newHS(alg, key)
 }
 
 // NewVerifierHS returns a new HMAC-based verifier.
 func NewVerifierHS(alg Algorithm, key []byte) (Verifier, error) {
+	return newHS(alg, key)
+}
+
+type hmacAlgo interface {
+	// copy-pasted Signer & Verifier due to older Go versions
+	Algorithm() Algorithm
+	SignSize() int
+	Sign(payload []byte) ([]byte, error)
+	Verify(payload, signature []byte) error
+}
+
+func newHS(alg Algorithm, key []byte) (hmacAlgo, error) {
 	if len(key) == 0 {
 		return nil, ErrInvalidKey
 	}

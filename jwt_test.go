@@ -67,7 +67,8 @@ func TestSecurePrint(t *testing.T) {
 		Audience: Audience([]string{"test-user"}),
 	}
 
-	token, err := Build(sign, claims)
+	builder := NewBuilder(signer)
+	token, err := builder.Build(claims)
 	if err != nil {
 		t.Fatal(err)
 	}

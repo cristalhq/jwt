@@ -17,16 +17,6 @@ type Builder struct {
 	headerRaw []byte
 }
 
-// BuildBytes is used to create and encode JWT with a provided claims.
-func BuildBytes(signer Signer, claims interface{}) ([]byte, error) {
-	return NewBuilder(signer).BuildBytes(claims)
-}
-
-// Build is used to create and encode JWT with a provided claims.
-func Build(signer Signer, claims interface{}) (*Token, error) {
-	return NewBuilder(signer).Build(claims)
-}
-
 // NewBuilder returns new instance of Builder.
 func NewBuilder(signer Signer) *Builder {
 	b := &Builder{
