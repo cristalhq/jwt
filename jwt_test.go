@@ -21,7 +21,7 @@ func mustVerifier(v Verifier, err error) Verifier {
 }
 
 type customClaims struct {
-	StandardClaims
+	RegisteredClaims
 	TestField string `json:"test_field"`
 }
 
@@ -61,8 +61,8 @@ func TestMarshalHeader(t *testing.T) {
 }
 
 func TestSecurePrint(t *testing.T) {
-	signer, _ := NewSignerHS(HS256, []byte(`test-key`))
-	claims := &StandardClaims{
+	sign, _ := NewSignerHS(HS256, []byte(`test-key`))
+	claims := &RegisteredClaims{
 		ID:       "test-id",
 		Audience: Audience([]string{"test-user"}),
 	}

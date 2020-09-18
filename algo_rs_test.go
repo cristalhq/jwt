@@ -60,17 +60,17 @@ func TestRSA(t *testing.T) {
 	f(
 		mustSigner(NewSignerRS(RS256, rsaPrivateKey1)),
 		mustVerifier(NewVerifierRS(RS256, rsaPublicKey1)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerRS(RS384, rsaPrivateKey1)),
 		mustVerifier(NewVerifierRS(RS384, rsaPublicKey1)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerRS(RS512, rsaPrivateKey1)),
 		mustVerifier(NewVerifierRS(RS512, rsaPublicKey1)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 
 	f(
@@ -111,17 +111,17 @@ func TestRSA_InvalidSignature(t *testing.T) {
 	f(
 		mustSigner(NewSignerRS(RS256, rsaPrivateKey1)),
 		mustVerifier(NewVerifierRS(RS256, rsaPublicKey2)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerRS(RS384, rsaPrivateKey1)),
 		mustVerifier(NewVerifierRS(RS384, rsaPublicKey2)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerRS(RS512, rsaPrivateKey1)),
 		mustVerifier(NewVerifierRS(RS512, rsaPublicKey2)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 
 	f(

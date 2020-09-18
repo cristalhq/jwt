@@ -57,17 +57,17 @@ func TestES256_WithValidSignature(t *testing.T) {
 	f(
 		mustSigner(NewSignerES(ES256, ecdsaPrivateKey256)),
 		mustVerifier(NewVerifierES(ES256, ecdsaPublicKey256)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerES(ES384, ecdsaPrivateKey384)),
 		mustVerifier(NewVerifierES(ES384, ecdsaPublicKey384)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)),
 		mustVerifier(NewVerifierES(ES512, ecdsaPublicKey521)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 
 	f(
@@ -108,17 +108,17 @@ func TestES384_WithInvalidSignature(t *testing.T) {
 	f(
 		mustSigner(NewSignerES(ES256, ecdsaPrivateKey256)),
 		mustVerifier(NewVerifierES(ES256, ecdsaOtherPublicKey256)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerES(ES384, ecdsaPrivateKey384)),
 		mustVerifier(NewVerifierES(ES384, ecdsaOtherPublicKey384)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)),
 		mustVerifier(NewVerifierES(ES512, ecdsaOtherPublicKey521)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 
 	f(

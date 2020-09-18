@@ -20,17 +20,17 @@ func TestPS256_WithValidSignature(t *testing.T) {
 	f(
 		mustSigner(NewSignerPS(PS256, rsaPrivateKey1)),
 		mustVerifier(NewVerifierPS(PS256, rsaPublicKey1)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerPS(PS384, rsaPrivateKey1)),
 		mustVerifier(NewVerifierPS(PS384, rsaPublicKey1)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerPS(PS512, rsaPrivateKey1)),
 		mustVerifier(NewVerifierPS(PS512, rsaPublicKey1)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 
 	f(
@@ -71,17 +71,17 @@ func TestPS384_WithInvalidSignature(t *testing.T) {
 	f(
 		mustSigner(NewSignerPS(PS256, rsaPrivateKey1)),
 		mustVerifier(NewVerifierPS(PS256, rsaPublicKey2)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerPS(PS384, rsaPrivateKey1)),
 		mustVerifier(NewVerifierPS(PS384, rsaPublicKey2)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 	f(
 		mustSigner(NewSignerPS(PS512, rsaPrivateKey1)),
 		mustVerifier(NewVerifierPS(PS512, rsaPublicKey2)),
-		&StandardClaims{},
+		&RegisteredClaims{},
 	)
 
 	f(
