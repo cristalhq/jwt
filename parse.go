@@ -36,6 +36,7 @@ func Parse(raw []byte) (*Token, error) {
 	if err != nil {
 		return nil, ErrInvalidFormat
 	}
+	claims := buf[headerN : headerN+claimsN]
 
 	_, err = b64Decode(buf[headerN+claimsN:], raw[dot2+1:])
 	if err != nil {
@@ -47,6 +48,7 @@ func Parse(raw []byte) (*Token, error) {
 		dot1:   dot1,
 		dot2:   dot2,
 		header: header,
+		claims: claims,
 	}
 	return token, nil
 }
@@ -65,7 +67,7 @@ func ParseAndVerify(raw []byte, verifier Verifier) (*Token, error) {
 	if token.Header().Algorithm != verifier.Algorithm() {
 		return nil, ErrAlgorithmMismatch
 	}
-	if err := verifier.Verify(token.Payload(), token.Signature()); err != nil {
+	if err := verifier.Verify(token.PayloadPart(), token.Signature()); err != nil {
 		return nil, err
 	}
 	return token, nil

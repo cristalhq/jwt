@@ -16,15 +16,15 @@ func TestParseString(t *testing.T) {
 			t.Errorf("want %#v, got %#v", header, tk.Header())
 		}
 		headerStr := toBase64(headerString(header))
-		if string(tk.RawHeader()) != headerStr {
-			t.Errorf("want %#v, got %#v", headerStr, string(tk.RawHeader()))
+		if string(tk.HeaderPart()) != headerStr {
+			t.Errorf("header: want %#v, got %#v", headerStr, string(tk.HeaderPart()))
 		}
-		if string(tk.Payload()) != payload {
-			t.Errorf("want %#v, got %#v", payload, string(tk.Payload()))
+		if string(tk.PayloadPart()) != payload {
+			t.Errorf("payload: want %#v, got %#v", payload, string(tk.PayloadPart()))
 		}
 		sign := toBase64(string(tk.Signature()))
 		if sign != signature {
-			t.Errorf("want %#v, got %#v", signature, sign)
+			t.Errorf("signature: want %#v, got %#v", signature, sign)
 		}
 	}
 

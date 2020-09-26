@@ -14,9 +14,9 @@ func Example_Parse() {
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
-	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(token.Payload()))
-	fmt.Printf("Token     %v\n", string(token.Raw()))
+	fmt.Printf("Claims    %v\n", string(token.Claims()))
+	fmt.Printf("Payload   %v\n", string(token.PayloadPart()))
+	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
 	// Algorithm HS256
@@ -37,9 +37,9 @@ func Example_ParseAndVerify() {
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
-	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(token.Payload()))
-	fmt.Printf("Token     %v\n", string(token.Raw()))
+	fmt.Printf("Claims    %v\n", string(token.Claims()))
+	fmt.Printf("Payload   %v\n", string(token.PayloadPart()))
+	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
 	// Algorithm HS256

@@ -31,7 +31,7 @@ func Example_JWT() {
 	checkErr(errBuild)
 
 	// 5. here is your token  :)
-	var _ []byte = token.Raw() // or just token.String() for string
+	var _ []byte = token.Bytes() // or just token.String() for string
 
 	// 6. parse a token (by example received from a request)
 	tokenStr := token.String()
@@ -39,7 +39,7 @@ func Example_JWT() {
 	checkErr(errParse)
 
 	// 7. and verify it's signature
-	errVerify := verifier.Verify(newToken.Payload(), newToken.Signature())
+	errVerify := verifier.Verify(newToken.PayloadPart(), newToken.Signature())
 	checkErr(errVerify)
 
 	// 8. also you can parse and verify in 1 operation
@@ -48,7 +48,7 @@ func Example_JWT() {
 
 	// 9. get standard claims
 	var newClaims jwt.RegisteredClaims
-	errClaims := json.Unmarshal(newToken.RawClaims(), &newClaims)
+	errClaims := json.Unmarshal(newToken.Claims(), &newClaims)
 	checkErr(errClaims)
 
 	// 10. verify claims
@@ -57,9 +57,9 @@ func Example_JWT() {
 
 	fmt.Printf("Algorithm %v\n", newToken.Header().Algorithm)
 	fmt.Printf("Type      %v\n", newToken.Header().Type)
-	fmt.Printf("Claims    %v\n", string(newToken.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(newToken.Payload()))
-	fmt.Printf("Token     %v\n", string(newToken.Raw()))
+	fmt.Printf("Claims    %v\n", string(newToken.Claims()))
+	fmt.Printf("Payload   %v\n", string(newToken.PayloadPart()))
+	fmt.Printf("Token     %v\n", string(newToken.Bytes()))
 
 	// Output:
 	// Algorithm HS256

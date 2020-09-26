@@ -36,7 +36,7 @@ func (b *Builder) BuildBytes(claims interface{}) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	return token.Raw(), nil
+	return token.Bytes(), nil
 }
 
 // Build used to create and encode JWT with a provided claims.
@@ -79,8 +79,7 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 		dot1:   lenH,
 		dot2:   lenH + 1 + lenC,
 		header: b.header,
-		// signature: signature,
-		// claims: rawClaims,
+		claims: rawClaims,
 	}
 	return t, nil
 }

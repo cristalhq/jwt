@@ -14,7 +14,7 @@ func TestHMAC(t *testing.T) {
 			t.Errorf("want nil, got %#v", err)
 		}
 
-		err = verifier.Verify(token.Payload(), token.Signature())
+		err = verifier.Verify(token.PayloadPart(), token.Signature())
 		if err != nil {
 			t.Errorf("want no err, got: %#v", err)
 		}
@@ -68,7 +68,7 @@ func TestHMAC_InvalidSignature(t *testing.T) {
 			t.Errorf("want nil, got %#v", err)
 		}
 
-		err = verifier.Verify(token.Payload(), token.Signature())
+		err = verifier.Verify(token.PayloadPart(), token.Signature())
 		if err == nil {
 			t.Errorf("want %#v, got nil", ErrInvalidSignature)
 		}

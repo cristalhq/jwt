@@ -149,7 +149,7 @@ func runSignerBench(b *testing.B, builder *jwt.Builder) {
 		if tokenErr != nil {
 			b.Fatal(tokenErr)
 		}
-		sink += int(token.Payload()[0])
+		sink += int(token.PayloadPart()[0])
 	}
 
 	if mathRand.Intn(10000) > 9999 {
@@ -176,7 +176,7 @@ func runVerifyBench(b *testing.B, builder *jwt.Builder, verifier jwt.Verifier) {
 	sink := uintptr(0)
 	for i := 0; i < b.N/tokensCount; i++ {
 		for _, token := range tokens {
-			verificationErr := verifier.Verify(token.Payload(), token.Signature())
+			verificationErr := verifier.Verify(token.PayloadPart(), token.Signature())
 			if verificationErr != nil {
 				b.Fatal(verificationErr)
 			}

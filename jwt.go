@@ -3,7 +3,6 @@ package jwt
 import (
 	"bytes"
 	"encoding/base64"
-	"encoding/json"
 )
 
 var b64DecodeStr = base64.RawURLEncoding.DecodeString
@@ -16,6 +15,7 @@ type Token struct {
 	dot1   int
 	dot2   int
 	header Header
+	claims []byte
 }
 
 func (t Token) String() string {
@@ -37,6 +37,11 @@ func (t Token) ClaimsPart() []byte {
 	return t.raw[t.dot1+1 : t.dot2]
 }
 
+// PayloadPart returns token's payload.
+func (t *Token) PayloadPart() []byte {
+	return t.raw[:t.dot2]
+}
+
 // SignaturePart of the token (base64 encoded).
 func (t Token) SignaturePart() []byte {
 	return t.raw[t.dot2+1:]
@@ -47,62 +52,14 @@ func (t Token) Header() Header {
 	return t.header
 }
 
-// DecodeClaims into the given container.
-func (t Token) DecodeClaims(into interface{}) error {
-	return json.Unmarshal(t.ClaimsPart(), into)
+// Claims into the given container.
+func (t Token) Claims() []byte {
+	return t.claims
 }
 
-// DecodeClaims into the given container.
-func (t Token) DecodedClaims() ([]byte, error) {
-	return b64DecodeStr(string(t.ClaimsPart()))
-}
-
-// DecodeSignature into the given container.
-func (t Token) DecodedSignature() ([]byte, error) {
-	return b64DecodeStr(string(t.SignaturePart()))
-}
-
-// SecureString returns token without a signature (replaced with `.<signature>`).
-// Deprecated: will be removed in v4
-func (t *Token) SecureString() string {
-	dot := bytes.LastIndexByte(t.raw, '.')
-	return string(t.raw[:dot]) + `.<signature>`
-}
-
-// Raw returns token's raw bytes.
-// Deprecated: will be removed in v4
-func (t *Token) Raw() []byte {
-	return t.raw
-}
-
-// RawHeader returns token's header raw bytes.
-// Deprecated: will be removed in v4
-func (t *Token) RawHeader() []byte {
-	return t.raw[:t.dot1]
-}
-
-// RawClaims returns token's claims as a raw bytes.
-// Deprecated: will be removed in v4
-func (t *Token) RawClaims() []byte {
-	c, err := t.DecodedClaims()
-	if err != nil {
-		panic(err)
-	}
-	return c
-}
-
-// Payload returns token's payload.
-func (t *Token) Payload() []byte {
-	return t.raw[:t.dot2]
-}
-
-// Signature returns token's signature.
-// Deprecated: will be removed in v4
-func (t *Token) Signature() []byte {
-	s, err := t.DecodedSignature()
-	if err != nil {
-		panic(err)
-	}
+// Signature into the given container.
+func (t Token) Signature() []byte {
+	s, _ := b64DecodeStr(string(t.SignaturePart()))
 	return s
 }
 

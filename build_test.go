@@ -47,7 +47,7 @@ func TestBuildHeader(t *testing.T) {
 		}
 
 		want = toBase64(want)
-		raw := string(token.RawHeader())
+		raw := string(token.HeaderPart())
 		if raw != want {
 			t.Errorf("\nwant %v,\n got %v", want, raw)
 		}
@@ -147,7 +147,7 @@ func Test_Two_ECDSA(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			err = json.Unmarshal(obj.RawClaims(), new(map[string]interface{}))
+			err = json.Unmarshal(obj.Claims(), new(map[string]interface{}))
 			if err != nil {
 				t.Fatal(err)
 			}

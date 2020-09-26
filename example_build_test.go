@@ -20,9 +20,9 @@ func Example_BuildSimple() {
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
-	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(token.Payload()))
-	fmt.Printf("Token     %v\n", string(token.Raw()))
+	fmt.Printf("Claims    %v\n", string(token.Claims()))
+	fmt.Printf("Payload   %v\n", string(token.PayloadPart()))
+	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
 	// Algorithm HS256
@@ -54,9 +54,9 @@ func Example_BuildUserClaims() {
 	token, err := builder.Build(claims)
 	checkErr(err)
 
-	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(token.Payload()))
-	fmt.Printf("Token     %v\n", string(token.Raw()))
+	fmt.Printf("Claims    %v\n", string(token.Claims()))
+	fmt.Printf("Payload   %v\n", string(token.PayloadPart()))
+	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
 	// Claims    {"jti":"random-unique-string","aud":"admin","is_admin":true,"email":"foo@bar.baz"}
@@ -78,9 +78,9 @@ func Example_DummyClaims() {
 	token, err := builder.Build(&claims)
 	checkErr(err)
 
-	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(token.Payload()))
-	fmt.Printf("Token     %v\n", string(token.Raw()))
+	fmt.Printf("Claims    %v\n", string(token.Claims()))
+	fmt.Printf("Payload   %v\n", string(token.PayloadPart()))
+	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
 	// Claims    {"aUdIeNcE":"@everyone","well":"well-well-well"}
