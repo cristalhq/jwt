@@ -26,7 +26,7 @@ func TestSignerAlg(t *testing.T) {
 	f(mustSigner(NewSignerPS(PS384, rsaPriv)), PS384)
 	f(mustSigner(NewSignerPS(PS512, rsaPriv)), PS512)
 
-	ecdsaPriv := ecdsaPrivateKey256
+	ecdsaPriv := ecdsaPrivKey256
 	f(mustSigner(NewSignerES(ES256, ecdsaPriv)), ES256)
 	f(mustSigner(NewSignerES(ES384, ecdsaPriv)), ES384)
 	f(mustSigner(NewSignerES(ES512, ecdsaPriv)), ES512)
@@ -54,7 +54,7 @@ func TestVerifierAlg(t *testing.T) {
 	f(mustVerifier(NewVerifierPS(PS384, rsaPub)), PS384)
 	f(mustVerifier(NewVerifierPS(PS512, rsaPub)), PS512)
 
-	ecdsaPub := ecdsaPublicKey256
+	ecdsaPub := ecdsaPubKey256
 	f(mustVerifier(NewVerifierES(ES256, ecdsaPub)), ES256)
 	f(mustVerifier(NewVerifierES(ES384, ecdsaPub)), ES384)
 	f(mustVerifier(NewVerifierES(ES512, ecdsaPub)), ES512)
@@ -81,7 +81,7 @@ func TestSignerBadParams(t *testing.T) {
 	f(NewSignerHS("xxx", []byte("key")))
 	f(NewSignerRS("xxx", rsaPrivateKey1))
 	f(NewSignerPS("xxx", rsaPrivateKey1))
-	f(NewSignerES("xxx", ecdsaPrivateKey256))
+	f(NewSignerES("xxx", ecdsaPrivKey256))
 }
 
 func TestVerifierBadParams(t *testing.T) {
@@ -105,5 +105,5 @@ func TestVerifierBadParams(t *testing.T) {
 	f(NewVerifierHS("xxx", []byte("key")))
 	f(NewVerifierRS("xxx", rsaPublicKey1))
 	f(NewVerifierPS("xxx", rsaPublicKey1))
-	f(NewVerifierES("xxx", ecdsaPublicKey256))
+	f(NewVerifierES("xxx", ecdsaPubKey256))
 }
