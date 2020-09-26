@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"crypto/rsa"
+	"encoding/base64"
 	"math/big"
 	"testing"
 )
@@ -44,46 +45,63 @@ func init() {
 	}
 }
 
-func TestRSA(t *testing.T) {
-	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, expectedSign string) {
+func TestRS(t *testing.T) {
+	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, isCorrectSign bool, wantSign string) {
 		t.Helper()
 
 		const payload = `simple-string-payload`
 
-		sign := rsaSign(t, alg, privateKey, payload)
-		rsaVerify(t, alg, publicKey, payload, sign)
+		sign := rsSign(t, alg, privateKey, payload)
+
+		got := base64.StdEncoding.EncodeToString(sign)
+		if got != wantSign {
+			t.Fatalf("want %q, got %q", wantSign, got)
+		}
+
+		err := rsVerify(t, alg, publicKey, payload, sign)
+		if err != nil {
+			if isCorrectSign {
+				t.Fatal(err)
+			}
+		}
 	}
 
 	f(
 		RS256, rsaPrivateKey1, rsaPublicKey1,
+		true,
 		`BjTjE0oRTnpaiEMxni4k73QmBAvw1PV6ODnsp8v/RQr5h/uQ2X59Mw/ft9IjFWHqvgEMLLRRVCj8j/AJ37sIcNiXaoCRkcvLQv1voQu+Ztmc+lV03jKnDjQCIxYB+OxQ1AxIGWCbTZGC45eHMCr1Ha9N4twAKRfYDQzSUL5x02Oj8jyqFWQG3tZuwWpAFx50VImSSQdrOoVJngKp9yWQnAKa/uEmF32ePz1HXLQc2XaQFBNP+Wa6RmU8CtFbiKeRKX3HitX6obQb1YiDtp3fwvi4T1SCW81mq+2JbO8as1FejlS1B3LYZdH5OsGgQeciFogNojMcOenPGH/5zWsw4A==`,
 	)
 	f(
 		RS384, rsaPrivateKey1, rsaPublicKey1,
+		true,
 		`CELJCnQwM05KugjmXnY94QNiyAD6E6Kg3US/fGD8dkEPUGwaTBBs00bBbdmK4wJaBwEmAzHITY9NFxB6Muw+XbJCSuc84dJeq6r5chz9aMlCwWkMejB/cC7MJ4D24EqChbT5/0hiYgIQ1JS+qXgKNdd8JrUDNklgV61oBZfNB4J9HMDF+PLy0wkJRe1siFzMqVy/ZujPoC1fHvuJlqyjDF8ksgrzc9mZVNBcQLFecFMAw1KRw7ssvNernSnRC7KSSYvToWfndHVUIpLygM5SEF8RJEgZYBanEN4w4XYuU53gtpLw35Iu5vb1tYMXBGcaVRrynJviUBaPJvJ0e16i8Q==`,
 	)
 	f(
 		RS512, rsaPrivateKey1, rsaPublicKey1,
+		true,
+		`X3z8RIr++dPiZZw1NaslDnZTIQ5PRMtgLv0eFZfJTIaeWmp5m+bI/wsKQZ+x8UCxhYnNYtX/xcnkLaGn/D7ZQNNw5e3lHrXxYKqg5TSuH0wSVC6l1rU6WOkBmvdIe1B7hwenjCUHSAl2AQC/WN4KKpYMpRhW3+gFixs3p9A2X86J9mR3bPfp+eaCernvhNkIp19IC+YMnZuy4Tj7pKiOf/AFemyngDW7OME/ZZ1CuKR//xPBkQmKPnhVnjhPkFmXMHn6KdSmpEE5CbldmmkKQ/PEbIK0P4hYOvjD2kkAWpADn/X+8rBzSGXb8aq6zWJtN1T4uuDmMNaDMYmUI6s0qQ==`,
+	)
+
+	f(
+		RS256, rsaPrivateKey1, rsaPublicKey2,
+		false,
+		`BjTjE0oRTnpaiEMxni4k73QmBAvw1PV6ODnsp8v/RQr5h/uQ2X59Mw/ft9IjFWHqvgEMLLRRVCj8j/AJ37sIcNiXaoCRkcvLQv1voQu+Ztmc+lV03jKnDjQCIxYB+OxQ1AxIGWCbTZGC45eHMCr1Ha9N4twAKRfYDQzSUL5x02Oj8jyqFWQG3tZuwWpAFx50VImSSQdrOoVJngKp9yWQnAKa/uEmF32ePz1HXLQc2XaQFBNP+Wa6RmU8CtFbiKeRKX3HitX6obQb1YiDtp3fwvi4T1SCW81mq+2JbO8as1FejlS1B3LYZdH5OsGgQeciFogNojMcOenPGH/5zWsw4A==`,
+	)
+	f(
+		RS384, rsaPrivateKey1, rsaPublicKey2,
+		false,
+		`CELJCnQwM05KugjmXnY94QNiyAD6E6Kg3US/fGD8dkEPUGwaTBBs00bBbdmK4wJaBwEmAzHITY9NFxB6Muw+XbJCSuc84dJeq6r5chz9aMlCwWkMejB/cC7MJ4D24EqChbT5/0hiYgIQ1JS+qXgKNdd8JrUDNklgV61oBZfNB4J9HMDF+PLy0wkJRe1siFzMqVy/ZujPoC1fHvuJlqyjDF8ksgrzc9mZVNBcQLFecFMAw1KRw7ssvNernSnRC7KSSYvToWfndHVUIpLygM5SEF8RJEgZYBanEN4w4XYuU53gtpLw35Iu5vb1tYMXBGcaVRrynJviUBaPJvJ0e16i8Q==`,
+	)
+	f(
+		RS512, rsaPrivateKey1, rsaPublicKey2,
+		false,
 		`X3z8RIr++dPiZZw1NaslDnZTIQ5PRMtgLv0eFZfJTIaeWmp5m+bI/wsKQZ+x8UCxhYnNYtX/xcnkLaGn/D7ZQNNw5e3lHrXxYKqg5TSuH0wSVC6l1rU6WOkBmvdIe1B7hwenjCUHSAl2AQC/WN4KKpYMpRhW3+gFixs3p9A2X86J9mR3bPfp+eaCernvhNkIp19IC+YMnZuy4Tj7pKiOf/AFemyngDW7OME/ZZ1CuKR//xPBkQmKPnhVnjhPkFmXMHn6KdSmpEE5CbldmmkKQ/PEbIK0P4hYOvjD2kkAWpADn/X+8rBzSGXb8aq6zWJtN1T4uuDmMNaDMYmUI6s0qQ==`,
 	)
 }
 
-func TestRSA_InvalidSignature(t *testing.T) {
-	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey) {
-		t.Helper()
+func rsSign(t *testing.T, alg Algorithm, privateKey *rsa.PrivateKey, payload string) []byte {
+	t.Helper()
 
-		const payload = `simple-string-payload`
-
-		sign := rsaSign(t, alg, privateKey, payload)
-		rsaVerify(t, alg, publicKey, payload, sign)
-	}
-
-	f(RS256, rsaPrivateKey1, rsaPublicKey2)
-	f(RS384, rsaPrivateKey1, rsaPublicKey2)
-	f(RS512, rsaPrivateKey1, rsaPublicKey2)
-}
-
-func rsaSign(t *testing.T, alg Algorithm, privateKey *rsa.PrivateKey, payload string) []byte {
 	signer, errSigner := NewSignerRS(alg, privateKey)
 	if errSigner != nil {
 		t.Fatal(errSigner)
@@ -96,14 +114,12 @@ func rsaSign(t *testing.T, alg Algorithm, privateKey *rsa.PrivateKey, payload st
 	return sign
 }
 
-func rsaVerify(t *testing.T, alg Algorithm, publicKey *rsa.PublicKey, payload string, sign []byte) {
+func rsVerify(t *testing.T, alg Algorithm, publicKey *rsa.PublicKey, payload string, sign []byte) error {
+	t.Helper()
+
 	verifier, errVerifier := NewVerifierRS(alg, publicKey)
 	if errVerifier != nil {
 		t.Fatal(errVerifier)
 	}
-
-	errVerify := verifier.Verify([]byte(payload), sign)
-	if errVerify == nil {
-		t.Fatal("must be error")
-	}
+	return verifier.Verify([]byte(payload), sign)
 }
