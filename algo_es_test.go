@@ -7,12 +7,12 @@ import (
 	"testing"
 )
 
-var ecdsaPublicKey256 *ecdsa.PublicKey
-var ecdsaPublicKey384 *ecdsa.PublicKey
-var ecdsaPublicKey521 *ecdsa.PublicKey
-var ecdsaPrivateKey256 *ecdsa.PrivateKey
-var ecdsaPrivateKey384 *ecdsa.PrivateKey
-var ecdsaPrivateKey521 *ecdsa.PrivateKey
+var ecdsaPubKey256 *ecdsa.PublicKey
+var ecdsaPubKey384 *ecdsa.PublicKey
+var ecdsaPubKey521 *ecdsa.PublicKey
+var ecdsaPrivKey256 *ecdsa.PrivateKey
+var ecdsaPrivKey384 *ecdsa.PrivateKey
+var ecdsaPrivKey521 *ecdsa.PrivateKey
 
 var ecdsaOtherPublicKey256 *ecdsa.PublicKey
 var ecdsaOtherPublicKey384 *ecdsa.PublicKey
@@ -22,14 +22,14 @@ var ecdsaOtherPrivateKey384 *ecdsa.PrivateKey
 var ecdsaOtherPrivateKey521 *ecdsa.PrivateKey
 
 func init() {
-	ecdsaPrivateKey256, _ = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
-	ecdsaPublicKey256 = &ecdsaPrivateKey256.PublicKey
+	ecdsaPrivKey256, _ = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
+	ecdsaPubKey256 = &ecdsaPrivKey256.PublicKey
 
-	ecdsaPrivateKey384, _ = ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
-	ecdsaPublicKey384 = &ecdsaPrivateKey384.PublicKey
+	ecdsaPrivKey384, _ = ecdsa.GenerateKey(elliptic.P384(), rand.Reader)
+	ecdsaPubKey384 = &ecdsaPrivKey384.PublicKey
 
-	ecdsaPrivateKey521, _ = ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
-	ecdsaPublicKey521 = &ecdsaPrivateKey521.PublicKey
+	ecdsaPrivKey521, _ = ecdsa.GenerateKey(elliptic.P521(), rand.Reader)
+	ecdsaPubKey521 = &ecdsaPrivKey521.PublicKey
 
 	ecdsaOtherPrivateKey256, _ = ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
 	ecdsaOtherPublicKey256 = &ecdsaOtherPrivateKey256.PublicKey
@@ -41,105 +41,64 @@ func init() {
 	ecdsaOtherPublicKey521 = &ecdsaOtherPrivateKey521.PublicKey
 }
 
-func TestES256_WithValidSignature(t *testing.T) {
-	f := func(signer Signer, verifier Verifier, claims interface{}) {
+func TestES(t *testing.T) {
+	f := func(alg Algorithm, privateKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey, isCorrectSign bool) {
 		t.Helper()
 
-		tokenBuilder := NewBuilder(signer)
-		token, _ := tokenBuilder.Build(claims)
+		const payload = `simple-string-payload`
 
-		err := verifier.Verify(token.PayloadPart(), token.Signature())
+		sign := esSign(t, alg, privateKey, payload)
+
+		err := esVerify(t, alg, publicKey, payload, sign)
 		if err != nil {
-			t.Errorf("want no err, got: %#v", err)
+			if isCorrectSign {
+				t.Fatal(err)
+			}
 		}
 	}
 
 	f(
-		mustSigner(NewSignerES(ES256, ecdsaPrivateKey256)),
-		mustVerifier(NewVerifierES(ES256, ecdsaPublicKey256)),
-		&RegisteredClaims{},
+		ES256, ecdsaPrivKey256, ecdsaPubKey256, true,
 	)
 	f(
-		mustSigner(NewSignerES(ES384, ecdsaPrivateKey384)),
-		mustVerifier(NewVerifierES(ES384, ecdsaPublicKey384)),
-		&RegisteredClaims{},
+		ES384, ecdsaPrivKey384, ecdsaPubKey384, true,
 	)
 	f(
-		mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)),
-		mustVerifier(NewVerifierES(ES512, ecdsaPublicKey521)),
-		&RegisteredClaims{},
+		ES512, ecdsaPrivKey521, ecdsaPubKey521, true,
 	)
 
 	f(
-		mustSigner(NewSignerES(ES256, ecdsaPrivateKey256)),
-		mustVerifier(NewVerifierES(ES256, ecdsaPublicKey256)),
-		&customClaims{
-			TestField: "foo",
-		},
+		ES256, ecdsaPrivKey256, ecdsaPubKey256, false,
 	)
 	f(
-		mustSigner(NewSignerES(ES384, ecdsaPrivateKey384)),
-		mustVerifier(NewVerifierES(ES384, ecdsaPublicKey384)),
-		&customClaims{
-			TestField: "bar",
-		},
+		ES384, ecdsaPrivKey384, ecdsaPubKey384, false,
 	)
 	f(
-		mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)),
-		mustVerifier(NewVerifierES(ES512, ecdsaPublicKey521)),
-		&customClaims{
-			TestField: "baz",
-		},
+		ES512, ecdsaPrivKey521, ecdsaPubKey521, false,
 	)
 }
 
-func TestES384_WithInvalidSignature(t *testing.T) {
-	f := func(signer Signer, verifier Verifier, claims interface{}) {
-		t.Helper()
+func esSign(t *testing.T, alg Algorithm, privateKey *ecdsa.PrivateKey, payload string) []byte {
+	t.Helper()
 
-		tokenBuilder := NewBuilder(signer)
-		token, _ := tokenBuilder.Build(claims)
-
-		err := verifier.Verify(token.PayloadPart(), token.Signature())
-		if err == nil {
-			t.Errorf("want %v, got nil", ErrInvalidSignature)
-		}
+	signer, errSigner := NewSignerES(alg, privateKey)
+	if errSigner != nil {
+		t.Fatal(errSigner)
 	}
-	f(
-		mustSigner(NewSignerES(ES256, ecdsaPrivateKey256)),
-		mustVerifier(NewVerifierES(ES256, ecdsaOtherPublicKey256)),
-		&RegisteredClaims{},
-	)
-	f(
-		mustSigner(NewSignerES(ES384, ecdsaPrivateKey384)),
-		mustVerifier(NewVerifierES(ES384, ecdsaOtherPublicKey384)),
-		&RegisteredClaims{},
-	)
-	f(
-		mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)),
-		mustVerifier(NewVerifierES(ES512, ecdsaOtherPublicKey521)),
-		&RegisteredClaims{},
-	)
 
-	f(
-		mustSigner(NewSignerES(ES256, ecdsaPrivateKey256)),
-		mustVerifier(NewVerifierES(ES256, ecdsaOtherPublicKey256)),
-		&customClaims{
-			TestField: "foo",
-		},
-	)
-	f(
-		mustSigner(NewSignerES(ES384, ecdsaPrivateKey384)),
-		mustVerifier(NewVerifierES(ES384, ecdsaOtherPublicKey384)),
-		&customClaims{
-			TestField: "bar",
-		},
-	)
-	f(
-		mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)),
-		mustVerifier(NewVerifierES(ES512, ecdsaOtherPublicKey521)),
-		&customClaims{
-			TestField: "baz",
-		},
-	)
+	sign, errSign := signer.Sign([]byte(payload))
+	if errSign != nil {
+		t.Fatal(errSign)
+	}
+	return sign
+}
+
+func esVerify(t *testing.T, alg Algorithm, publicKey *ecdsa.PublicKey, payload string, sign []byte) error {
+	t.Helper()
+
+	verifier, errVerifier := NewVerifierES(alg, publicKey)
+	if errVerifier != nil {
+		t.Fatal(errVerifier)
+	}
+	return verifier.Verify([]byte(payload), sign)
 }
