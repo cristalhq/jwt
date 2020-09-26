@@ -9,21 +9,54 @@ import (
 var b64Decode = base64.RawURLEncoding.Decode
 
 // ParseString decodes a token.
-func ParseString(raw string) (*Token, error) {
-	return Parse([]byte(raw))
+func ParseString(token string, verifier Verifier) (*Token, error) {
+	return Parse([]byte(token), verifier)
 }
 
 // Parse decodes a token from a raw bytes.
-func Parse(raw []byte) (*Token, error) {
-	dot1 := bytes.IndexByte(raw, '.')
-	dot2 := bytes.LastIndexByte(raw, '.')
+func Parse(token []byte, verifier Verifier) (*Token, error) {
+	tok, errParse := parse(token)
+	if errParse != nil {
+		return nil, errParse
+	}
+
+	gotAlg := tok.Header().Algorithm.String()
+	wantAlg := verifier.Algorithm().String()
+	if !constTimeEqual(gotAlg, wantAlg) {
+		return nil, ErrAlgorithmMismatch
+	}
+
+	errVerify := verifier.Verify(tok.PayloadPart(), tok.Signature())
+	if errVerify != nil {
+		return nil, errVerify
+	}
+	return tok, nil
+}
+
+// ParseNoVerifyString decodes a token and verifies it's signature.
+func ParseNoVerifyString(token string) (*Token, error) {
+	return ParseNoVerify([]byte(token))
+}
+
+// ParseNoVerify decodes a token and verifies it's signature.
+func ParseNoVerify(token []byte) (*Token, error) {
+	tok, err := parse(token)
+	if err != nil {
+		return nil, err
+	}
+	return tok, nil
+}
+
+func parse(token []byte) (*Token, error) {
+	dot1 := bytes.IndexByte(token, '.')
+	dot2 := bytes.LastIndexByte(token, '.')
 	if dot2 <= dot1 {
 		return nil, ErrInvalidFormat
 	}
 
-	buf := make([]byte, len(raw))
+	buf := make([]byte, len(token))
 
-	headerN, err := b64Decode(buf, raw[:dot1])
+	headerN, err := b64Decode(buf, token[:dot1])
 	if err != nil {
 		return nil, ErrInvalidFormat
 	}
@@ -32,43 +65,25 @@ func Parse(raw []byte) (*Token, error) {
 		return nil, ErrInvalidFormat
 	}
 
-	claimsN, err := b64Decode(buf[headerN:], raw[dot1+1:dot2])
+	claimsN, err := b64Decode(buf[headerN:], token[dot1+1:dot2])
 	if err != nil {
 		return nil, ErrInvalidFormat
 	}
 	claims := buf[headerN : headerN+claimsN]
 
-	_, err = b64Decode(buf[headerN+claimsN:], raw[dot2+1:])
+	signN, err := b64Decode(buf[headerN+claimsN:], token[dot2+1:])
 	if err != nil {
 		return nil, ErrInvalidFormat
 	}
+	signature := buf[headerN+claimsN : headerN+claimsN+signN]
 
-	token := &Token{
-		raw:    raw,
-		dot1:   dot1,
-		dot2:   dot2,
-		header: header,
-		claims: claims,
+	tok := &Token{
+		raw:       token,
+		dot1:      dot1,
+		dot2:      dot2,
+		header:    header,
+		claims:    claims,
+		signature: signature,
 	}
-	return token, nil
-}
-
-// ParseAndVerifyString decodes a token and verifies it's signature.
-func ParseAndVerifyString(raw string, verifier Verifier) (*Token, error) {
-	return ParseAndVerify([]byte(raw), verifier)
-}
-
-// ParseAndVerify decodes a token and verifies it's signature.
-func ParseAndVerify(raw []byte, verifier Verifier) (*Token, error) {
-	token, err := Parse(raw)
-	if err != nil {
-		return nil, err
-	}
-	if token.Header().Algorithm != verifier.Algorithm() {
-		return nil, ErrAlgorithmMismatch
-	}
-	if err := verifier.Verify(token.PayloadPart(), token.Signature()); err != nil {
-		return nil, err
-	}
-	return token, nil
+	return tok, nil
 }

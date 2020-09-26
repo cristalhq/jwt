@@ -6,7 +6,7 @@ import (
 	"github.com/cristalhq/jwt/v3"
 )
 
-func Example_BuildSimple() {
+func ExampleBuilder_Build() {
 	key := []byte(`secret`)
 	signer, _ := jwt.NewSignerHS(jwt.HS256, key)
 	builder := jwt.NewBuilder(signer)
@@ -38,7 +38,7 @@ type userClaims struct {
 	Email           string `json:"email"`
 }
 
-func Example_BuildUserClaims() {
+func ExampleBuilder2() {
 	key := []byte(`secret`)
 	signer, _ := jwt.NewSignerHS(jwt.HS256, key)
 	builder := jwt.NewBuilder(signer)
@@ -66,7 +66,7 @@ func Example_BuildUserClaims() {
 
 type dummyClaims map[string]interface{}
 
-func Example_DummyClaims() {
+func ExampleBuilder() {
 	key := []byte(`secret`)
 	signer, _ := jwt.NewSignerHS(jwt.HS256, key)
 	builder := jwt.NewBuilder(signer)

@@ -30,15 +30,6 @@ func NewBuilder(signer Signer) *Builder {
 	return b
 }
 
-// BuildBytes used to create and encode JWT with a provided claims.
-func (b *Builder) BuildBytes(claims interface{}) ([]byte, error) {
-	token, err := b.Build(claims)
-	if err != nil {
-		return nil, err
-	}
-	return token.Bytes(), nil
-}
-
 // Build used to create and encode JWT with a provided claims.
 // If claims param is of type []byte then it's treated as a marshaled JSON.
 // In other words you can pass already marshaled claims.
@@ -75,11 +66,12 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 	b64Encode(token[idx:], signature)
 
 	t := &Token{
-		raw:    token,
-		dot1:   lenH,
-		dot2:   lenH + 1 + lenC,
-		header: b.header,
-		claims: rawClaims,
+		raw:       token,
+		dot1:      lenH,
+		dot2:      lenH + 1 + lenC,
+		header:    b.header,
+		claims:    rawClaims,
+		signature: signature,
 	}
 	return t, nil
 }

@@ -6,10 +6,10 @@ import (
 	"github.com/cristalhq/jwt/v3"
 )
 
-func Example_Parse() {
+func ExampleParse() {
 	t := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs`
 
-	token, err := jwt.Parse([]byte(t))
+	token, err := jwt.ParseNoVerify([]byte(t))
 	checkErr(err)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
@@ -26,13 +26,13 @@ func Example_Parse() {
 	// Token     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs
 }
 
-func Example_ParseAndVerify() {
+func ExampleParseAndVerify() {
 	key := []byte(`secret`)
 	verifier, _ := jwt.NewVerifierHS(jwt.HS256, key)
 
 	t := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs`
 
-	token, err := jwt.ParseAndVerify([]byte(t), verifier)
+	token, err := jwt.Parse([]byte(t), verifier)
 	checkErr(err)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)

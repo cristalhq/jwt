@@ -8,7 +8,7 @@ func TestParseString(t *testing.T) {
 	f := func(token string, header Header, payload, signature string) {
 		t.Helper()
 
-		tk, err := ParseString(token)
+		tk, err := ParseNoVerifyString(token)
 		if err != nil {
 			t.Errorf("want nil, got %#v", err)
 		}
@@ -53,7 +53,7 @@ func TestParseMalformed(t *testing.T) {
 	f := func(got string) {
 		t.Helper()
 
-		_, err := ParseString(got)
+		_, err := ParseNoVerifyString(got)
 		if err == nil {
 			t.Error("got nil want nil")
 		}
