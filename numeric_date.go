@@ -25,7 +25,7 @@ func NewNumericDate(t time.Time) *NumericDate {
 }
 
 // MarshalJSON implements the json.Marshaler interface.
-func (t NumericDate) MarshalJSON() ([]byte, error) {
+func (t *NumericDate) MarshalJSON() ([]byte, error) {
 	return []byte(strconv.FormatInt(t.Unix(), 10)), nil
 }
 

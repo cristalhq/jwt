@@ -5,11 +5,6 @@ import (
 	"encoding/json"
 )
 
-var (
-	b64Encode     = base64.RawURLEncoding.Encode
-	b64EncodedLen = base64.RawURLEncoding.EncodedLen
-)
-
 // Builder is used to create a new token.
 type Builder struct {
 	signer    Signer
@@ -54,8 +49,8 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 	b64Encode(token[idx:], rawClaims)
 	idx += lenC
 
-	// calculate signature of already written 'header.claims'
-	signature, errSign := b.signer.Sign(token[:idx])
+	// calculate signature of already written header and claims
+	rawSignature, errSign := b.signer.Sign(token[:idx])
 	if errSign != nil {
 		return nil, errSign
 	}
@@ -63,7 +58,7 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 	// add '.' and append encoded signature
 	token[idx] = '.'
 	idx++
-	b64Encode(token[idx:], signature)
+	b64Encode(token[idx:], rawSignature)
 
 	t := &Token{
 		raw:       token,
@@ -71,7 +66,7 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 		dot2:      lenH + 1 + lenC,
 		header:    b.header,
 		claims:    rawClaims,
-		signature: signature,
+		signature: rawSignature,
 	}
 	return t, nil
 }
@@ -80,6 +75,8 @@ func encodeClaims(claims interface{}) ([]byte, error) {
 	switch claims := claims.(type) {
 	case []byte:
 		return claims, nil
+	case string:
+		return []byte(claims), nil
 	default:
 		return json.Marshal(claims)
 	}
@@ -137,3 +134,8 @@ func getPredefinedHeader(header Header) string {
 		return ""
 	}
 }
+
+var (
+	b64Encode     = base64.RawURLEncoding.Encode
+	b64EncodedLen = base64.RawURLEncoding.EncodedLen
+)

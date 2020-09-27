@@ -2,6 +2,8 @@ package jwt
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
 )
 
 // Token represents a JWT token.
@@ -23,6 +25,15 @@ func (t *Token) String() string {
 // Bytes representation of the token.
 func (t *Token) Bytes() []byte {
 	return t.raw
+}
+
+// DecodeClaims into a given container.
+func (t *Token) DecodeClaims(into interface{}) error {
+	err := json.Unmarshal(t.claims, into)
+	if err != nil {
+		return fmt.Errorf("jwt: claims are not valid: %w", err)
+	}
+	return nil
 }
 
 // Header of the token.
@@ -50,7 +61,7 @@ func (t *Token) ClaimsPart() []byte {
 	return t.raw[t.dot1+1 : t.dot2]
 }
 
-// PayloadPart returns token's payload (header.claims).
+// PayloadPart returns token's payload (header and claims in base64).
 func (t *Token) PayloadPart() []byte {
 	return t.raw[:t.dot2]
 }

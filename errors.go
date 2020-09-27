@@ -13,6 +13,15 @@ var (
 	// ErrInvalidFormat indicates that token format is not valid.
 	ErrInvalidFormat = errors.New("jwt: token format is not valid")
 
+	// ErrInvalidHeaderFormat indicates that token header format is not valid.
+	ErrInvalidHeaderFormat = errors.New("jwt: token header format is not valid")
+
+	// ErrInvalidClaimsFormat indicates that token claims format is not valid.
+	ErrInvalidClaimsFormat = errors.New("jwt: token claims format is not valid")
+
+	// ErrInvalidSignatureFormat indicates that token signature format is not valid.
+	ErrInvalidSignatureFormat = errors.New("jwt: token signature format is not valid")
+
 	// ErrAudienceInvalidFormat indicates that audience format is not valid.
 	ErrAudienceInvalidFormat = errors.New("jwt: audience format is not valid")
 
