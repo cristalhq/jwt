@@ -63,19 +63,19 @@ type hsAlg struct {
 	hashPool *sync.Pool
 }
 
-func (hs hsAlg) Algorithm() Algorithm {
+func (hs *hsAlg) Algorithm() Algorithm {
 	return hs.alg
 }
 
-func (hs hsAlg) SignSize() int {
+func (hs *hsAlg) SignSize() int {
 	return hs.hash.Size()
 }
 
-func (hs hsAlg) Sign(payload []byte) ([]byte, error) {
+func (hs *hsAlg) Sign(payload []byte) ([]byte, error) {
 	return hs.sign(payload)
 }
 
-func (hs hsAlg) Verify(payload, signature []byte) error {
+func (hs *hsAlg) Verify(payload, signature []byte) error {
 	digest, err := hs.sign(payload)
 	if err != nil {
 		return err
@@ -86,7 +86,7 @@ func (hs hsAlg) Verify(payload, signature []byte) error {
 	return nil
 }
 
-func (hs hsAlg) sign(payload []byte) ([]byte, error) {
+func (hs *hsAlg) sign(payload []byte) ([]byte, error) {
 	hasher := hs.hashPool.Get().(hash.Hash)
 	defer func() {
 		hasher.Reset()
