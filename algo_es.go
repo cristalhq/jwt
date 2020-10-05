@@ -90,8 +90,8 @@ func (es *esAlg) Sign(payload []byte) ([]byte, error) {
 	return signature, nil
 }
 
-func (ed *esAlg) VerifyToken(token *Token) error {
-	return ed.Verify(token.Payload(), token.Signature())
+func (es *esAlg) VerifyToken(token *Token) error {
+	return es.Verify(token.Payload(), token.Signature())
 }
 
 func (es *esAlg) Verify(payload, signature []byte) error {
