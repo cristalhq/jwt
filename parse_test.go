@@ -8,20 +8,24 @@ func TestParseString(t *testing.T) {
 	f := func(token string, header Header, payload, signature string) {
 		t.Helper()
 
-		tk, err := ParseString(token)
+		tk, err := ParseNoVerifyString(token)
 		if err != nil {
 			t.Errorf("want nil, got %#v", err)
 		}
+
 		if tk.Header() != header {
 			t.Errorf("want %#v, got %#v", header, tk.Header())
 		}
+
 		headerStr := toBase64(headerString(header))
 		if string(tk.RawHeader()) != headerStr {
 			t.Errorf("want %#v, got %#v", headerStr, string(tk.RawHeader()))
 		}
+
 		if string(tk.Payload()) != payload {
 			t.Errorf("want %#v, got %#v", payload, string(tk.Payload()))
 		}
+
 		sign := toBase64(string(tk.Signature()))
 		if sign != signature {
 			t.Errorf("want %#v, got %#v", signature, sign)
@@ -34,7 +38,8 @@ func TestParseString(t *testing.T) {
 			Algorithm: HS256,
 			Type:      "JWT",
 		},
-		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ",
+		`{"jti": "just an id","aud": "audience"}`,
+		// "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ",
 		"t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo",
 	)
 	f(
@@ -44,7 +49,8 @@ func TestParseString(t *testing.T) {
 			Type:        "JWT",
 			ContentType: "token",
 		},
-		"eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCIsImN0eSI6InRva2VuIn0.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ",
+		`{"jti": "just an id","aud": "audience"}`,
+		// "eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCIsImN0eSI6InRva2VuIn0.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ",
 		"t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo",
 	)
 }
@@ -53,7 +59,7 @@ func TestParseMalformed(t *testing.T) {
 	f := func(got string) {
 		t.Helper()
 
-		_, err := ParseString(got)
+		_, err := ParseNoVerifyString(got)
 		if err == nil {
 			t.Error("got nil want nil")
 		}
@@ -66,6 +72,8 @@ func TestParseMalformed(t *testing.T) {
 	f(`xyz.abc.x/yz`)
 	f(`x/z.ab_c.xyz`)
 	f(`ab_c.xyz.xyz`)
+	f(`e30.ab/c.xyz`) // `e30` is JSON `{}` in base64
+	f(`e30.e30.ab/c`)
 }
 
 func headerString(header Header) string {
