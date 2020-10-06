@@ -143,7 +143,7 @@ func Test_Two_ECDSA(t *testing.T) {
 			t.Fatal(err)
 		}
 		t.Run("check-"+test.alg.String(), func(t *testing.T) {
-			obj, err := ParseAndVerify(token, verifier)
+			obj, err := Parse(token, verifier)
 			if err != nil {
 				t.Fatal(err)
 			}
