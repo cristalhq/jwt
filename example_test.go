@@ -35,7 +35,7 @@ func Example_JWT() {
 
 	// 6. parse a token (by example received from a request)
 	tokenStr := token.String()
-	newToken, errParse := jwt.ParseString(tokenStr)
+	newToken, errParse := jwt.ParseNoVerifyString(tokenStr)
 	checkErr(errParse)
 
 	// 7. and verify it's signature
@@ -43,7 +43,7 @@ func Example_JWT() {
 	checkErr(errVerify)
 
 	// 8. also you can parse and verify in 1 operation
-	newToken, err = jwt.ParseAndVerifyString(tokenStr, verifier)
+	newToken, err = jwt.ParseString(tokenStr, verifier)
 	checkErr(err)
 
 	// 9. get standard claims
