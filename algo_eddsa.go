@@ -44,6 +44,10 @@ func (ed *edDSAAlg) Sign(payload []byte) ([]byte, error) {
 	return ed25519.Sign(ed.privateKey, payload), nil
 }
 
+func (ed *edDSAAlg) VerifyToken(token *Token) error {
+	return ed.Verify(token.Payload(), token.Signature())
+}
+
 func (ed *edDSAAlg) Verify(payload, signature []byte) error {
 	if !ed25519.Verify(ed.publicKey, payload, signature) {
 		return ErrInvalidSignature
