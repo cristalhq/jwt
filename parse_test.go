@@ -26,7 +26,7 @@ func TestParseNoVerifyString(t *testing.T) {
 			t.Errorf("want %#v, got %#v", header, tk.Header())
 		}
 
-		gotClaims := string(tk.Claims())
+		gotClaims := string(tk.RawClaims())
 		if gotClaims != claims {
 			t.Errorf("want claim %s, got %s", claims, gotClaims)
 		}
