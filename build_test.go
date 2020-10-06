@@ -16,12 +16,12 @@ func TestBuild(t *testing.T) {
 		t.Helper()
 
 		builder := NewBuilder(signer)
-		token, err := builder.BuildBytes(claims)
+		token, err := builder.Build(claims)
 		if err != nil {
 			t.Error(err)
 		}
 
-		raw := string(token)
+		raw := string(token.Raw())
 		if raw != want {
 			t.Errorf("want %v,\n got %v", want, raw)
 		}
@@ -92,7 +92,7 @@ func TestBuildMalformed(t *testing.T) {
 		t.Helper()
 
 		builder := NewBuilder(signer)
-		_, err := builder.BuildBytes(claims)
+		_, err := builder.Build(claims)
 		if err == nil {
 			t.Error("want err, got nil")
 		}
@@ -133,7 +133,7 @@ func Test_Two_ECDSA(t *testing.T) {
 			t.Fatal(err)
 		}
 		bui := NewBuilder(signer)
-		token, err := bui.BuildBytes(mybenchClaims)
+		token, err := bui.Build(mybenchClaims)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -143,7 +143,7 @@ func Test_Two_ECDSA(t *testing.T) {
 			t.Fatal(err)
 		}
 		t.Run("check-"+test.alg.String(), func(t *testing.T) {
-			obj, err := Parse(token, verifier)
+			obj, err := Parse(token.Raw(), verifier)
 			if err != nil {
 				t.Fatal(err)
 			}
