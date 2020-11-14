@@ -1,13 +1,17 @@
 # jwt
 
-[![Build Status][build-img]][build-url]
-[![GoDoc][pkg-img]][pkg-url]
-[![Go Report Card][reportcard-img]][reportcard-url]
-[![Coverage][coverage-img]][coverage-url]
+[![build-img]][build-url]
+[![pkg-img]][pkg-url]
+[![reportcard-img]][reportcard-url]
+[![coverage-img]][coverage-url]
 
 JSON Web Token for Go [RFC 7519](https://tools.ietf.org/html/rfc7519), also see [jwt.io](https://jwt.io) for more.
 
 The latest version is `v3`.
+
+## Rationale
+
+There are many JWT libraries, but many of them are hard to use (unclear or fixed API), not optimal (unneeded allocations + strange API). This library addresses all these issues. It's simple to read, to use, memory and CPU conservative.
 
 ## Features
 
@@ -15,7 +19,7 @@ The latest version is `v3`.
 * Clean and tested code.
 * Optimized for speed.
 * Dependency-free.
-* All sign methods supported
+* All well-known algorithms are supported
   * HMAC (HS)
   * RSA (RS)
   * RSA-PSS (PS)
@@ -84,7 +88,7 @@ Also see examples: [this above](https://github.com/cristalhq/jwt/blob/master/exa
 
 ## Documentation
 
-See [these docs][doc-url].
+See [these docs][pkg-url].
 
 ## License
 
