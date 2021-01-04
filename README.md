@@ -28,7 +28,7 @@ The latest version is `v3`.
 Go version 1.13+
 
 ```
-go get github.com/cristalhq/jwt/v3
+go get github.com/cristalhq/jwt
 ```
 
 ## Example
@@ -43,7 +43,7 @@ checkErr(err)
 
 // 2. create q standard claims
 // (you can create your own, see: Example_BuildUserClaims)
-claims := &jwt.StandardClaims{
+claims := &jwt.RegisteredClaims{
     Audience: []string{"admin"},
     ID:       "random-unique-string",
 }
