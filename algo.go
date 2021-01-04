@@ -16,8 +16,7 @@ type Signer interface {
 // Verifier is used to verify tokens.
 type Verifier interface {
 	Algorithm() Algorithm
-	Verify(payload, signature []byte) error
-	VerifyToken(*Token) error
+	Verify(*Token) error
 }
 
 // Algorithm for signing and verifying.
@@ -55,4 +54,8 @@ func hashPayload(hash crypto.Hash, payload []byte) ([]byte, error) {
 	}
 	signed := hasher.Sum(nil)
 	return signed, nil
+}
+
+func constTimeAlgEqual(a, b Algorithm) bool {
+	return constTimeEqual(a.String(), b.String())
 }

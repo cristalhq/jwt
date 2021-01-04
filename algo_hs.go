@@ -22,8 +22,7 @@ type hmacAlgo interface {
 	Algorithm() Algorithm
 	SignSize() int
 	Sign(payload []byte) ([]byte, error)
-	Verify(payload, signature []byte) error
-	VerifyToken(token *Token) error
+	Verify(token *Token) error
 }
 
 func newHS(alg Algorithm, key []byte) (hmacAlgo, error) {
@@ -76,11 +75,14 @@ func (hs *hsAlg) Sign(payload []byte) ([]byte, error) {
 	return hs.sign(payload)
 }
 
-func (hs *hsAlg) VerifyToken(token *Token) error {
-	return hs.Verify(token.Payload(), token.Signature())
-}
+func (hs *hsAlg) Verify(token *Token) error {
+	if !constTimeAlgEqual(token.Header().Algorithm, hs.Algorithm()) {
+		return ErrAlgorithmMismatch
+	}
 
-func (hs *hsAlg) Verify(payload, signature []byte) error {
+	payload := token.Payload()
+	signature := token.Signature()
+
 	digest, err := hs.sign(payload)
 	if err != nil {
 		return err

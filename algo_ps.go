@@ -99,11 +99,14 @@ func (ps *psAlg) Sign(payload []byte) ([]byte, error) {
 	return signature, nil
 }
 
-func (ps *psAlg) VerifyToken(token *Token) error {
-	return ps.Verify(token.Payload(), token.Signature())
-}
+func (ps *psAlg) Verify(token *Token) error {
+	if !constTimeAlgEqual(token.Header().Algorithm, ps.Algorithm()) {
+		return ErrAlgorithmMismatch
+	}
 
-func (ps *psAlg) Verify(payload, signature []byte) error {
+	payload := token.Payload()
+	signature := token.Signature()
+
 	digest, err := hashPayload(ps.hash, payload)
 	if err != nil {
 		return err

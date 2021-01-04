@@ -90,11 +90,14 @@ func (es *esAlg) Sign(payload []byte) ([]byte, error) {
 	return signature, nil
 }
 
-func (es *esAlg) VerifyToken(token *Token) error {
-	return es.Verify(token.Payload(), token.Signature())
-}
+func (es *esAlg) Verify(token *Token) error {
+	if !constTimeAlgEqual(token.Header().Algorithm, es.Algorithm()) {
+		return ErrAlgorithmMismatch
+	}
 
-func (es *esAlg) Verify(payload, signature []byte) error {
+	payload := token.Payload()
+	signature := token.Signature()
+
 	if len(signature) != es.SignSize() {
 		return ErrInvalidSignature
 	}
