@@ -34,6 +34,16 @@ func TestBuild(t *testing.T) {
 		},
 		`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`,
 	)
+	f(
+		mustSigner(NewSignerHS(HS256, []byte("test-key-256"))),
+		"i-am-already-a-claims",
+		`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.aS1hbS1hbHJlYWR5LWEtY2xhaW1z.CLeN9xtQ9afr2_niL2JmurspYVwxDe0LxffAba3Wr9g`,
+	)
+	f(
+		mustSigner(NewSignerHS(HS256, []byte("test-key-256"))),
+		[]byte("i-am-already-a-claims"),
+		`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.aS1hbS1hbHJlYWR5LWEtY2xhaW1z.CLeN9xtQ9afr2_niL2JmurspYVwxDe0LxffAba3Wr9g`,
+	)
 }
 
 func TestBuildHeader(t *testing.T) {
