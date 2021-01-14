@@ -85,9 +85,20 @@ func TestBuildHeader(t *testing.T) {
 		WithKeyID("test"),
 	)
 	f(
+		mustSigner(NewSignerHS(HS512, key)),
+		`{"alg":"HS512","typ":"JWT","cty":"jwk+json"}`,
+		WithContentType("jwk+json"),
+	)
+
+	f(
 		mustSigner(NewSignerRS(RS256, rsaPrivateKey1)),
 		`{"alg":"RS256","typ":"JWT","kid":"test"}`,
 		WithKeyID("test"),
+	)
+	f(
+		mustSigner(NewSignerRS(RS512, rsaPrivateKey1)),
+		`{"alg":"RS512","typ":"JWT","cty":"jwk+json"}`,
+		WithContentType("jwk+json"),
 	)
 }
 

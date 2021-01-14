@@ -13,9 +13,14 @@ var (
 // BuilderOption is used to modify builder properties.
 type BuilderOption func(*Builder)
 
-// WithKeyID sets kid into token header.
+// WithKeyID sets `kid` header for token.
 func WithKeyID(kid string) BuilderOption {
 	return func(b *Builder) { b.header.KeyID = kid }
+}
+
+// WithContentType sets `cty` header for token.
+func WithContentType(cty string) BuilderOption {
+	return func(b *Builder) { b.header.ContentType = cty }
 }
 
 // Builder is used to create a new token.
