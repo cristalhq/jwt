@@ -37,10 +37,10 @@ func TestBuild(t *testing.T) {
 }
 
 func TestBuildHeader(t *testing.T) {
-	f := func(signer Signer, header Header, want string) {
+	f := func(signer Signer, want string, opts ...BuilderOption) {
 		t.Helper()
 
-		token, err := NewBuilder(signer).Build(&StandardClaims{})
+		token, err := NewBuilder(signer, opts...).Build(&StandardClaims{})
 		if err != nil {
 			t.Error(err)
 		}
@@ -55,34 +55,50 @@ func TestBuildHeader(t *testing.T) {
 	key := []byte("key")
 	f(
 		mustSigner(NewSignerHS(HS256, key)),
-		Header{Algorithm: HS256, Type: "JWT"},
 		`{"alg":"HS256","typ":"JWT"}`,
 	)
 	f(
 		mustSigner(NewSignerHS(HS384, key)),
-		Header{Algorithm: HS384, Type: "JWT"},
 		`{"alg":"HS384","typ":"JWT"}`,
 	)
 	f(
 		mustSigner(NewSignerHS(HS512, key)),
-		Header{Algorithm: HS512, Type: "JWT"},
 		`{"alg":"HS512","typ":"JWT"}`,
 	)
 
 	f(
 		mustSigner(NewSignerRS(RS256, rsaPrivateKey1)),
-		Header{Algorithm: RS256, Type: "JWT"},
 		`{"alg":"RS256","typ":"JWT"}`,
 	)
 	f(
 		mustSigner(NewSignerRS(RS384, rsaPrivateKey1)),
-		Header{Algorithm: RS384, Type: "JWT"},
 		`{"alg":"RS384","typ":"JWT"}`,
 	)
 	f(
 		mustSigner(NewSignerRS(RS512, rsaPrivateKey1)),
-		Header{Algorithm: RS512, Type: "JWT"},
 		`{"alg":"RS512","typ":"JWT"}`,
+	)
+
+	f(
+		mustSigner(NewSignerHS(HS256, key)),
+		`{"alg":"HS256","typ":"JWT","kid":"test"}`,
+		WithKeyID("test"),
+	)
+	f(
+		mustSigner(NewSignerHS(HS512, key)),
+		`{"alg":"HS512","typ":"JWT","cty":"jwk+json"}`,
+		WithContentType("jwk+json"),
+	)
+
+	f(
+		mustSigner(NewSignerRS(RS256, rsaPrivateKey1)),
+		`{"alg":"RS256","typ":"JWT","kid":"test"}`,
+		WithKeyID("test"),
+	)
+	f(
+		mustSigner(NewSignerRS(RS512, rsaPrivateKey1)),
+		`{"alg":"RS512","typ":"JWT","cty":"jwk+json"}`,
+		WithContentType("jwk+json"),
 	)
 }
 

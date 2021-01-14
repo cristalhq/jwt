@@ -10,6 +10,19 @@ var (
 	b64EncodedLen = base64.RawURLEncoding.EncodedLen
 )
 
+// BuilderOption is used to modify builder properties.
+type BuilderOption func(*Builder)
+
+// WithKeyID sets `kid` header for token.
+func WithKeyID(kid string) BuilderOption {
+	return func(b *Builder) { b.header.KeyID = kid }
+}
+
+// WithContentType sets `cty` header for token.
+func WithContentType(cty string) BuilderOption {
+	return func(b *Builder) { b.header.ContentType = cty }
+}
+
 // Builder is used to create a new token.
 type Builder struct {
 	signer    Signer
@@ -28,7 +41,7 @@ func Build(signer Signer, claims interface{}) (*Token, error) {
 }
 
 // NewBuilder returns new instance of Builder.
-func NewBuilder(signer Signer) *Builder {
+func NewBuilder(signer Signer, opts ...BuilderOption) *Builder {
 	b := &Builder{
 		signer: signer,
 		header: Header{
@@ -36,6 +49,11 @@ func NewBuilder(signer Signer) *Builder {
 			Type:      "JWT",
 		},
 	}
+
+	for _, opt := range opts {
+		opt(b)
+	}
+
 	b.headerRaw = encodeHeader(b.header)
 	return b
 }
@@ -105,7 +123,7 @@ func encodeClaims(claims interface{}) ([]byte, error) {
 }
 
 func encodeHeader(header Header) []byte {
-	if header.Type == "JWT" && header.ContentType == "" {
+	if header.Type == "JWT" && header.ContentType == "" && header.KeyID == "" {
 		if h := getPredefinedHeader(header); h != "" {
 			return []byte(h)
 		}
