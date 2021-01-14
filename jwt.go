@@ -6,7 +6,7 @@ import (
 )
 
 // Token represents a JWT token.
-// See: https://tools.ietf.org/html/rfc7519
+// See: https://tools.ietf.org/html/rfc7519, https://tools.ietf.org/html/rfc7517
 //
 type Token struct {
 	raw       []byte
@@ -64,6 +64,7 @@ type Header struct {
 	Algorithm   Algorithm `json:"alg"`
 	Type        string    `json:"typ,omitempty"` // only "JWT" can be here
 	ContentType string    `json:"cty,omitempty"`
+	KeyID       string    `json:"kid,omitempty"`
 }
 
 // MarshalJSON implements the json.Marshaler interface.
@@ -79,6 +80,10 @@ func (h *Header) MarshalJSON() ([]byte, error) {
 	if h.ContentType != "" {
 		buf.WriteString(`","cty":"`)
 		buf.WriteString(h.ContentType)
+	}
+	if h.KeyID != "" {
+		buf.WriteString(`","kid":"`)
+		buf.WriteString(h.KeyID)
 	}
 	buf.WriteString(`"}`)
 

@@ -58,6 +58,10 @@ func TestMarshalHeader(t *testing.T) {
 		&Header{Algorithm: RS256, Type: "JwT", ContentType: "token"},
 		`{"alg":"RS256","typ":"JwT","cty":"token"}`,
 	)
+	f(
+		&Header{Algorithm: RS256, Type: "JwT", ContentType: "token", KeyID: "test"},
+		`{"alg":"RS256","typ":"JwT","cty":"token","kid":"test"}`,
+	)
 }
 
 func TestSecurePrint(t *testing.T) {
