@@ -1,5 +1,11 @@
 name: build
-on: [push, pull_request]
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
 jobs:
 
   build:
@@ -7,31 +13,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
 
-    - name: Set up Go 1.14
-      uses: actions/setup-go@v1
+    - name: Set up Go 1.x
+      uses: actions/setup-go@v2
       with:
-        go-version: 1.14
-      id: go
+        go-version: ^1.15
 
     - name: Check out code
-      uses: actions/checkout@v1
+      uses: actions/checkout@v2
 
     - name: Download module dependencies
       env: 
          GOPROXY: "https://proxy.golang.org"
       run: go mod download
 
-    - name: Build
-      run: go build .
-
     - name: Test
-      run: go test -v ./...
-
-    - name: Generate Coverage
-      run: go test -coverprofile=coverage.txt
+      run: go test -v -coverprofile=coverage.txt ./...
 
     - name: Upload Coverage
       uses: codecov/codecov-action@v1
+      continue-on-error: true
       with:
         token: ${{secrets.CODECOV_TOKEN}}
         file: ./coverage.txt
