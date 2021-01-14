@@ -5,11 +5,6 @@ import (
 	"encoding/json"
 )
 
-var (
-	b64Encode     = base64.RawURLEncoding.Encode
-	b64EncodedLen = base64.RawURLEncoding.EncodedLen
-)
-
 // BuilderOption is used to modify builder properties.
 type BuilderOption func(*Builder)
 
@@ -92,7 +87,7 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 	idx += lenC
 
 	// calculate signature of already written 'header.claims'
-	signature, errSign := b.signer.Sign(token[:idx])
+	rawSignature, errSign := b.signer.Sign(token[:idx])
 	if errSign != nil {
 		return nil, errSign
 	}
@@ -100,15 +95,15 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 	// add '.' and append encoded signature
 	token[idx] = '.'
 	idx++
-	b64Encode(token[idx:], signature)
+	b64Encode(token[idx:], rawSignature)
 
 	t := &Token{
 		raw:       token,
 		dot1:      lenH,
 		dot2:      lenH + 1 + lenC,
-		signature: signature,
 		header:    b.header,
 		claims:    rawClaims,
+		signature: rawSignature,
 	}
 	return t, nil
 }
@@ -174,3 +169,8 @@ func getPredefinedHeader(header Header) string {
 		return ""
 	}
 }
+
+var (
+	b64Encode     = base64.RawURLEncoding.Encode
+	b64EncodedLen = base64.RawURLEncoding.EncodedLen
+)
