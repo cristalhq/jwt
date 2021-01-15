@@ -37,54 +37,62 @@ GO111MODULE=on go get github.com/cristalhq/jwt/v3
 
 ## Example
 
+Build new token:
+
 ```go
-// 1. create a signer & a verifier
+// create a Signer (HMAC in this example)
 key := []byte(`secret`)
 signer, err := jwt.NewSignerHS(jwt.HS256, key)
 checkErr(err)
-verifier, err := jwt.NewVerifierHS(jwt.HS256, key)
-checkErr(err)
 
-// 2. create q standard claims
-// (you can create your own, see: Example_BuildUserClaims)
-claims := &jwt.StandardClaims{
+// create claims (you can create your own, see: Example_BuildUserClaims)
+claims := &jwt.RegisteredClaims{
     Audience: []string{"admin"},
     ID:       "random-unique-string",
 }
 
-// 3. create a builder
+// create a Builder
 builder := jwt.NewBuilder(signer)
 
-// 4. and build a token
+// and build a Token
 token, err := builder.Build(claims)
+checkErr(err)
 
-// 5. here is your token  :)
-var _ []byte = token.Raw() // or just token.String() for string
+// here is token as byte slice
+var _ []byte = token.Bytes() // or just token.String() for string
+```
 
-// 6. parse a token (by example received from a request)
-tokenStr := token.String()
-newToken, errParse := jwt.ParseString(tokenStr)
-checkErr(errParse)
+Parse and verify token:
+```go
+// create a Verifier (HMAC in this example)
+key := []byte(`secret`)
+verifier, err := jwt.NewVerifierHS(jwt.HS256, key)
+checkErr(err)
 
-// 7. and verify it's signature
-errVerify := verifier.Verify(newToken.Payload(), newToken.Signature())
-checkErr(errVerify)
+// parse a Token (by example received from a request)
+tokenStr := `<header.payload.signature>`
+token, err := jwt.ParseString(tokenStr, verifier)
+checkErr(err)
 
-// 8. also you can parse and verify in 1 operation
+// and verify it's signature
+err = verifier.Verify(token)
+checkErr(err)
+
+// also you can parse and verify together
 newToken, err = jwt.ParseAndVerifyString(tokenStr, verifier)
 checkErr(err)
 
-// 9. get standard claims
+// get standard claims
 var newClaims jwt.StandardClaims
 errClaims := json.Unmarshal(newToken.RawClaims(), &newClaims)
 checkErr(errClaims)
 
-// 10. verify claims
+// verify claims as you 
 var _ bool = newClaims.IsForAudience("admin")
 var _ bool = newClaims.IsValidAt(time.Now())
 ```
 
-Also see examples: [this above](https://github.com/cristalhq/jwt/blob/master/example_test.go), [build](https://github.com/cristalhq/jwt/blob/master/example_build_test.go), [parse](https://github.com/cristalhq/jwt/blob/master/example_parse_test.go).
+Also see examples: [example_test.go](https://github.com/cristalhq/jwt/blob/master/example_test.go).
 
 ## Documentation
 
