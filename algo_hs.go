@@ -77,7 +77,10 @@ func (hs *hsAlg) Sign(payload []byte) ([]byte, error) {
 }
 
 func (hs *hsAlg) VerifyToken(token *Token) error {
-	return hs.Verify(token.Payload(), token.Signature())
+	if constTimeAlgEqual(token.Header().Algorithm, hs.alg) {
+		return hs.Verify(token.Payload(), token.Signature())
+	}
+	return ErrAlgorithmMismatch
 }
 
 func (hs *hsAlg) Verify(payload, signature []byte) error {

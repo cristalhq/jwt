@@ -45,7 +45,10 @@ func (ed *edDSAAlg) Sign(payload []byte) ([]byte, error) {
 }
 
 func (ed *edDSAAlg) VerifyToken(token *Token) error {
-	return ed.Verify(token.Payload(), token.Signature())
+	if constTimeAlgEqual(token.Header().Algorithm, ed.alg) {
+		return ed.Verify(token.Payload(), token.Signature())
+	}
+	return ErrAlgorithmMismatch
 }
 
 func (ed *edDSAAlg) Verify(payload, signature []byte) error {
