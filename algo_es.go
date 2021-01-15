@@ -91,7 +91,10 @@ func (es *esAlg) Sign(payload []byte) ([]byte, error) {
 }
 
 func (es *esAlg) VerifyToken(token *Token) error {
-	return es.Verify(token.Payload(), token.Signature())
+	if constTimeAlgEqual(token.Header().Algorithm, es.alg) {
+		return es.Verify(token.Payload(), token.Signature())
+	}
+	return ErrAlgorithmMismatch
 }
 
 func (es *esAlg) Verify(payload, signature []byte) error {

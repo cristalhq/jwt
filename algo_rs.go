@@ -80,7 +80,10 @@ func (rs *rsAlg) Sign(payload []byte) ([]byte, error) {
 }
 
 func (rs *rsAlg) VerifyToken(token *Token) error {
-	return rs.Verify(token.Payload(), token.Signature())
+	if constTimeAlgEqual(token.Header().Algorithm, rs.alg) {
+		return rs.Verify(token.Payload(), token.Signature())
+	}
+	return ErrAlgorithmMismatch
 }
 
 func (rs *rsAlg) Verify(payload, signature []byte) error {

@@ -100,7 +100,10 @@ func (ps *psAlg) Sign(payload []byte) ([]byte, error) {
 }
 
 func (ps *psAlg) VerifyToken(token *Token) error {
-	return ps.Verify(token.Payload(), token.Signature())
+	if constTimeAlgEqual(token.Header().Algorithm, ps.alg) {
+		return ps.Verify(token.Payload(), token.Signature())
+	}
+	return ErrAlgorithmMismatch
 }
 
 func (ps *psAlg) Verify(payload, signature []byte) error {
