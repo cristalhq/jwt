@@ -27,7 +27,7 @@ func ParseAndVerify(raw []byte, verifier Verifier) (*Token, error) {
 	if err != nil {
 		return nil, err
 	}
-	if token.Header().Algorithm != verifier.Algorithm() {
+	if !constTimeAlgEqual(token.Header().Algorithm, verifier.Algorithm()) {
 		return nil, ErrAlgorithmMismatch
 	}
 	if err := verifier.Verify(token.Payload(), token.Signature()); err != nil {
