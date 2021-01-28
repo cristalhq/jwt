@@ -75,7 +75,7 @@ token, err := jwt.ParseString(tokenStr, verifier)
 checkErr(err)
 
 // and verify it's signature
-err = verifier.Verify(token)
+err = verifier.Verify(token.Payload(), token.Signature())
 checkErr(err)
 
 // also you can parse and verify together
