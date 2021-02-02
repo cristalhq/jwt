@@ -79,7 +79,7 @@ err = verifier.Verify(token.Payload(), token.Signature())
 checkErr(err)
 
 // also you can parse and verify together
-newToken, err = jwt.ParseAndVerifyString(tokenStr, verifier)
+newToken, err := jwt.ParseAndVerifyString(tokenStr, verifier)
 checkErr(err)
 
 // get standard claims
