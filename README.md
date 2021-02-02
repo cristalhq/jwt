@@ -71,7 +71,7 @@ checkErr(err)
 
 // parse a Token (by example received from a request)
 tokenStr := `<header.payload.signature>`
-token, err := jwt.ParseString(tokenStr, verifier)
+token, err := jwt.ParseString(tokenStr)
 checkErr(err)
 
 // and verify it's signature
