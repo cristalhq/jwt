@@ -18,6 +18,7 @@ There are many JWT libraries, but many of them are hard to use (unclear or fixed
 * Simple API.
 * Clean and tested code.
 * Optimized for speed.
+* Concurrent-safe.
 * Dependency-free.
 * All well-known algorithms are supported
   * HMAC (HS)
