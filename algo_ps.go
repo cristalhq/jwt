@@ -9,11 +9,11 @@ import (
 // NewSignerPS returns a new RSA-PSS-based signer.
 func NewSignerPS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 	if key == nil {
-		return nil, ErrInvalidKey
+		return nil, ErrNilKey
 	}
-	hash, opts, ok := getParamsPS(alg)
-	if !ok {
-		return nil, ErrUnsupportedAlg
+	hash, opts, err := getParamsPS(alg, key.Size())
+	if err != nil {
+		return nil, err
 	}
 	return &psAlg{
 		alg:        alg,
@@ -26,11 +26,11 @@ func NewSignerPS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 // NewVerifierPS returns a new RSA-PSS-based signer.
 func NewVerifierPS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
 	if key == nil {
-		return nil, ErrInvalidKey
+		return nil, ErrNilKey
 	}
-	hash, opts, ok := getParamsPS(alg)
-	if !ok {
-		return nil, ErrUnsupportedAlg
+	hash, opts, err := getParamsPS(alg, key.Size())
+	if err != nil {
+		return nil, err
 	}
 	return &psAlg{
 		alg:       alg,
@@ -40,17 +40,24 @@ func NewVerifierPS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
 	}, nil
 }
 
-func getParamsPS(alg Algorithm) (crypto.Hash, *rsa.PSSOptions, bool) {
+func getParamsPS(alg Algorithm, size int) (crypto.Hash, *rsa.PSSOptions, error) {
+	var hash crypto.Hash
+	var opts *rsa.PSSOptions
 	switch alg {
 	case PS256:
-		return crypto.SHA256, optsPS256, true
+		hash, opts = crypto.SHA256, optsPS256
 	case PS384:
-		return crypto.SHA384, optsPS384, true
+		hash, opts = crypto.SHA384, optsPS384
 	case PS512:
-		return crypto.SHA512, optsPS512, true
+		hash, opts = crypto.SHA512, optsPS512
 	default:
-		return 0, nil, false
+		return 0, nil, ErrUnsupportedAlg
 	}
+
+	if alg.keySize() != size {
+		return 0, nil, ErrInvalidKey
+	}
+	return hash, opts, nil
 }
 
 var (

@@ -10,11 +10,11 @@ import (
 // NewSignerES returns a new ECDSA-based signer.
 func NewSignerES(alg Algorithm, key *ecdsa.PrivateKey) (Signer, error) {
 	if key == nil {
-		return nil, ErrInvalidKey
+		return nil, ErrNilKey
 	}
-	hash, ok := getParamsES(alg)
-	if !ok {
-		return nil, ErrUnsupportedAlg
+	hash, err := getParamsES(alg, roundBytes(key.PublicKey.Params().BitSize)*2)
+	if err != nil {
+		return nil, err
 	}
 	return &esAlg{
 		alg:        alg,
@@ -27,11 +27,11 @@ func NewSignerES(alg Algorithm, key *ecdsa.PrivateKey) (Signer, error) {
 // NewVerifierES returns a new ECDSA-based verifier.
 func NewVerifierES(alg Algorithm, key *ecdsa.PublicKey) (Verifier, error) {
 	if key == nil {
-		return nil, ErrInvalidKey
+		return nil, ErrNilKey
 	}
-	hash, ok := getParamsES(alg)
-	if !ok {
-		return nil, ErrUnsupportedAlg
+	hash, err := getParamsES(alg, roundBytes(key.Params().BitSize)*2)
+	if err != nil {
+		return nil, err
 	}
 	return &esAlg{
 		alg:       alg,
@@ -41,17 +41,23 @@ func NewVerifierES(alg Algorithm, key *ecdsa.PublicKey) (Verifier, error) {
 	}, nil
 }
 
-func getParamsES(alg Algorithm) (crypto.Hash, bool) {
+func getParamsES(alg Algorithm, size int) (crypto.Hash, error) {
+	var hash crypto.Hash
 	switch alg {
 	case ES256:
-		return crypto.SHA256, true
+		hash = crypto.SHA256
 	case ES384:
-		return crypto.SHA384, true
+		hash = crypto.SHA384
 	case ES512:
-		return crypto.SHA512, true
+		hash = crypto.SHA512
 	default:
-		return 0, false
+		return 0, ErrUnsupportedAlg
 	}
+
+	if alg.keySize() != size {
+		return 0, ErrInvalidKey
+	}
+	return hash, nil
 }
 
 type esAlg struct {

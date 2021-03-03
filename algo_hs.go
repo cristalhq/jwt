@@ -28,7 +28,7 @@ type hmacAlgo interface {
 
 func newHS(alg Algorithm, key []byte) (hmacAlgo, error) {
 	if len(key) == 0 {
-		return nil, ErrInvalidKey
+		return nil, ErrNilKey
 	}
 	hash, ok := getHashHMAC(alg)
 	if !ok {

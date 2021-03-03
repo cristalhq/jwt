@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"crypto/rsa"
+	"errors"
 	"testing"
 )
 
@@ -33,6 +34,42 @@ func TestPS(t *testing.T) {
 	f(PS256, rsaOtherPrivateKey256, rsaPublicKey256, false)
 	f(PS384, rsaOtherPrivateKey384, rsaPublicKey384, false)
 	f(PS512, rsaOtherPrivateKey512, rsaPublicKey512, false)
+}
+
+func TestPS_BadKeys(t *testing.T) {
+	f := func(err, wantErr error) {
+		t.Helper()
+
+		if !errors.Is(err, wantErr) {
+			t.Fatalf("expected %v, got %v", wantErr, err)
+		}
+	}
+
+	f(getSignerError(NewSignerPS(PS256, nil)), ErrNilKey)
+	f(getSignerError(NewSignerPS(PS384, nil)), ErrNilKey)
+	f(getSignerError(NewSignerPS(PS512, nil)), ErrNilKey)
+
+	f(getSignerError(NewSignerPS("foo", rsaPrivateKey384)), ErrUnsupportedAlg)
+
+	f(getSignerError(NewSignerPS(PS256, rsaPrivateKey384)), ErrInvalidKey)
+	f(getSignerError(NewSignerPS(PS256, rsaPrivateKey512)), ErrInvalidKey)
+	f(getSignerError(NewSignerPS(PS384, rsaPrivateKey256)), ErrInvalidKey)
+	f(getSignerError(NewSignerPS(PS384, rsaPrivateKey512)), ErrInvalidKey)
+	f(getSignerError(NewSignerPS(PS512, rsaPrivateKey256)), ErrInvalidKey)
+	f(getSignerError(NewSignerPS(PS512, rsaPrivateKey384)), ErrInvalidKey)
+
+	f(getVerifierError(NewVerifierPS(PS256, nil)), ErrNilKey)
+	f(getVerifierError(NewVerifierPS(PS384, nil)), ErrNilKey)
+	f(getVerifierError(NewVerifierPS(PS512, nil)), ErrNilKey)
+
+	f(getVerifierError(NewVerifierPS("boo", rsaPublicKey384)), ErrUnsupportedAlg)
+
+	f(getVerifierError(NewVerifierPS(PS256, rsaPublicKey384)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierPS(PS256, rsaPublicKey512)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierPS(PS384, rsaPublicKey256)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierPS(PS384, rsaPublicKey512)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierPS(PS512, rsaPublicKey256)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierPS(PS512, rsaPublicKey384)), ErrInvalidKey)
 }
 
 func psSign(t *testing.T, alg Algorithm, privateKey *rsa.PrivateKey, payload string) []byte {
