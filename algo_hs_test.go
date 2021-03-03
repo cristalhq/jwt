@@ -4,110 +4,55 @@ import (
 	"testing"
 )
 
-func TestHMAC(t *testing.T) {
-	f := func(signer Signer, verifier Verifier, claims interface{}) {
+func TestHS(t *testing.T) {
+	f := func(alg Algorithm, signKey, verifyKey string, isCorrectSign bool) {
 		t.Helper()
 
-		tokenBuilder := NewBuilder(signer)
-		token, err := tokenBuilder.Build(claims)
-		if err != nil {
-			t.Errorf("want nil, got %#v", err)
-		}
+		const payload = `simple-string-payload`
 
-		err = verifier.Verify(token.Payload(), token.Signature())
-		if err != nil {
-			t.Errorf("want no err, got: %#v", err)
+		sign := hsSign(t, alg, signKey, payload)
+
+		err := hsVerify(t, alg, verifyKey, payload, sign)
+		if err != nil && isCorrectSign {
+			t.Fatal(err)
+		}
+		if err == nil && !isCorrectSign {
+			t.Fatal("must be not nil")
 		}
 	}
-	f(
-		mustSigner(NewSignerHS(HS256, []byte("key1"))),
-		mustVerifier(NewVerifierHS(HS256, []byte("key1"))),
-		&StandardClaims{},
-	)
-	f(
-		mustSigner(NewSignerHS(HS384, []byte("key2"))),
-		mustVerifier(NewVerifierHS(HS384, []byte("key2"))),
-		&StandardClaims{},
-	)
-	f(
-		mustSigner(NewSignerHS(HS512, []byte("key3"))),
-		mustVerifier(NewVerifierHS(HS512, []byte("key3"))),
-		&StandardClaims{},
-	)
 
-	f(
-		mustSigner(NewSignerHS(HS256, []byte("key1"))),
-		mustVerifier(NewVerifierHS(HS256, []byte("key1"))),
-		&customClaims{
-			TestField: "foo",
-		},
-	)
-	f(
-		mustSigner(NewSignerHS(HS384, []byte("key2"))),
-		mustVerifier(NewVerifierHS(HS384, []byte("key2"))),
-		&customClaims{
-			TestField: "bar",
-		},
-	)
-	f(
-		mustSigner(NewSignerHS(HS512, []byte("key3"))),
-		mustVerifier(NewVerifierHS(HS512, []byte("key3"))),
-		&customClaims{
-			TestField: "baz",
-		},
-	)
+	f(HS256, `hmac-secret-key`, `hmac-secret-key`, true)
+	f(HS384, `hmac-secret-key`, `hmac-secret-key`, true)
+	f(HS512, `hmac-secret-key`, `hmac-secret-key`, true)
+
+	f(HS256, `key_1`, `1_key`, false)
+	f(HS384, `key_1`, `1_key`, false)
+	f(HS512, `key_1`, `1_key`, false)
+
+	f(HS256, `hmac-secret-key`, `key_1`, false)
 }
 
-func TestHMAC_InvalidSignature(t *testing.T) {
-	f := func(signer Signer, verifier Verifier, claims interface{}) {
-		t.Helper()
+func hsSign(t *testing.T, alg Algorithm, key, payload string) []byte {
+	t.Helper()
 
-		tokenBuilder := NewBuilder(signer)
-		token, err := tokenBuilder.Build(claims)
-		if err != nil {
-			t.Errorf("want nil, got %#v", err)
-		}
-
-		err = verifier.Verify(token.Payload(), token.Signature())
-		if err == nil {
-			t.Errorf("want %#v, got nil", ErrInvalidSignature)
-		}
+	signer, errSigner := NewSignerHS(alg, []byte(key))
+	if errSigner != nil {
+		t.Fatalf("NewSignerHS %v", errSigner)
 	}
-	f(
-		mustSigner(NewSignerHS(HS256, []byte("key1"))),
-		mustVerifier(NewVerifierHS(HS256, []byte("1key"))),
-		&StandardClaims{},
-	)
-	f(
-		mustSigner(NewSignerHS(HS384, []byte("key2"))),
-		mustVerifier(NewVerifierHS(HS384, []byte("2key"))),
-		&StandardClaims{},
-	)
-	f(
-		mustSigner(NewSignerHS(HS512, []byte("key3"))),
-		mustVerifier(NewVerifierHS(HS512, []byte("3key"))),
-		&StandardClaims{},
-	)
 
-	f(
-		mustSigner(NewSignerHS(HS256, []byte("key1"))),
-		mustVerifier(NewVerifierHS(HS256, []byte("1key"))),
-		&customClaims{
-			TestField: "foo",
-		},
-	)
-	f(
-		mustSigner(NewSignerHS(HS384, []byte("key2"))),
-		mustVerifier(NewVerifierHS(HS384, []byte("2key"))),
-		&customClaims{
-			TestField: "bar",
-		},
-	)
-	f(
-		mustSigner(NewSignerHS(HS512, []byte("key3"))),
-		mustVerifier(NewVerifierHS(HS512, []byte("3key"))),
-		&customClaims{
-			TestField: "baz",
-		},
-	)
+	sign, errSign := signer.Sign([]byte(payload))
+	if errSign != nil {
+		t.Fatalf("SignHS %v", errSign)
+	}
+	return sign
+}
+
+func hsVerify(t *testing.T, alg Algorithm, key, payload string, sign []byte) error {
+	t.Helper()
+
+	verifier, errVerifier := NewVerifierHS(alg, []byte(key))
+	if errVerifier != nil {
+		t.Fatalf("NewVerifierHS %v", errVerifier)
+	}
+	return verifier.Verify([]byte(payload), sign)
 }

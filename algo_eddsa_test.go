@@ -2,100 +2,74 @@ package jwt
 
 import (
 	"crypto/ed25519"
+	"crypto/rand"
 	"testing"
 )
 
-// example from RFC 8037, appendix A.1
-var ed25519Private = ed25519.PrivateKey([]byte{
-	0x9d, 0x61, 0xb1, 0x9d, 0xef, 0xfd, 0x5a, 0x60,
-	0xba, 0x84, 0x4a, 0xf4, 0x92, 0xec, 0x2c, 0xc4,
-	0x44, 0x49, 0xc5, 0x69, 0x7b, 0x32, 0x69, 0x19,
-	0x70, 0x3b, 0xac, 0x03, 0x1c, 0xae, 0x7f, 0x60,
-	// public key suffix
-	0xd7, 0x5a, 0x98, 0x01, 0x82, 0xb1, 0x0a, 0xb7,
-	0xd5, 0x4b, 0xfe, 0xd3, 0xc9, 0x64, 0x07, 0x3a,
-	0x0e, 0xe1, 0x72, 0xf3, 0xda, 0xa6, 0x23, 0x25,
-	0xaf, 0x02, 0x1a, 0x68, 0xf7, 0x07, 0x51, 0x1a,
-})
+var (
+	ed25519PrivateKey ed25519.PrivateKey
+	ed25519PublicKey  ed25519.PublicKey
 
-var ed25519Private2 = ed25519.PrivateKey([]byte{
-	0x9d, 0x61, 0xb1, 0x9d, 0xef, 0xfd, 0x5a, 0x60,
-	0xba, 0x84, 0x4a, 0xf4, 0x92, 0xec, 0x2c, 0xc4,
-	0x44, 0x49, 0xc5, 0x69, 0x7b, 0x32, 0x69, 0x19,
-	0x70, 0x3b, 0xac, 0x03, 0x1c, 0xae, 0x7f, 0x60,
-	// public key suffix
-	0xd5, 0x4b, 0xfe, 0xd3, 0xc9, 0x64, 0x07, 0x3a,
-	0xd7, 0x5a, 0x98, 0x01, 0x82, 0xb1, 0x0a, 0xb7,
-	0xaf, 0x02, 0x1a, 0x68, 0xf7, 0x07, 0x51, 0x1a,
-	0x0e, 0xe1, 0x72, 0xf3, 0xda, 0xa6, 0x23, 0x25,
-})
+	ed25519OtherPrivateKey ed25519.PrivateKey
+	ed25519OtherPublicKey  ed25519.PublicKey
+)
 
-// example from RFC 8037, appendix A.1
-var ed25519Public = ed25519.PublicKey([]byte{
-	0xd7, 0x5a, 0x98, 0x01, 0x82, 0xb1, 0x0a, 0xb7,
-	0xd5, 0x4b, 0xfe, 0xd3, 0xc9, 0x64, 0x07, 0x3a,
-	0x0e, 0xe1, 0x72, 0xf3, 0xda, 0xa6, 0x23, 0x25,
-	0xaf, 0x02, 0x1a, 0x68, 0xf7, 0x07, 0x51, 0x1a,
-})
-
-func TestEdDSA(t *testing.T) {
-	f := func(signer Signer, verifier Verifier, claims interface{}) {
-		t.Helper()
-
-		tokenBuilder := NewBuilder(signer)
-		token, err := tokenBuilder.Build(claims)
+func init() {
+	f := func() (ed25519.PrivateKey, ed25519.PublicKey) {
+		pubKey, privKey, err := ed25519.GenerateKey(rand.Reader)
 		if err != nil {
-			t.Errorf("want nil, got %#v", err)
+			panic(err)
 		}
-
-		err = verifier.Verify(token.Payload(), token.Signature())
-		if err != nil {
-			t.Errorf("want no err, got: %#v", err)
-		}
+		return privKey, pubKey
 	}
 
-	f(
-		mustSigner(NewSignerEdDSA(ed25519Private)),
-		mustVerifier(NewVerifierEdDSA(ed25519Public)),
-		&StandardClaims{},
-	)
-
-	f(
-		mustSigner(NewSignerEdDSA(ed25519Private)),
-		mustVerifier(NewVerifierEdDSA(ed25519Public)),
-		&customClaims{
-			TestField: "foo",
-		},
-	)
+	ed25519PrivateKey, ed25519PublicKey = f()
+	ed25519OtherPrivateKey, ed25519OtherPublicKey = f()
 }
 
-func TestEdDSA_InvalidSignature(t *testing.T) {
-	f := func(signer Signer, verifier Verifier, claims interface{}) {
+func TestEdDSA(t *testing.T) {
+	f := func(privateKey ed25519.PrivateKey, publicKey ed25519.PublicKey, isCorrectSign bool) {
 		t.Helper()
 
-		tokenBuilder := NewBuilder(signer)
-		token, err := tokenBuilder.Build(claims)
-		if err != nil {
-			t.Errorf("want nil, got %#v", err)
-		}
+		const payload = `simple-string-payload`
 
-		err = verifier.Verify(token.Payload(), token.Signature())
-		if err == nil {
-			t.Errorf("want %#v, got nil", ErrInvalidSignature)
+		sign := ed25519Sign(t, privateKey, payload)
+
+		err := ed25519Verify(t, publicKey, payload, sign)
+		if err != nil && isCorrectSign {
+			t.Fatal(err)
+		}
+		if err == nil && !isCorrectSign {
+			t.Fatal("must be not nil")
 		}
 	}
 
-	f(
-		mustSigner(NewSignerEdDSA(ed25519Private2)),
-		mustVerifier(NewVerifierEdDSA(ed25519Public)),
-		&StandardClaims{},
-	)
+	f(ed25519PrivateKey, ed25519PublicKey, true)
+	f(ed25519PrivateKey, ed25519OtherPublicKey, false)
+	f(ed25519OtherPrivateKey, ed25519PublicKey, false)
+}
 
-	f(
-		mustSigner(NewSignerEdDSA(ed25519Private2)),
-		mustVerifier(NewVerifierEdDSA(ed25519Public)),
-		&customClaims{
-			TestField: "foo",
-		},
-	)
+func ed25519Sign(t *testing.T, privateKey ed25519.PrivateKey, payload string) []byte {
+	t.Helper()
+
+	signer, errSigner := NewSignerEdDSA(privateKey)
+	if errSigner != nil {
+		t.Fatalf("NewSignerEdDSA %v", errSigner)
+	}
+
+	sign, errSign := signer.Sign([]byte(payload))
+	if errSign != nil {
+		t.Fatalf("SignEdDSA %v", errSign)
+	}
+	return sign
+}
+
+func ed25519Verify(t *testing.T, publicKey ed25519.PublicKey, payload string, sign []byte) error {
+	t.Helper()
+
+	verifier, errVerifier := NewVerifierEdDSA(publicKey)
+	if errVerifier != nil {
+		t.Fatalf("NewVerifierEdDSA %v", errVerifier)
+	}
+	return verifier.Verify([]byte(payload), sign)
 }
