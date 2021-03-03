@@ -6,7 +6,10 @@ import (
 
 // NewSignerEdDSA returns a new ed25519-based signer.
 func NewSignerEdDSA(key ed25519.PrivateKey) (Signer, error) {
-	if len(key) == 0 || len(key) != ed25519.PrivateKeySize {
+	if len(key) == 0 {
+		return nil, ErrInvalidNilKey
+	}
+	if len(key) != ed25519.PrivateKeySize {
 		return nil, ErrInvalidKey
 	}
 	return &edDSAAlg{
@@ -17,7 +20,10 @@ func NewSignerEdDSA(key ed25519.PrivateKey) (Signer, error) {
 
 // NewVerifierEdDSA returns a new ed25519-based verifier.
 func NewVerifierEdDSA(key ed25519.PublicKey) (Verifier, error) {
-	if len(key) == 0 || len(key) != ed25519.PublicKeySize {
+	if len(key) == 0 {
+		return nil, ErrInvalidNilKey
+	}
+	if len(key) != ed25519.PublicKeySize {
 		return nil, ErrInvalidKey
 	}
 	return &edDSAAlg{

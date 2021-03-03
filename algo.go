@@ -24,6 +24,26 @@ type Algorithm string
 
 func (a Algorithm) String() string { return string(a) }
 
+// KeySize of the algorithm's key (if exist). Is similar to Signer.SignSize.
+func (a Algorithm) KeySize() int { return algsKeySize[a] }
+
+var algsKeySize = map[Algorithm]int{
+	// for EdDSA private and public key have different sizes, so 0
+	// for HS there is no limits for key size, so 0
+
+	RS256: 256,
+	RS384: 384,
+	RS512: 512,
+
+	ES256: 64,
+	ES384: 96,
+	ES512: 132,
+
+	PS256: 256,
+	PS384: 384,
+	PS512: 512,
+}
+
 // Algorithm names for signing and verifying.
 const (
 	EdDSA Algorithm = "EdDSA"

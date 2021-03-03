@@ -9,11 +9,11 @@ import (
 // NewSignerRS returns a new RSA-based signer.
 func NewSignerRS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 	if key == nil {
-		return nil, ErrInvalidKey
+		return nil, ErrInvalidNilKey
 	}
-	hash, ok := getHashRSA(alg)
-	if !ok {
-		return nil, ErrUnsupportedAlg
+	hash, err := getHashRS(alg, key.Size())
+	if err != nil {
+		return nil, err
 	}
 	return &rsAlg{
 		alg:        alg,
@@ -25,11 +25,11 @@ func NewSignerRS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 // NewVerifierRS returns a new RSA-based verifier.
 func NewVerifierRS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
 	if key == nil {
-		return nil, ErrInvalidKey
+		return nil, ErrInvalidNilKey
 	}
-	hash, ok := getHashRSA(alg)
-	if !ok {
-		return nil, ErrUnsupportedAlg
+	hash, err := getHashRS(alg, key.Size())
+	if err != nil {
+		return nil, err
 	}
 	return &rsAlg{
 		alg:       alg,
@@ -38,17 +38,23 @@ func NewVerifierRS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
 	}, nil
 }
 
-func getHashRSA(alg Algorithm) (crypto.Hash, bool) {
+func getHashRS(alg Algorithm, size int) (crypto.Hash, error) {
+	var hash crypto.Hash
 	switch alg {
 	case RS256:
-		return crypto.SHA256, true
+		hash = crypto.SHA256
 	case RS384:
-		return crypto.SHA384, true
+		hash = crypto.SHA384
 	case RS512:
-		return crypto.SHA512, true
+		hash = crypto.SHA512
 	default:
-		return 0, false
+		return 0, ErrUnsupportedAlg
 	}
+
+	if alg.KeySize() != size {
+		return 0, ErrInvalidKey
+	}
+	return hash, nil
 }
 
 type rsAlg struct {

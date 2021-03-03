@@ -11,6 +11,9 @@ var _ error = (Error)("")
 
 // Build and parse errors.
 const (
+	// ErrInvalidNilKey indicates that key is nil and is not valid.
+	ErrInvalidNilKey = Error("jwt: key is nil and is not valid")
+
 	// ErrInvalidKey indicates that key is not valid.
 	ErrInvalidKey = Error("jwt: key is not valid")
 
