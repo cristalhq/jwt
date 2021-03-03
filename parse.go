@@ -37,6 +37,12 @@ func ParseAndVerify(raw []byte, verifier Verifier) (*Token, error) {
 }
 
 func parse(token []byte) (*Token, error) {
+	// "eyJ" is `{"` which is begin of every JWT token.
+	// Quick check for the invalid input.
+	if !bytes.HasPrefix(token, []byte("eyJ")) {
+		return nil, ErrInvalidFormat
+	}
+
 	dot1 := bytes.IndexByte(token, '.')
 	dot2 := bytes.LastIndexByte(token, '.')
 	if dot2 <= dot1 {
