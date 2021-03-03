@@ -6,6 +6,14 @@ import (
 	"testing"
 )
 
+func getSignerError(_ Signer, err error) error {
+	return err
+}
+
+func getVerifierError(_ Verifier, err error) error {
+	return err
+}
+
 func mustSigner(s Signer, err error) Signer {
 	if err != nil {
 		panic(err)

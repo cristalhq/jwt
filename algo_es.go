@@ -10,7 +10,7 @@ import (
 // NewSignerES returns a new ECDSA-based signer.
 func NewSignerES(alg Algorithm, key *ecdsa.PrivateKey) (Signer, error) {
 	if key == nil {
-		return nil, ErrInvalidNilKey
+		return nil, ErrNilKey
 	}
 	hash, err := getParamsES(alg, roundBytes(key.PublicKey.Params().BitSize)*2)
 	if err != nil {
@@ -27,7 +27,7 @@ func NewSignerES(alg Algorithm, key *ecdsa.PrivateKey) (Signer, error) {
 // NewVerifierES returns a new ECDSA-based verifier.
 func NewVerifierES(alg Algorithm, key *ecdsa.PublicKey) (Verifier, error) {
 	if key == nil {
-		return nil, ErrInvalidNilKey
+		return nil, ErrNilKey
 	}
 	hash, err := getParamsES(alg, roundBytes(key.Params().BitSize)*2)
 	if err != nil {
@@ -54,7 +54,7 @@ func getParamsES(alg Algorithm, size int) (crypto.Hash, error) {
 		return 0, ErrUnsupportedAlg
 	}
 
-	if alg.KeySize() != size {
+	if alg.keySize() != size {
 		return 0, ErrInvalidKey
 	}
 	return hash, nil

@@ -9,7 +9,7 @@ import (
 // NewSignerPS returns a new RSA-PSS-based signer.
 func NewSignerPS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 	if key == nil {
-		return nil, ErrInvalidNilKey
+		return nil, ErrNilKey
 	}
 	hash, opts, err := getParamsPS(alg, key.Size())
 	if err != nil {
@@ -26,7 +26,7 @@ func NewSignerPS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 // NewVerifierPS returns a new RSA-PSS-based signer.
 func NewVerifierPS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
 	if key == nil {
-		return nil, ErrInvalidNilKey
+		return nil, ErrNilKey
 	}
 	hash, opts, err := getParamsPS(alg, key.Size())
 	if err != nil {
@@ -54,7 +54,7 @@ func getParamsPS(alg Algorithm, size int) (crypto.Hash, *rsa.PSSOptions, error) 
 		return 0, nil, ErrUnsupportedAlg
 	}
 
-	if alg.KeySize() != size {
+	if alg.keySize() != size {
 		return 0, nil, ErrInvalidKey
 	}
 	return hash, opts, nil

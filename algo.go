@@ -24,8 +24,8 @@ type Algorithm string
 
 func (a Algorithm) String() string { return string(a) }
 
-// KeySize of the algorithm's key (if exist). Is similar to Signer.SignSize.
-func (a Algorithm) KeySize() int { return algsKeySize[a] }
+// keySize of the algorithm's key (if exist). Is similar to Signer.SignSize.
+func (a Algorithm) keySize() int { return algsKeySize[a] }
 
 var algsKeySize = map[Algorithm]int{
 	// for EdDSA private and public key have different sizes, so 0

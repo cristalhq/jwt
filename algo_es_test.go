@@ -4,6 +4,7 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rand"
+	"errors"
 	"testing"
 )
 
@@ -61,6 +62,42 @@ func TestES(t *testing.T) {
 	f(ES256, ecdsaOtherPrivateKey256, ecdsaPublicKey256, false)
 	f(ES384, ecdsaOtherPrivateKey384, ecdsaPublicKey384, false)
 	f(ES512, ecdsaOtherPrivateKey521, ecdsaPublicKey521, false)
+}
+
+func TestES_BadKeys(t *testing.T) {
+	f := func(err, wantErr error) {
+		t.Helper()
+
+		if !errors.Is(err, wantErr) {
+			t.Fatalf("expected %v, got %v", wantErr, err)
+		}
+	}
+
+	f(getSignerError(NewSignerES(ES256, nil)), ErrNilKey)
+	f(getSignerError(NewSignerES(ES384, nil)), ErrNilKey)
+	f(getSignerError(NewSignerES(ES512, nil)), ErrNilKey)
+
+	f(getSignerError(NewSignerES("foo", ecdsaPrivateKey384)), ErrUnsupportedAlg)
+
+	f(getSignerError(NewSignerES(ES256, ecdsaPrivateKey384)), ErrInvalidKey)
+	f(getSignerError(NewSignerES(ES256, ecdsaPrivateKey521)), ErrInvalidKey)
+	f(getSignerError(NewSignerES(ES384, ecdsaPrivateKey256)), ErrInvalidKey)
+	f(getSignerError(NewSignerES(ES384, ecdsaPrivateKey521)), ErrInvalidKey)
+	f(getSignerError(NewSignerES(ES512, ecdsaPrivateKey256)), ErrInvalidKey)
+	f(getSignerError(NewSignerES(ES512, ecdsaPrivateKey384)), ErrInvalidKey)
+
+	f(getVerifierError(NewVerifierES(ES256, nil)), ErrNilKey)
+	f(getVerifierError(NewVerifierES(ES384, nil)), ErrNilKey)
+	f(getVerifierError(NewVerifierES(ES512, nil)), ErrNilKey)
+
+	f(getVerifierError(NewVerifierES("boo", ecdsaPublicKey384)), ErrUnsupportedAlg)
+
+	f(getVerifierError(NewVerifierES(ES256, ecdsaPublicKey384)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierES(ES256, ecdsaPublicKey521)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierES(ES384, ecdsaPublicKey256)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierES(ES384, ecdsaPublicKey521)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierES(ES512, ecdsaPublicKey256)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierES(ES512, ecdsaPublicKey384)), ErrInvalidKey)
 }
 
 func esSign(t *testing.T, alg Algorithm, privateKey *ecdsa.PrivateKey, payload string) []byte {

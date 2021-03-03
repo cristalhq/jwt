@@ -9,7 +9,7 @@ import (
 // NewSignerRS returns a new RSA-based signer.
 func NewSignerRS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 	if key == nil {
-		return nil, ErrInvalidNilKey
+		return nil, ErrNilKey
 	}
 	hash, err := getHashRS(alg, key.Size())
 	if err != nil {
@@ -25,7 +25,7 @@ func NewSignerRS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 // NewVerifierRS returns a new RSA-based verifier.
 func NewVerifierRS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
 	if key == nil {
-		return nil, ErrInvalidNilKey
+		return nil, ErrNilKey
 	}
 	hash, err := getHashRS(alg, key.Size())
 	if err != nil {
@@ -51,7 +51,7 @@ func getHashRS(alg Algorithm, size int) (crypto.Hash, error) {
 		return 0, ErrUnsupportedAlg
 	}
 
-	if alg.KeySize() != size {
+	if alg.keySize() != size {
 		return 0, ErrInvalidKey
 	}
 	return hash, nil
