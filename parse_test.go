@@ -69,14 +69,11 @@ func TestParseMalformed(t *testing.T) {
 	}
 
 	f(`xyz.xyz`)
-	f(`xyz.xyz.xyz.xyz`)
-	f(`a.xyz.xyz`)
-	f(`xyz.ab/c.xyz`)
-	f(`xyz.abc.x/yz`)
-	f(`x/z.ab_c.xyz`)
-	f(`ab_c.xyz.xyz`)
-	f(`e30.ab/c.xyz`) // `e30` is JSON `{}` in base64
-	f(`e30.e30.ab/c`)
+	f(`eyJ.xyz`)
+	f(`eyJ!.x!yz.e30`)
+	f(`eyJ.xyz.xyz`)
+	f(`eyJhIjoxMjN9.x!yz.e30`) // `e30` is JSON `{}` in base64
+	f(`eyJhIjoxMjN9.e30.x!yz`)
 }
 
 var bytesToBase64 = base64.RawURLEncoding.EncodeToString
