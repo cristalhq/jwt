@@ -77,15 +77,15 @@ func TestBuildHeader(t *testing.T) {
 	)
 
 	f(
-		mustSigner(NewSignerRS(RS256, rsaPrivateKey1)),
+		mustSigner(NewSignerRS(RS256, rsaPrivateKey256)),
 		`{"alg":"RS256","typ":"JWT"}`,
 	)
 	f(
-		mustSigner(NewSignerRS(RS384, rsaPrivateKey1)),
+		mustSigner(NewSignerRS(RS384, rsaPrivateKey384)),
 		`{"alg":"RS384","typ":"JWT"}`,
 	)
 	f(
-		mustSigner(NewSignerRS(RS512, rsaPrivateKey1)),
+		mustSigner(NewSignerRS(RS512, rsaPrivateKey512)),
 		`{"alg":"RS512","typ":"JWT"}`,
 	)
 
@@ -101,12 +101,12 @@ func TestBuildHeader(t *testing.T) {
 	)
 
 	f(
-		mustSigner(NewSignerRS(RS256, rsaPrivateKey1)),
+		mustSigner(NewSignerRS(RS256, rsaPrivateKey256)),
 		`{"alg":"RS256","typ":"JWT","kid":"test"}`,
 		WithKeyID("test"),
 	)
 	f(
-		mustSigner(NewSignerRS(RS512, rsaPrivateKey1)),
+		mustSigner(NewSignerRS(RS512, rsaPrivateKey512)),
 		`{"alg":"RS512","typ":"JWT","cty":"jwk+json"}`,
 		WithContentType("jwk+json"),
 	)
@@ -224,12 +224,15 @@ type badSigner struct{}
 func (badSigner) SignSize() int {
 	return 0
 }
+
 func (badSigner) Algorithm() Algorithm {
 	return "bad"
 }
+
 func (badSigner) Sign(payload []byte) ([]byte, error) {
 	return nil, errors.New("error by design")
 }
+
 func (badSigner) Verify(payload, signature []byte) error {
 	return errors.New("error by design")
 }

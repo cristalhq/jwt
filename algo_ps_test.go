@@ -1,108 +1,61 @@
 package jwt
 
 import (
+	"crypto/rsa"
 	"testing"
 )
 
-func TestPS256_WithValidSignature(t *testing.T) {
-	f := func(signer Signer, verifier Verifier, claims interface{}) {
+func TestPS(t *testing.T) {
+	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, isCorrectSign bool) {
 		t.Helper()
 
-		tokenBuilder := NewBuilder(signer)
-		token, _ := tokenBuilder.Build(claims)
+		const payload = `simple-string-payload`
 
-		err := verifier.Verify(token.Payload(), token.Signature())
-		if err != nil {
-			t.Errorf("want no err, got: %#v", err)
+		sign := psSign(t, alg, privateKey, payload)
+
+		err := psVerify(t, alg, publicKey, payload, sign)
+		if err != nil && isCorrectSign {
+			t.Fatal(err)
+		}
+		if err == nil && !isCorrectSign {
+			t.Fatal("must be not nil")
 		}
 	}
 
-	f(
-		mustSigner(NewSignerPS(PS256, rsaPrivateKey1)),
-		mustVerifier(NewVerifierPS(PS256, rsaPublicKey1)),
-		&StandardClaims{},
-	)
-	f(
-		mustSigner(NewSignerPS(PS384, rsaPrivateKey1)),
-		mustVerifier(NewVerifierPS(PS384, rsaPublicKey1)),
-		&StandardClaims{},
-	)
-	f(
-		mustSigner(NewSignerPS(PS512, rsaPrivateKey1)),
-		mustVerifier(NewVerifierPS(PS512, rsaPublicKey1)),
-		&StandardClaims{},
-	)
+	f(PS256, rsaPrivateKey256, rsaPublicKey256, true)
+	f(PS384, rsaPrivateKey384, rsaPublicKey384, true)
+	f(PS512, rsaPrivateKey512, rsaPublicKey512, true)
 
-	f(
-		mustSigner(NewSignerPS(PS256, rsaPrivateKey1)),
-		mustVerifier(NewVerifierPS(PS256, rsaPublicKey1)),
-		&customClaims{
-			TestField: "foo",
-		},
-	)
-	f(
-		mustSigner(NewSignerPS(PS384, rsaPrivateKey1)),
-		mustVerifier(NewVerifierPS(PS384, rsaPublicKey1)),
-		&customClaims{
-			TestField: "bar",
-		},
-	)
-	f(
-		mustSigner(NewSignerPS(PS512, rsaPrivateKey1)),
-		mustVerifier(NewVerifierPS(PS512, rsaPublicKey1)),
-		&customClaims{
-			TestField: "baz",
-		},
-	)
+	f(PS256, rsaPrivateKey256, rsaOtherPublicKey256, false)
+	f(PS384, rsaPrivateKey384, rsaOtherPublicKey384, false)
+	f(PS512, rsaPrivateKey512, rsaOtherPublicKey512, false)
+
+	f(PS256, rsaOtherPrivateKey256, rsaPublicKey256, false)
+	f(PS384, rsaOtherPrivateKey384, rsaPublicKey384, false)
+	f(PS512, rsaOtherPrivateKey512, rsaPublicKey512, false)
 }
 
-func TestPS384_WithInvalidSignature(t *testing.T) {
-	f := func(signer Signer, verifier Verifier, claims interface{}) {
-		t.Helper()
+func psSign(t *testing.T, alg Algorithm, privateKey *rsa.PrivateKey, payload string) []byte {
+	t.Helper()
 
-		tokenBuilder := NewBuilder(signer)
-		token, _ := tokenBuilder.Build(claims)
-
-		err := verifier.Verify(token.Payload(), token.Signature())
-		if err == nil {
-			t.Errorf("want %v, got nil", ErrInvalidSignature)
-		}
+	signer, errSigner := NewSignerPS(alg, privateKey)
+	if errSigner != nil {
+		t.Fatalf("NewSignerPS %v", errSigner)
 	}
-	f(
-		mustSigner(NewSignerPS(PS256, rsaPrivateKey1)),
-		mustVerifier(NewVerifierPS(PS256, rsaPublicKey2)),
-		&StandardClaims{},
-	)
-	f(
-		mustSigner(NewSignerPS(PS384, rsaPrivateKey1)),
-		mustVerifier(NewVerifierPS(PS384, rsaPublicKey2)),
-		&StandardClaims{},
-	)
-	f(
-		mustSigner(NewSignerPS(PS512, rsaPrivateKey1)),
-		mustVerifier(NewVerifierPS(PS512, rsaPublicKey2)),
-		&StandardClaims{},
-	)
 
-	f(
-		mustSigner(NewSignerPS(PS256, rsaPrivateKey1)),
-		mustVerifier(NewVerifierPS(PS256, rsaPublicKey2)),
-		&customClaims{
-			TestField: "foo",
-		},
-	)
-	f(
-		mustSigner(NewSignerPS(PS384, rsaPrivateKey1)),
-		mustVerifier(NewVerifierPS(PS384, rsaPublicKey2)),
-		&customClaims{
-			TestField: "bar",
-		},
-	)
-	f(
-		mustSigner(NewSignerPS(PS512, rsaPrivateKey1)),
-		mustVerifier(NewVerifierPS(PS512, rsaPublicKey2)),
-		&customClaims{
-			TestField: "baz",
-		},
-	)
+	sign, errSign := signer.Sign([]byte(payload))
+	if errSign != nil {
+		t.Fatalf("SignPS %v", errSign)
+	}
+	return sign
+}
+
+func psVerify(t *testing.T, alg Algorithm, publicKey *rsa.PublicKey, payload string, sign []byte) error {
+	t.Helper()
+
+	verifier, errVerifier := NewVerifierPS(alg, publicKey)
+	if errVerifier != nil {
+		t.Fatalf("NewVerifierPS %v", errVerifier)
+	}
+	return verifier.Verify([]byte(payload), sign)
 }
