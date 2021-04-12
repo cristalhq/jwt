@@ -67,6 +67,7 @@ func TestNumericDateUnmarshalMalformed(t *testing.T) {
 	f(`["admin",123]`)
 	f(`{}`)
 	f(`[]`)
+	f(`1e+309`)
 }
 
 func asNumericDate(n int64) NumericDate {
