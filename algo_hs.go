@@ -38,9 +38,11 @@ func newHS(alg Algorithm, key []byte) (hmacAlgo, error) {
 		alg:  alg,
 		hash: hash,
 		key:  key,
-		hashPool: &sync.Pool{New: func() interface{} {
-			return hmac.New(hash.New, key)
-		}},
+		hashPool: &sync.Pool{
+			New: func() interface{} {
+				return hmac.New(hash.New, key)
+			},
+		},
 	}, nil
 }
 
