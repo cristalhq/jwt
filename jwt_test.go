@@ -28,11 +28,6 @@ func mustVerifier(v Verifier, err error) Verifier {
 	return v
 }
 
-type customClaims struct {
-	StandardClaims
-	TestField string `json:"test_field"`
-}
-
 func TestMarshalHeader(t *testing.T) {
 	f := func(h *Header, want string) {
 		t.Helper()

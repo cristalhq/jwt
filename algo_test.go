@@ -26,7 +26,7 @@ func TestSignerAlg(t *testing.T) {
 
 	f(mustSigner(NewSignerES(ES256, ecdsaPrivateKey256)), ES256)
 	f(mustSigner(NewSignerES(ES384, ecdsaPrivateKey384)), ES384)
-	// f(mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)), ES512)
+	f(mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)), ES512)
 }
 
 func TestVerifierAlg(t *testing.T) {
