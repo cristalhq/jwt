@@ -4,8 +4,18 @@ import (
 	"testing"
 )
 
+var (
+	hsKey256 = []byte("hmac-secret-key-256")
+	hsKey384 = []byte("hmac-secret-key-384")
+	hsKey512 = []byte("hmac-secret-key-512")
+
+	hsKeyAnother256 = []byte("hmac-secret-key-256-another")
+	hsKeyAnother384 = []byte("hmac-secret-key-384-another")
+	hsKeyAnother512 = []byte("hmac-secret-key-512-another")
+)
+
 func TestHS(t *testing.T) {
-	f := func(alg Algorithm, signKey, verifyKey string, isCorrectSign bool) {
+	f := func(alg Algorithm, signKey, verifyKey []byte, isCorrectSign bool) {
 		t.Helper()
 
 		const payload = `simple-string-payload`
@@ -21,21 +31,21 @@ func TestHS(t *testing.T) {
 		}
 	}
 
-	f(HS256, `hmac-secret-key`, `hmac-secret-key`, true)
-	f(HS384, `hmac-secret-key`, `hmac-secret-key`, true)
-	f(HS512, `hmac-secret-key`, `hmac-secret-key`, true)
+	f(HS256, hsKey256, hsKey256, true)
+	f(HS384, hsKey384, hsKey384, true)
+	f(HS512, hsKey512, hsKey512, true)
 
-	f(HS256, `key_1`, `1_key`, false)
-	f(HS384, `key_1`, `1_key`, false)
-	f(HS512, `key_1`, `1_key`, false)
+	f(HS256, hsKey256, hsKeyAnother256, false)
+	f(HS384, hsKey384, hsKeyAnother384, false)
+	f(HS512, hsKey512, hsKeyAnother512, false)
 
-	f(HS256, `hmac-secret-key`, `key_1`, false)
+	f(HS256, hsKey256, hsKeyAnother256, false)
 }
 
-func hsSign(t *testing.T, alg Algorithm, key, payload string) []byte {
+func hsSign(t *testing.T, alg Algorithm, key []byte, payload string) []byte {
 	t.Helper()
 
-	signer, errSigner := NewSignerHS(alg, []byte(key))
+	signer, errSigner := NewSignerHS(alg, key)
 	if errSigner != nil {
 		t.Fatalf("NewSignerHS %v", errSigner)
 	}
@@ -47,10 +57,10 @@ func hsSign(t *testing.T, alg Algorithm, key, payload string) []byte {
 	return sign
 }
 
-func hsVerify(t *testing.T, alg Algorithm, key, payload string, sign []byte) error {
+func hsVerify(t *testing.T, alg Algorithm, key []byte, payload string, sign []byte) error {
 	t.Helper()
 
-	verifier, errVerifier := NewVerifierHS(alg, []byte(key))
+	verifier, errVerifier := NewVerifierHS(alg, key)
 	if errVerifier != nil {
 		t.Fatalf("NewVerifierHS %v", errVerifier)
 	}
