@@ -27,13 +27,13 @@ func TestPS(t *testing.T) {
 	f(PS384, rsaPrivateKey384, rsaPublicKey384, true)
 	f(PS512, rsaPrivateKey512, rsaPublicKey512, true)
 
-	f(PS256, rsaPrivateKey256, rsaOtherPublicKey256, false)
-	f(PS384, rsaPrivateKey384, rsaOtherPublicKey384, false)
-	f(PS512, rsaPrivateKey512, rsaOtherPublicKey512, false)
+	f(PS256, rsaPrivateKey256, rsaPublicKey256Another, false)
+	f(PS384, rsaPrivateKey384, rsaPublicKey384Another, false)
+	f(PS512, rsaPrivateKey512, rsaPublicKey512Another, false)
 
-	f(PS256, rsaOtherPrivateKey256, rsaPublicKey256, false)
-	f(PS384, rsaOtherPrivateKey384, rsaPublicKey384, false)
-	f(PS512, rsaOtherPrivateKey512, rsaPublicKey512, false)
+	f(PS256, rsaPrivateKey256Another, rsaPublicKey256, false)
+	f(PS384, rsaPrivateKey384Another, rsaPublicKey384, false)
+	f(PS512, rsaPrivateKey512Another, rsaPublicKey512, false)
 }
 
 func TestPS_BadKeys(t *testing.T) {

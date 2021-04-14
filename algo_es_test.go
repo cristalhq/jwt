@@ -12,8 +12,8 @@ var (
 	ecdsaPublicKey256, ecdsaPublicKey384, ecdsaPublicKey521    *ecdsa.PublicKey
 	ecdsaPrivateKey256, ecdsaPrivateKey384, ecdsaPrivateKey521 *ecdsa.PrivateKey
 
-	ecdsaOtherPublicKey256, ecdsaOtherPublicKey384, ecdsaOtherPublicKey521    *ecdsa.PublicKey
-	ecdsaOtherPrivateKey256, ecdsaOtherPrivateKey384, ecdsaOtherPrivateKey521 *ecdsa.PrivateKey
+	ecdsaPublicKey256Another, ecdsaPublicKey384Another, ecdsaPublicKey521Another    *ecdsa.PublicKey
+	ecdsaPrivateKey256Another, ecdsaPrivateKey384Another, ecdsaPrivateKey521Another *ecdsa.PrivateKey
 )
 
 func init() {
@@ -29,9 +29,9 @@ func init() {
 	ecdsaPrivateKey384, ecdsaPublicKey384 = f(elliptic.P384)
 	ecdsaPrivateKey521, ecdsaPublicKey521 = f(elliptic.P521)
 
-	ecdsaOtherPrivateKey256, ecdsaOtherPublicKey256 = f(elliptic.P256)
-	ecdsaOtherPrivateKey384, ecdsaOtherPublicKey384 = f(elliptic.P384)
-	ecdsaOtherPrivateKey521, ecdsaOtherPublicKey521 = f(elliptic.P521)
+	ecdsaPrivateKey256Another, ecdsaPublicKey256Another = f(elliptic.P256)
+	ecdsaPrivateKey384Another, ecdsaPublicKey384Another = f(elliptic.P384)
+	ecdsaPrivateKey521Another, ecdsaPublicKey521Another = f(elliptic.P521)
 }
 
 func TestES(t *testing.T) {
@@ -55,13 +55,13 @@ func TestES(t *testing.T) {
 	f(ES384, ecdsaPrivateKey384, ecdsaPublicKey384, true)
 	f(ES512, ecdsaPrivateKey521, ecdsaPublicKey521, true)
 
-	f(ES256, ecdsaPrivateKey256, ecdsaOtherPublicKey256, false)
-	f(ES384, ecdsaPrivateKey384, ecdsaOtherPublicKey384, false)
-	f(ES512, ecdsaPrivateKey521, ecdsaOtherPublicKey521, false)
+	f(ES256, ecdsaPrivateKey256, ecdsaPublicKey256Another, false)
+	f(ES384, ecdsaPrivateKey384, ecdsaPublicKey384Another, false)
+	f(ES512, ecdsaPrivateKey521, ecdsaPublicKey521Another, false)
 
-	f(ES256, ecdsaOtherPrivateKey256, ecdsaPublicKey256, false)
-	f(ES384, ecdsaOtherPrivateKey384, ecdsaPublicKey384, false)
-	f(ES512, ecdsaOtherPrivateKey521, ecdsaPublicKey521, false)
+	f(ES256, ecdsaPrivateKey256Another, ecdsaPublicKey256, false)
+	f(ES384, ecdsaPrivateKey384Another, ecdsaPublicKey384, false)
+	f(ES512, ecdsaPrivateKey521Another, ecdsaPublicKey521, false)
 }
 
 func TestES_BadKeys(t *testing.T) {

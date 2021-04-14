@@ -11,8 +11,8 @@ var (
 	ed25519PrivateKey ed25519.PrivateKey
 	ed25519PublicKey  ed25519.PublicKey
 
-	ed25519OtherPrivateKey ed25519.PrivateKey
-	ed25519OtherPublicKey  ed25519.PublicKey
+	ed25519PrivateKeyAnother ed25519.PrivateKey
+	ed25519PublicKeyAnother  ed25519.PublicKey
 )
 
 func init() {
@@ -25,7 +25,7 @@ func init() {
 	}
 
 	ed25519PrivateKey, ed25519PublicKey = f()
-	ed25519OtherPrivateKey, ed25519OtherPublicKey = f()
+	ed25519PrivateKeyAnother, ed25519PublicKeyAnother = f()
 }
 
 func TestEdDSA(t *testing.T) {
@@ -46,8 +46,8 @@ func TestEdDSA(t *testing.T) {
 	}
 
 	f(ed25519PrivateKey, ed25519PublicKey, true)
-	f(ed25519PrivateKey, ed25519OtherPublicKey, false)
-	f(ed25519OtherPrivateKey, ed25519PublicKey, false)
+	f(ed25519PrivateKey, ed25519PublicKeyAnother, false)
+	f(ed25519PrivateKeyAnother, ed25519PublicKey, false)
 }
 
 func TestEdDSA_BadKeys(t *testing.T) {

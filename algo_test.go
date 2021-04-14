@@ -12,10 +12,9 @@ func TestSignerAlg(t *testing.T) {
 		}
 	}
 
-	hmacKey := []byte("key")
-	f(mustSigner(NewSignerHS(HS256, hmacKey)), HS256)
-	f(mustSigner(NewSignerHS(HS384, hmacKey)), HS384)
-	f(mustSigner(NewSignerHS(HS512, hmacKey)), HS512)
+	f(mustSigner(NewSignerHS(HS256, hsKey256)), HS256)
+	f(mustSigner(NewSignerHS(HS384, hsKey384)), HS384)
+	f(mustSigner(NewSignerHS(HS512, hsKey512)), HS512)
 
 	f(mustSigner(NewSignerRS(RS256, rsaPrivateKey256)), RS256)
 	f(mustSigner(NewSignerRS(RS384, rsaPrivateKey384)), RS384)
@@ -38,10 +37,9 @@ func TestVerifierAlg(t *testing.T) {
 		}
 	}
 
-	hmacKey := []byte("key")
-	f(mustVerifier(NewVerifierHS(HS256, hmacKey)), HS256)
-	f(mustVerifier(NewVerifierHS(HS384, hmacKey)), HS384)
-	f(mustVerifier(NewVerifierHS(HS512, hmacKey)), HS512)
+	f(mustVerifier(NewVerifierHS(HS256, hsKey256)), HS256)
+	f(mustVerifier(NewVerifierHS(HS384, hsKey384)), HS384)
+	f(mustVerifier(NewVerifierHS(HS512, hsKey512)), HS512)
 
 	f(mustVerifier(NewVerifierRS(RS256, rsaPublicKey256)), RS256)
 	f(mustVerifier(NewVerifierRS(RS384, rsaPublicKey384)), RS384)

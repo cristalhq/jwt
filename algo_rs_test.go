@@ -11,8 +11,8 @@ var (
 	rsaPublicKey256, rsaPublicKey384, rsaPublicKey512    *rsa.PublicKey
 	rsaPrivateKey256, rsaPrivateKey384, rsaPrivateKey512 *rsa.PrivateKey
 
-	rsaOtherPublicKey256, rsaOtherPublicKey384, rsaOtherPublicKey512    *rsa.PublicKey
-	rsaOtherPrivateKey256, rsaOtherPrivateKey384, rsaOtherPrivateKey512 *rsa.PrivateKey
+	rsaPublicKey256Another, rsaPublicKey384Another, rsaPublicKey512Another    *rsa.PublicKey
+	rsaPrivateKey256Another, rsaPrivateKey384Another, rsaPrivateKey512Another *rsa.PrivateKey
 )
 
 func init() {
@@ -28,9 +28,9 @@ func init() {
 	rsaPrivateKey384, rsaPublicKey384 = f(384 * 8)
 	rsaPrivateKey512, rsaPublicKey512 = f(512 * 8)
 
-	rsaOtherPrivateKey256, rsaOtherPublicKey256 = f(256 * 8)
-	rsaOtherPrivateKey384, rsaOtherPublicKey384 = f(384 * 8)
-	rsaOtherPrivateKey512, rsaOtherPublicKey512 = f(512 * 8)
+	rsaPrivateKey256Another, rsaPublicKey256Another = f(256 * 8)
+	rsaPrivateKey384Another, rsaPublicKey384Another = f(384 * 8)
+	rsaPrivateKey512Another, rsaPublicKey512Another = f(512 * 8)
 }
 
 func TestRS(t *testing.T) {
@@ -54,13 +54,13 @@ func TestRS(t *testing.T) {
 	f(RS384, rsaPrivateKey384, rsaPublicKey384, true)
 	f(RS512, rsaPrivateKey512, rsaPublicKey512, true)
 
-	f(RS256, rsaPrivateKey256, rsaOtherPublicKey256, false)
-	f(RS384, rsaPrivateKey384, rsaOtherPublicKey384, false)
-	f(RS512, rsaPrivateKey512, rsaOtherPublicKey512, false)
+	f(RS256, rsaPrivateKey256, rsaPublicKey256Another, false)
+	f(RS384, rsaPrivateKey384, rsaPublicKey384Another, false)
+	f(RS512, rsaPrivateKey512, rsaPublicKey512Another, false)
 
-	f(RS256, rsaOtherPrivateKey256, rsaPublicKey256, false)
-	f(RS384, rsaOtherPrivateKey384, rsaPublicKey384, false)
-	f(RS512, rsaOtherPrivateKey512, rsaPublicKey512, false)
+	f(RS256, rsaPrivateKey256Another, rsaPublicKey256, false)
+	f(RS384, rsaPrivateKey384Another, rsaPublicKey384, false)
+	f(RS512, rsaPrivateKey512Another, rsaPublicKey512, false)
 }
 
 func TestRS_BadKeys(t *testing.T) {
