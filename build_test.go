@@ -12,37 +12,88 @@ import (
 )
 
 func TestBuild(t *testing.T) {
-	f := func(signer Signer, claims interface{}, want string) {
+	f := func(signer Signer, verifier Verifier, claims interface{}) {
 		t.Helper()
 
-		token, err := BuildBytes(signer, claims)
+		token, err := Build(signer, claims)
 		if err != nil {
 			t.Error(err)
 		}
 
-		raw := string(token)
-		if raw != want {
-			t.Errorf("want %v,\n got %v", want, raw)
+		errVerify := verifier.Verify(token.Payload(), token.Signature())
+		if errVerify != nil {
+			t.Error(errVerify)
 		}
 	}
 
 	f(
-		mustSigner(NewSignerHS(HS256, []byte("test-key-256"))),
-		&StandardClaims{
-			ID:       "just an id",
-			Audience: Audience([]string{"audience"}),
-		},
-		`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`,
-	)
-	f(
-		mustSigner(NewSignerHS(HS256, []byte("test-key-256"))),
+		mustSigner(NewSignerEdDSA(ed25519PrivateKey)),
+		mustVerifier(NewVerifierEdDSA(ed25519PublicKey)),
 		"i-am-already-a-claims",
-		`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.aS1hbS1hbHJlYWR5LWEtY2xhaW1z.CLeN9xtQ9afr2_niL2JmurspYVwxDe0LxffAba3Wr9g`,
+	)
+
+	f(
+		mustSigner(NewSignerHS(HS256, hsKey256)),
+		mustVerifier(NewVerifierHS(HS256, hsKey256)),
+		"i-am-already-a-claims",
 	)
 	f(
-		mustSigner(NewSignerHS(HS256, []byte("test-key-256"))),
-		[]byte("i-am-already-a-claims"),
-		`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.aS1hbS1hbHJlYWR5LWEtY2xhaW1z.CLeN9xtQ9afr2_niL2JmurspYVwxDe0LxffAba3Wr9g`,
+		mustSigner(NewSignerHS(HS384, hsKey384)),
+		mustVerifier(NewVerifierHS(HS384, hsKey384)),
+		"i-am-already-a-claims",
+	)
+	f(
+		mustSigner(NewSignerHS(HS512, hsKey512)),
+		mustVerifier(NewVerifierHS(HS512, hsKey512)),
+		"i-am-already-a-claims",
+	)
+
+	f(
+		mustSigner(NewSignerRS(RS256, rsaPrivateKey256)),
+		mustVerifier(NewVerifierRS(RS256, rsaPublicKey256)),
+		"i-am-already-a-claims",
+	)
+	f(
+		mustSigner(NewSignerRS(RS384, rsaPrivateKey384)),
+		mustVerifier(NewVerifierRS(RS384, rsaPublicKey384)),
+		"i-am-already-a-claims",
+	)
+	f(
+		mustSigner(NewSignerRS(RS512, rsaPrivateKey512)),
+		mustVerifier(NewVerifierRS(RS512, rsaPublicKey512)),
+		"i-am-already-a-claims",
+	)
+
+	f(
+		mustSigner(NewSignerES(ES256, ecdsaPrivateKey256)),
+		mustVerifier(NewVerifierES(ES256, ecdsaPublicKey256)),
+		"i-am-already-a-claims",
+	)
+	f(
+		mustSigner(NewSignerES(ES384, ecdsaPrivateKey384)),
+		mustVerifier(NewVerifierES(ES384, ecdsaPublicKey384)),
+		"i-am-already-a-claims",
+	)
+	f(
+		mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)),
+		mustVerifier(NewVerifierES(ES512, ecdsaPublicKey521)),
+		"i-am-already-a-claims",
+	)
+
+	f(
+		mustSigner(NewSignerPS(PS256, rsaPrivateKey256)),
+		mustVerifier(NewVerifierPS(PS256, rsaPublicKey256)),
+		"i-am-already-a-claims",
+	)
+	f(
+		mustSigner(NewSignerPS(PS384, rsaPrivateKey384)),
+		mustVerifier(NewVerifierPS(PS384, rsaPublicKey384)),
+		"i-am-already-a-claims",
+	)
+	f(
+		mustSigner(NewSignerPS(PS512, rsaPrivateKey512)),
+		mustVerifier(NewVerifierPS(PS512, rsaPublicKey512)),
+		"i-am-already-a-claims",
 	)
 }
 
