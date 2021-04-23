@@ -1,14 +1,8 @@
 package jwt
 
 import (
-	"crypto/ecdsa"
-	"crypto/x509"
-	"encoding/base64"
-	"encoding/json"
-	"encoding/pem"
 	"errors"
 	"testing"
-	"time"
 )
 
 func TestBuild(t *testing.T) {
@@ -106,7 +100,7 @@ func TestBuildHeader(t *testing.T) {
 			t.Error(err)
 		}
 
-		want = toBase64(want)
+		want = strToBase64(want)
 		raw := string(token.RawHeader())
 		if raw != want {
 			t.Errorf("\nwant %v,\n got %v", want, raw)
@@ -163,11 +157,60 @@ func TestBuildHeader(t *testing.T) {
 	)
 }
 
+func TestBuildClaims(t *testing.T) {
+	key := []byte("somekey")
+	s := mustSigner(NewSignerHS(HS256, key))
+	v := mustVerifier(NewVerifierHS(HS256, key))
+
+	f := func(claims interface{}, want string) {
+		token, err := NewBuilder(s).Build(claims)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		errVerify := v.Verify(token.Payload(), token.Signature())
+		if errVerify != nil {
+			t.Fatal(errVerify)
+		}
+
+		if got := token.String(); got != want {
+			t.Errorf("want %v, got %v", want, got)
+		}
+	}
+
+	f(
+		"i-am-already-a-claims",
+		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.aS1hbS1hbHJlYWR5LWEtY2xhaW1z.AXh-18zdRymq7HlsG7bweN5WSaM-KKaP2N5HNecuWys",
+	)
+	f(
+		[]byte("i-am-also-a-claims"),
+		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.aS1hbS1hbHNvLWEtY2xhaW1z._hc2MMMxkHFx3FqkEwEuhY78m7Jx-wKezbBSwrpnTug",
+	)
+
+	type myType string
+	f(
+		myType("custom-type-a-claims"),
+		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.ImN1c3RvbS10eXBlLWEtY2xhaW1zIg.f8zbPF75mPfza6cHH6C_wm2tJh3_HyaPmqC12ZGuX0o",
+	)
+
+	myClaims := struct {
+		Foo string
+		Bar int64
+	}{
+		Foo: "foo",
+		Bar: 42,
+	}
+	f(
+		myClaims,
+		"eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJGb28iOiJmb28iLCJCYXIiOjQyfQ.Ac3O8UnAtnbjY681ZYE-XdgXN6tQgdcHuhk4mDfohdY",
+	)
+}
+
 func TestBuildMalformed(t *testing.T) {
 	f := func(signer Signer, claims interface{}) {
 		t.Helper()
 
-		_, err := BuildBytes(signer, claims)
+		_, err := Build(signer, claims)
 		if err == nil {
 			t.Error("want err, got nil")
 		}
@@ -181,93 +224,6 @@ func TestBuildMalformed(t *testing.T) {
 		mustSigner(NewSignerHS(HS256, []byte("test-key"))),
 		badSigner.Algorithm,
 	)
-}
-
-var tests = []struct {
-	key *ecdsa.PrivateKey
-	alg Algorithm
-}{
-	{testKeyEC256, ES256},
-	{testKeyEC384, ES384},
-	{testKeyEC521, ES512},
-}
-
-var mybenchClaims = &struct {
-	StandardClaims
-}{
-	StandardClaims: StandardClaims{
-		Issuer:   "benchmark",
-		IssuedAt: NewNumericDate(time.Now()),
-	},
-}
-
-func Test_Two_ECDSA(t *testing.T) {
-	for _, test := range tests {
-		signer, err := NewSignerES(test.alg, test.key)
-		if err != nil {
-			t.Fatal(err)
-		}
-		bui := NewBuilder(signer)
-		token, err := bui.BuildBytes(mybenchClaims)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		verifier, err := NewVerifierES(test.alg, &test.key.PublicKey)
-		if err != nil {
-			t.Fatal(err)
-		}
-		t.Run("check-"+test.alg.String(), func(t *testing.T) {
-			obj, err := ParseAndVerify(token, verifier)
-			if err != nil {
-				t.Fatal(err)
-			}
-			err = json.Unmarshal(obj.RawClaims(), new(map[string]interface{}))
-			if err != nil {
-				t.Fatal(err)
-			}
-		})
-	}
-}
-
-func mustParseECKey(s string) *ecdsa.PrivateKey {
-	block, _ := pem.Decode([]byte(s))
-	if block == nil {
-		panic("invalid PEM")
-	}
-
-	key, err := x509.ParseECPrivateKey(block.Bytes)
-	if err != nil {
-		panic(err)
-	}
-	return key
-}
-
-var testKeyEC256 = mustParseECKey(`-----BEGIN EC PRIVATE KEY-----
-MHcCAQEEIBOm12aaXvqSzysOSGV2yL/xKY3kCtaOfAPY1KQN2sTJoAoGCCqGSM49
-AwEHoUQDQgAEX0iTLAcGqlWeGIRtIk0G2PRgpf/6gLxOTyMAdriP4NLRkuu+9Idt
-y3qmEizRC0N81j84E213/LuqLqnsrgfyiw==
------END EC PRIVATE KEY-----`)
-
-var testKeyEC384 = mustParseECKey(`-----BEGIN EC PRIVATE KEY-----
-MIGkAgEBBDBluSyfK9BEPc9y944ZLahd4xHRVse64iCeEC5gBQ4UM1961bsEthUC
-NKXyTGTBuW2gBwYFK4EEACKhZANiAAR3Il6V61OwAnb6oYm4hQ4TVVaGQ2QGzrSi
-eYGoRewNhAaZ8wfemWX4fww7yNi6AmUzWV8Su5Qq3dtN3nLpKUEaJrTvfjtowrr/
-ZtU1fZxzI/agEpG2+uLFW6JNdYzp67w=
------END EC PRIVATE KEY-----`)
-
-var testKeyEC521 = mustParseECKey(`-----BEGIN EC PRIVATE KEY-----
-MIHcAgEBBEIBH31vhkSH+x+J8C/xf/PRj81u3MCqgiaGdW1S1jcjEuikczbbX689
-9ETHGCPtHEWw/Il1RAFaKMvndmfDVd/YapmgBwYFK4EEACOhgYkDgYYABAGNpBDA
-Lx6rKQXWdWQR581uw9dTuV8zjmkSpLZ3k0qLHVlOqt00AfEL4NO+E7fxh4SuAZPb
-RDMu2lx4lWOM2EyFvgFIyu8xlA9lEg5GKq+A7+y5r99RLughiDd52vGnudMspHEy
-x6IpwXzTZR/T8TkluL3jDWtVNFxGBf/aEErnpeLfRQ==
------END EC PRIVATE KEY-----`)
-
-func toBase64(s string) string {
-	buf := make([]byte, b64EncodedLen(len(s)))
-	base64.RawURLEncoding.Encode(buf, []byte(s))
-	return string(buf)
 }
 
 type badSigner struct{}

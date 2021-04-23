@@ -1,7 +1,6 @@
 package jwt
 
 import (
-	"encoding/base64"
 	"strings"
 	"testing"
 )
@@ -75,5 +74,3 @@ func TestParseMalformed(t *testing.T) {
 	f(`eyJhIjoxMjN9.x!yz.e30`) // `e30` is JSON `{}` in base64
 	f(`eyJhIjoxMjN9.e30.x!yz`)
 }
-
-var bytesToBase64 = base64.RawURLEncoding.EncodeToString
