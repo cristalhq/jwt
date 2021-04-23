@@ -1,10 +1,17 @@
 package jwt
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"strings"
 	"testing"
 )
+
+var bytesToBase64 = base64.RawURLEncoding.EncodeToString
+
+func strToBase64(s string) string {
+	return base64.RawURLEncoding.EncodeToString([]byte(s))
+}
 
 func getSignerError(_ Signer, err error) error {
 	return err
