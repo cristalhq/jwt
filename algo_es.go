@@ -77,7 +77,7 @@ func (es *esAlg) SignSize() int {
 }
 
 func (es *esAlg) Sign(payload []byte) ([]byte, error) {
-	digest, err := hashPayload(es.hash, payload)
+	digest, err := hashPayload(es.hash.New(), payload)
 	if err != nil {
 		return nil, err
 	}
@@ -108,7 +108,7 @@ func (es *esAlg) Verify(payload, signature []byte) error {
 		return ErrInvalidSignature
 	}
 
-	digest, err := hashPayload(es.hash, payload)
+	digest, err := hashPayload(es.hash.New(), payload)
 	if err != nil {
 		return err
 	}

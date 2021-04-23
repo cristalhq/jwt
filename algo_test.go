@@ -1,6 +1,8 @@
 package jwt
 
 import (
+	"errors"
+	"hash"
 	"testing"
 )
 
@@ -101,3 +103,25 @@ func TestVerifierBadParams(t *testing.T) {
 	f(NewVerifierPS("xxx", rsaPublicKey256))
 	f(NewVerifierES("xxx", ecdsaPublicKey256))
 }
+
+// This test was added just to bump coverage :)
+func TestDummyHash(t *testing.T) {
+	_, err := hashPayload(&badHash{}, []byte("what-ever"))
+	if err == nil {
+		t.Fatal("expected non-nil")
+	}
+}
+
+var _ hash.Hash = &badHash{}
+
+type badHash struct{}
+
+func (*badHash) Write([]byte) (int, error) {
+	return 0, errors.New("oh-no")
+}
+func (*badHash) Sum(b []byte) []byte {
+	return nil
+}
+func (*badHash) Reset()         {}
+func (*badHash) Size() int      { return 0 }
+func (*badHash) BlockSize() int { return 0 }

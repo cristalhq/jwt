@@ -1,9 +1,9 @@
 package jwt
 
 import (
-	"crypto"
 	_ "crypto/sha256" // to register a hash
 	_ "crypto/sha512" // to register a hash
+	"hash"
 )
 
 // Signer is used to sign tokens.
@@ -65,15 +65,13 @@ const (
 	PS512 Algorithm = "PS512"
 )
 
-func hashPayload(hash crypto.Hash, payload []byte) ([]byte, error) {
-	hasher := hash.New()
-
+func hashPayload(hasher hash.Hash, payload []byte) ([]byte, error) {
 	_, err := hasher.Write(payload)
 	if err != nil {
 		return nil, err
 	}
-	signed := hasher.Sum(nil)
-	return signed, nil
+	sign := hasher.Sum(nil)
+	return sign, nil
 }
 
 func constTimeAlgEqual(a, b Algorithm) bool {

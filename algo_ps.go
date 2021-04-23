@@ -94,7 +94,7 @@ func (ps *psAlg) Algorithm() Algorithm {
 }
 
 func (ps *psAlg) Sign(payload []byte) ([]byte, error) {
-	digest, err := hashPayload(ps.hash, payload)
+	digest, err := hashPayload(ps.hash.New(), payload)
 	if err != nil {
 		return nil, err
 	}
@@ -114,7 +114,7 @@ func (ps *psAlg) VerifyToken(token *Token) error {
 }
 
 func (ps *psAlg) Verify(payload, signature []byte) error {
-	digest, err := hashPayload(ps.hash, payload)
+	digest, err := hashPayload(ps.hash.New(), payload)
 	if err != nil {
 		return err
 	}

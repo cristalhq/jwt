@@ -73,7 +73,7 @@ func (rs *rsAlg) SignSize() int {
 }
 
 func (rs *rsAlg) Sign(payload []byte) ([]byte, error) {
-	digest, err := hashPayload(rs.hash, payload)
+	digest, err := hashPayload(rs.hash.New(), payload)
 	if err != nil {
 		return nil, err
 	}
@@ -93,7 +93,7 @@ func (rs *rsAlg) VerifyToken(token *Token) error {
 }
 
 func (rs *rsAlg) Verify(payload, signature []byte) error {
-	digest, err := hashPayload(rs.hash, payload)
+	digest, err := hashPayload(rs.hash.New(), payload)
 	if err != nil {
 		return err
 	}
