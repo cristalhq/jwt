@@ -5,14 +5,20 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to create'
+        required: true
+        default: 'v0.0.0'
 
 jobs:
 
   build:
     name: Build & Test
     runs-on: ubuntu-latest
+  
     steps:
-
     - name: Set up Go 1.x
       uses: actions/setup-go@v2
       with:
@@ -36,3 +42,20 @@ jobs:
         token: ${{secrets.CODECOV_TOKEN}}
         file: ./coverage.txt
         fail_ci_if_error: false
+
+  release:
+    if: github.event_name == 'workflow_dispatch'
+
+    name: Release
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Checkout with tags
+        run: git fetch --prune --unshallow --tags
+
+      - name: Create release
+        run: |
+          git log --format="%C(auto) %H %s" `git tag --sort=-committerdate | head -1`...HEAD > changelog.txt
+          echo ${{ secrets.GITHUB_TOKEN }} | gh auth login --with-token
+          gh release create ${{ github.event.inputs.tag }} -F changelog.txt
