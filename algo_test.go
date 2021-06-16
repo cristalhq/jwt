@@ -20,9 +20,9 @@ func TestSignerAlg(t *testing.T) {
 	f(mustSigner(NewSignerRS(RS384, rsaPrivateKey384)), RS384)
 	f(mustSigner(NewSignerRS(RS512, rsaPrivateKey512)), RS512)
 
-	f(mustSigner(NewSignerPS(PS256, rsaPrivateKey256)), PS256)
-	f(mustSigner(NewSignerPS(PS384, rsaPrivateKey384)), PS384)
-	f(mustSigner(NewSignerPS(PS512, rsaPrivateKey512)), PS512)
+	f(mustSigner(NewSignerPS(PS256, rsapsPrivateKey256)), PS256)
+	f(mustSigner(NewSignerPS(PS384, rsapsPrivateKey384)), PS384)
+	f(mustSigner(NewSignerPS(PS512, rsapsPrivateKey512)), PS512)
 
 	f(mustSigner(NewSignerES(ES256, ecdsaPrivateKey256)), ES256)
 	f(mustSigner(NewSignerES(ES384, ecdsaPrivateKey384)), ES384)
@@ -45,9 +45,9 @@ func TestVerifierAlg(t *testing.T) {
 	f(mustVerifier(NewVerifierRS(RS384, rsaPublicKey384)), RS384)
 	f(mustVerifier(NewVerifierRS(RS512, rsaPublicKey512)), RS512)
 
-	f(mustVerifier(NewVerifierPS(PS256, rsaPublicKey256)), PS256)
-	f(mustVerifier(NewVerifierPS(PS384, rsaPublicKey384)), PS384)
-	f(mustVerifier(NewVerifierPS(PS512, rsaPublicKey512)), PS512)
+	f(mustVerifier(NewVerifierPS(PS256, rsapsPublicKey256)), PS256)
+	f(mustVerifier(NewVerifierPS(PS384, rsapsPublicKey384)), PS384)
+	f(mustVerifier(NewVerifierPS(PS512, rsapsPublicKey512)), PS512)
 
 	f(mustVerifier(NewVerifierES(ES256, ecdsaPublicKey256)), ES256)
 	f(mustVerifier(NewVerifierES(ES384, ecdsaPublicKey384)), ES384)
