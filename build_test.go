@@ -6,6 +6,8 @@ import (
 )
 
 func TestBuild(t *testing.T) {
+	initKeys()
+
 	f := func(signer Signer, verifier Verifier, claims interface{}) {
 		t.Helper()
 
@@ -92,6 +94,8 @@ func TestBuild(t *testing.T) {
 }
 
 func TestBuildHeader(t *testing.T) {
+	initKeys()
+
 	f := func(signer Signer, want string, opts ...BuilderOption) {
 		t.Helper()
 
