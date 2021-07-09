@@ -81,14 +81,14 @@ func (rs *rsAlg) Sign(payload []byte) ([]byte, error) {
 	return signature, nil
 }
 
-func (rs *rsAlg) VerifyToken(token *Token) error {
-	if constTimeAlgEqual(token.Header().Algorithm, rs.alg) {
-		return rs.Verify(token.Payload(), token.Signature())
+func (rs *rsAlg) Verify(token *Token) error {
+	if !constTimeAlgEqual(token.Header().Algorithm, rs.alg) {
+		return ErrAlgorithmMismatch
 	}
-	return ErrAlgorithmMismatch
+	return rs.verify(token.Payload(), token.Signature())
 }
 
-func (rs *rsAlg) Verify(payload, signature []byte) error {
+func (rs *rsAlg) verify(payload, signature []byte) error {
 	digest, err := hashPayload(rs.hash, payload)
 	if err != nil {
 		return err

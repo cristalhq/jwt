@@ -6,23 +6,8 @@ import (
 	"encoding/json"
 )
 
-// ParseString decodes a token.
-func ParseString(raw string) (*Token, error) {
-	return Parse([]byte(raw))
-}
-
-// Parse decodes a token from a raw bytes.
-func Parse(raw []byte) (*Token, error) {
-	return parse(raw)
-}
-
-// ParseAndVerifyString decodes a token and verifies it's signature.
-func ParseAndVerifyString(raw string, verifier Verifier) (*Token, error) {
-	return ParseAndVerify([]byte(raw), verifier)
-}
-
-// ParseAndVerify decodes a token and verifies it's signature.
-func ParseAndVerify(raw []byte, verifier Verifier) (*Token, error) {
+// Parse decodes a token and verifies it's signature.
+func Parse(raw []byte, verifier Verifier) (*Token, error) {
 	token, err := parse(raw)
 	if err != nil {
 		return nil, err
@@ -30,10 +15,16 @@ func ParseAndVerify(raw []byte, verifier Verifier) (*Token, error) {
 	if !constTimeAlgEqual(token.Header().Algorithm, verifier.Algorithm()) {
 		return nil, ErrAlgorithmMismatch
 	}
-	if err := verifier.Verify(token.Payload(), token.Signature()); err != nil {
+	if err := verifier.Verify(token); err != nil {
 		return nil, err
 	}
 	return token, nil
+}
+
+// ParseNoVerify decodes a token from a raw bytes.
+// Consider to use Parse with a verifier to verify token signature.
+func ParseNoVerify(raw []byte) (*Token, error) {
+	return parse(raw)
 }
 
 func parse(token []byte) (*Token, error) {

@@ -45,14 +45,11 @@ func TestES(t *testing.T) {
 	f := func(alg Algorithm, privateKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey, isCorrectSign bool) {
 		t.Helper()
 
-		const payload = `simple-string-payload`
+		signer := mustSigner(NewSignerES(alg, privateKey))
+		token := mustBuild(signer, simplePayload)
+		verifier := mustVerifier(NewVerifierES(alg, publicKey))
 
-		sign := esSign(t, alg, privateKey, payload)
-
-		err := esVerify(t, alg, publicKey, payload, sign)
-		if err != nil && isCorrectSign {
-			t.Error(err)
-		}
+		err := verifier.Verify(token)
 		if err == nil && !isCorrectSign {
 			t.Error("must be not nil")
 		}
@@ -107,29 +104,4 @@ func TestES_BadKeys(t *testing.T) {
 	f(getVerifierError(NewVerifierES(ES384, ecdsaPublicKey521)), ErrInvalidKey)
 	f(getVerifierError(NewVerifierES(ES512, ecdsaPublicKey256)), ErrInvalidKey)
 	f(getVerifierError(NewVerifierES(ES512, ecdsaPublicKey384)), ErrInvalidKey)
-}
-
-func esSign(t *testing.T, alg Algorithm, privateKey *ecdsa.PrivateKey, payload string) []byte {
-	t.Helper()
-
-	signer, errSigner := NewSignerES(alg, privateKey)
-	if errSigner != nil {
-		t.Fatalf("NewSignerES %v", errSigner)
-	}
-
-	sign, errSign := signer.Sign([]byte(payload))
-	if errSign != nil {
-		t.Fatalf("SignES %v", errSign)
-	}
-	return sign
-}
-
-func esVerify(t *testing.T, alg Algorithm, publicKey *ecdsa.PublicKey, payload string, sign []byte) error {
-	t.Helper()
-
-	verifier, errVerifier := NewVerifierES(alg, publicKey)
-	if errVerifier != nil {
-		t.Fatalf("NewVerifierES %v", errVerifier)
-	}
-	return verifier.Verify([]byte(payload), sign)
 }

@@ -20,6 +20,14 @@ func getVerifierError(_ Verifier, err error) error {
 	return err
 }
 
+func mustBuild(s Signer, p interface{}) *Token {
+	t, err := NewBuilder(s).Build(p)
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
+
 func mustSigner(s Signer, err error) Signer {
 	if err != nil {
 		panic(err)
@@ -80,7 +88,7 @@ func TestSecurePrint(t *testing.T) {
 		Audience: Audience([]string{"test-user"}),
 	}
 
-	token, err := Build(sign, claims)
+	token, err := NewBuilder(sign).Build(claims)
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -1,3 +1,3 @@
-module github.com/cristalhq/jwt/v3
+module github.com/cristalhq/jwt/v4
 
-go 1.13
+go 1.17

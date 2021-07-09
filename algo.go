@@ -16,7 +16,7 @@ type Signer interface {
 // Verifier is used to verify tokens.
 type Verifier interface {
 	Algorithm() Algorithm
-	Verify(payload, signature []byte) error
+	Verify(token *Token) error
 }
 
 // Algorithm for signing and verifying.

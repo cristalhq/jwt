@@ -12,7 +12,7 @@ func TestParse(t *testing.T) {
 		parts := strings.Split(token, ".")
 		partHeader, _, _ := parts[0], parts[1], parts[2]
 
-		tk, err := Parse([]byte(token))
+		tk, err := ParseNoVerify([]byte(token))
 		if err != nil {
 			t.Errorf("want nil, got %#v", err)
 		}
@@ -61,7 +61,7 @@ func TestParseMalformed(t *testing.T) {
 	f := func(got string) {
 		t.Helper()
 
-		_, err := Parse([]byte(got))
+		_, err := ParseNoVerify([]byte(got))
 		if err == nil {
 			t.Error("got nil want err")
 		}

@@ -18,14 +18,11 @@ func TestHS(t *testing.T) {
 	f := func(alg Algorithm, signKey, verifyKey []byte, isCorrectSign bool) {
 		t.Helper()
 
-		const payload = `simple-string-payload`
+		signer := mustSigner(NewSignerHS(alg, signKey))
+		token := mustBuild(signer, simplePayload)
+		verifier := mustVerifier(NewVerifierHS(alg, verifyKey))
 
-		sign := hsSign(t, alg, signKey, payload)
-
-		err := hsVerify(t, alg, verifyKey, payload, sign)
-		if err != nil && isCorrectSign {
-			t.Fatal(err)
-		}
+		err := verifier.Verify(token)
 		if err == nil && !isCorrectSign {
 			t.Fatal("must be not nil")
 		}
@@ -40,29 +37,4 @@ func TestHS(t *testing.T) {
 	f(HS512, hsKey512, hsKeyAnother512, false)
 
 	f(HS256, hsKey256, hsKeyAnother256, false)
-}
-
-func hsSign(t *testing.T, alg Algorithm, key []byte, payload string) []byte {
-	t.Helper()
-
-	signer, errSigner := NewSignerHS(alg, key)
-	if errSigner != nil {
-		t.Fatalf("NewSignerHS %v", errSigner)
-	}
-
-	sign, errSign := signer.Sign([]byte(payload))
-	if errSign != nil {
-		t.Fatalf("SignHS %v", errSign)
-	}
-	return sign
-}
-
-func hsVerify(t *testing.T, alg Algorithm, key []byte, payload string, sign []byte) error {
-	t.Helper()
-
-	verifier, errVerifier := NewVerifierHS(alg, key)
-	if errVerifier != nil {
-		t.Fatalf("NewVerifierHS %v", errVerifier)
-	}
-	return verifier.Verify([]byte(payload), sign)
 }

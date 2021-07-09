@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cristalhq/jwt/v3"
+	"github.com/cristalhq/jwt/v4"
 )
 
 func Example() {
@@ -35,16 +35,16 @@ func Example() {
 	checkErr(err)
 
 	// parse a Token (by example received from a request)
-	tokenStr := newToken.String()
-	token, err := jwt.ParseAndVerifyString(tokenStr, verifier)
+	tokenStr := newToken.Bytes()
+	token, err := jwt.Parse(tokenStr, verifier)
 	checkErr(err)
 
 	// and verify it's signature
-	err = verifier.Verify(token.Payload(), token.Signature())
+	err = verifier.Verify(token)
 	checkErr(err)
 
 	// also you can parse and verify together
-	newToken, err = jwt.ParseAndVerifyString(tokenStr, verifier)
+	newToken, err = jwt.Parse(tokenStr, verifier)
 	checkErr(err)
 
 	// get standard claims
@@ -120,7 +120,10 @@ func ExampleBuild_WithUserClaims() {
 func ExampleParse() {
 	rawToken := []byte(`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs`)
 
-	token, err := jwt.Parse(rawToken)
+	key := []byte(`secret`)
+	verifier, _ := jwt.NewVerifierHS(jwt.HS256, key)
+
+	token, err := jwt.Parse(rawToken, verifier)
 	checkErr(err)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
@@ -137,13 +140,10 @@ func ExampleParse() {
 	// Token     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs
 }
 
-func ExampleParseAndVerify() {
+func ExampleParseNoVerify() {
 	rawToken := []byte(`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs`)
 
-	key := []byte(`secret`)
-	verifier, _ := jwt.NewVerifierHS(jwt.HS256, key)
-
-	token, err := jwt.ParseAndVerify(rawToken, verifier)
+	token, err := jwt.ParseNoVerify(rawToken)
 	checkErr(err)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)

@@ -4,6 +4,8 @@ import (
 	"testing"
 )
 
+const simplePayload = `simple-string-payload`
+
 func initKeys() {
 	initRSKeys()
 	initPSKeys()

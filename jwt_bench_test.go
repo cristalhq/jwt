@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cristalhq/jwt/v3"
+	"github.com/cristalhq/jwt/v4"
 )
 
 func BenchmarkAlgEDSA(b *testing.B) {
@@ -176,7 +176,7 @@ func runVerifyBench(b *testing.B, builder *jwt.Builder, verifier jwt.Verifier) {
 	sink := uintptr(0)
 	for i := 0; i < b.N/tokensCount; i++ {
 		for _, token := range tokens {
-			verificationErr := verifier.Verify(token.Payload(), token.Signature())
+			verificationErr := verifier.Verify(token)
 			if verificationErr != nil {
 				b.Fatal(verificationErr)
 			}

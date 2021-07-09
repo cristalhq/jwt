@@ -45,14 +45,11 @@ func TestPS(t *testing.T) {
 	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, isCorrectSign bool) {
 		t.Helper()
 
-		const payload = `simple-string-payload`
+		signer := mustSigner(NewSignerPS(alg, privateKey))
+		token := mustBuild(signer, simplePayload)
+		verifier := mustVerifier(NewVerifierPS(alg, publicKey))
 
-		sign := psSign(t, alg, privateKey, payload)
-
-		err := psVerify(t, alg, publicKey, payload, sign)
-		if err != nil && isCorrectSign {
-			t.Error(err)
-		}
+		err := verifier.Verify(token)
 		if err == nil && !isCorrectSign {
 			t.Error("must be not nil")
 		}
@@ -93,29 +90,4 @@ func TestPS_BadKeys(t *testing.T) {
 	f(getVerifierError(NewVerifierPS(PS384, nil)), ErrNilKey)
 	f(getVerifierError(NewVerifierPS(PS512, nil)), ErrNilKey)
 	f(getVerifierError(NewVerifierPS("boo", rsapsPublicKey384)), ErrUnsupportedAlg)
-}
-
-func psSign(t *testing.T, alg Algorithm, privateKey *rsa.PrivateKey, payload string) []byte {
-	t.Helper()
-
-	signer, errSigner := NewSignerPS(alg, privateKey)
-	if errSigner != nil {
-		t.Fatalf("NewSignerPS %v", errSigner)
-	}
-
-	sign, errSign := signer.Sign([]byte(payload))
-	if errSign != nil {
-		t.Fatalf("SignPS %v", errSign)
-	}
-	return sign
-}
-
-func psVerify(t *testing.T, alg Algorithm, publicKey *rsa.PublicKey, payload string, sign []byte) error {
-	t.Helper()
-
-	verifier, errVerifier := NewVerifierPS(alg, publicKey)
-	if errVerifier != nil {
-		t.Fatalf("NewVerifierPS %v", errVerifier)
-	}
-	return verifier.Verify([]byte(payload), sign)
 }
