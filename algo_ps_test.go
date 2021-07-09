@@ -29,7 +29,7 @@ func initPSKeys() {
 		}
 
 		rsapsPrivateKey256, rsapsPublicKey256 = f(256 * 8)
-		rsapsPrivateKey384, rsapsPublicKey384 = f(256 * 8)
+		rsapsPrivateKey384, rsapsPublicKey384 = f(384 * 8)
 		rsapsPrivateKey512, rsapsPublicKey512 = f(512 * 8)
 
 		rsapsPrivateKey256Another, rsapsPublicKey256Another = f(256 * 8)
