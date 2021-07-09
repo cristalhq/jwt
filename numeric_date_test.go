@@ -1,7 +1,6 @@
 package jwt
 
 import (
-	"encoding/json"
 	"strconv"
 	"testing"
 	"time"
@@ -11,7 +10,7 @@ func TestNumericDateMarshal(t *testing.T) {
 	f := func(got *NumericDate, want string) {
 		t.Helper()
 
-		raw, err := json.Marshal(got)
+		raw, err := got.MarshalJSON()
 		if err != nil {
 			t.Errorf("want no err, got: %#v", err)
 		}
@@ -33,7 +32,7 @@ func TestNumericDateUnmarshal(t *testing.T) {
 		t.Helper()
 
 		var got NumericDate
-		err := json.Unmarshal([]byte(s), &got)
+		err := got.UnmarshalJSON([]byte(s))
 		if err != nil {
 			t.Errorf("want no err, got: %#v", err)
 		}
@@ -52,7 +51,7 @@ func TestNumericDateUnmarshalMalformed(t *testing.T) {
 		t.Helper()
 
 		var nd NumericDate
-		err := json.Unmarshal([]byte(got), &nd)
+		err := nd.UnmarshalJSON([]byte(got))
 		if err == nil {
 			t.Error("want err")
 		}
