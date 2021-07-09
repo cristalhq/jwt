@@ -26,7 +26,7 @@ func init() {
 
 	rsaPrivateKey256, rsaPublicKey256 = f(256 * 8)
 	rsaPrivateKey384, rsaPublicKey384 = f(384 * 8)
-	rsaPrivateKey512, rsaPublicKey512 = f(512 * 8)
+	rsaPrivateKey512, rsaPublicKey512 = f(256 * 8) // 256 just for the example
 
 	rsaPrivateKey256Another, rsaPublicKey256Another = f(256 * 8)
 	rsaPrivateKey384Another, rsaPublicKey384Another = f(384 * 8)
@@ -75,28 +75,13 @@ func TestRS_BadKeys(t *testing.T) {
 	f(getSignerError(NewSignerRS(RS256, nil)), ErrNilKey)
 	f(getSignerError(NewSignerRS(RS384, nil)), ErrNilKey)
 	f(getSignerError(NewSignerRS(RS512, nil)), ErrNilKey)
-
 	f(getSignerError(NewSignerRS("foo", rsaPrivateKey384)), ErrUnsupportedAlg)
-
-	f(getSignerError(NewSignerRS(RS256, rsaPrivateKey384)), ErrInvalidKey)
-	f(getSignerError(NewSignerRS(RS256, rsaPrivateKey512)), ErrInvalidKey)
-	f(getSignerError(NewSignerRS(RS384, rsaPrivateKey256)), ErrInvalidKey)
-	f(getSignerError(NewSignerRS(RS384, rsaPrivateKey512)), ErrInvalidKey)
-	f(getSignerError(NewSignerRS(RS512, rsaPrivateKey256)), ErrInvalidKey)
-	f(getSignerError(NewSignerRS(RS512, rsaPrivateKey384)), ErrInvalidKey)
 
 	f(getVerifierError(NewVerifierRS(RS256, nil)), ErrNilKey)
 	f(getVerifierError(NewVerifierRS(RS384, nil)), ErrNilKey)
 	f(getVerifierError(NewVerifierRS(RS512, nil)), ErrNilKey)
-
 	f(getVerifierError(NewVerifierRS("boo", rsaPublicKey384)), ErrUnsupportedAlg)
 
-	f(getVerifierError(NewVerifierRS(RS256, rsaPublicKey384)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierRS(RS256, rsaPublicKey512)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierRS(RS384, rsaPublicKey256)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierRS(RS384, rsaPublicKey512)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierRS(RS512, rsaPublicKey256)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierRS(RS512, rsaPublicKey384)), ErrInvalidKey)
 }
 
 func rsSign(t *testing.T, alg Algorithm, privateKey *rsa.PrivateKey, payload string) []byte {

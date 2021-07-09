@@ -85,8 +85,8 @@ func TestBuild(t *testing.T) {
 		"i-am-already-a-claims",
 	)
 	f(
-		mustSigner(NewSignerPS(PS512, rsaPrivateKey512)),
-		mustVerifier(NewVerifierPS(PS512, rsaPublicKey512)),
+		mustSigner(NewSignerPS(PS512, rsapsPrivateKey512)),
+		mustVerifier(NewVerifierPS(PS512, rsapsPublicKey512)),
 		"i-am-already-a-claims",
 	)
 }

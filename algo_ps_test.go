@@ -1,11 +1,37 @@
 package jwt
 
 import (
+	"crypto/rand"
 	"crypto/rsa"
 	"errors"
 	"testing"
 )
 
+var (
+	rsapsPublicKey256, rsapsPublicKey384, rsapsPublicKey512    *rsa.PublicKey
+	rsapsPrivateKey256, rsapsPrivateKey384, rsapsPrivateKey512 *rsa.PrivateKey
+
+	rsapsPublicKey256Another, rsapsPublicKey384Another, rsapsPublicKey512Another    *rsa.PublicKey
+	rsapsPrivateKey256Another, rsapsPrivateKey384Another, rsapsPrivateKey512Another *rsa.PrivateKey
+)
+
+func init() {
+	f := func(bits int) (*rsa.PrivateKey, *rsa.PublicKey) {
+		privKey, err := rsa.GenerateKey(rand.Reader, bits)
+		if err != nil {
+			panic(err)
+		}
+		return privKey, &privKey.PublicKey
+	}
+
+	rsapsPrivateKey256, rsapsPublicKey256 = f(256 * 8)
+	rsapsPrivateKey384, rsapsPublicKey384 = f(384 * 8)
+	rsapsPrivateKey512, rsapsPublicKey512 = f(512 * 8)
+
+	rsapsPrivateKey256Another, rsapsPublicKey256Another = f(256 * 8)
+	rsapsPrivateKey384Another, rsapsPublicKey384Another = f(384 * 8)
+	rsapsPrivateKey512Another, rsapsPublicKey512Another = f(512 * 8)
+}
 func TestPS(t *testing.T) {
 	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, isCorrectSign bool) {
 		t.Helper()
@@ -23,17 +49,17 @@ func TestPS(t *testing.T) {
 		}
 	}
 
-	f(PS256, rsaPrivateKey256, rsaPublicKey256, true)
-	f(PS384, rsaPrivateKey384, rsaPublicKey384, true)
-	f(PS512, rsaPrivateKey512, rsaPublicKey512, true)
+	f(PS256, rsapsPrivateKey256, rsapsPublicKey256, true)
+	f(PS384, rsapsPrivateKey384, rsapsPublicKey384, true)
+	f(PS512, rsapsPrivateKey512, rsapsPublicKey512, true)
 
-	f(PS256, rsaPrivateKey256, rsaPublicKey256Another, false)
-	f(PS384, rsaPrivateKey384, rsaPublicKey384Another, false)
-	f(PS512, rsaPrivateKey512, rsaPublicKey512Another, false)
+	f(PS256, rsapsPrivateKey256, rsapsPublicKey256Another, false)
+	f(PS384, rsapsPrivateKey384, rsapsPublicKey384Another, false)
+	f(PS512, rsapsPrivateKey512, rsapsPublicKey512Another, false)
 
-	f(PS256, rsaPrivateKey256Another, rsaPublicKey256, false)
-	f(PS384, rsaPrivateKey384Another, rsaPublicKey384, false)
-	f(PS512, rsaPrivateKey512Another, rsaPublicKey512, false)
+	f(PS256, rsapsPrivateKey256Another, rsapsPublicKey256, false)
+	f(PS384, rsapsPrivateKey384Another, rsapsPublicKey384, false)
+	f(PS512, rsapsPrivateKey512Another, rsapsPublicKey512, false)
 }
 
 func TestPS_BadKeys(t *testing.T) {
@@ -49,27 +75,27 @@ func TestPS_BadKeys(t *testing.T) {
 	f(getSignerError(NewSignerPS(PS384, nil)), ErrNilKey)
 	f(getSignerError(NewSignerPS(PS512, nil)), ErrNilKey)
 
-	f(getSignerError(NewSignerPS("foo", rsaPrivateKey384)), ErrUnsupportedAlg)
+	f(getSignerError(NewSignerPS("foo", rsapsPrivateKey384)), ErrUnsupportedAlg)
 
-	f(getSignerError(NewSignerPS(PS256, rsaPrivateKey384)), ErrInvalidKey)
-	f(getSignerError(NewSignerPS(PS256, rsaPrivateKey512)), ErrInvalidKey)
-	f(getSignerError(NewSignerPS(PS384, rsaPrivateKey256)), ErrInvalidKey)
-	f(getSignerError(NewSignerPS(PS384, rsaPrivateKey512)), ErrInvalidKey)
-	f(getSignerError(NewSignerPS(PS512, rsaPrivateKey256)), ErrInvalidKey)
-	f(getSignerError(NewSignerPS(PS512, rsaPrivateKey384)), ErrInvalidKey)
+	f(getSignerError(NewSignerPS(PS256, rsapsPrivateKey384)), ErrInvalidKey)
+	f(getSignerError(NewSignerPS(PS256, rsapsPrivateKey512)), ErrInvalidKey)
+	f(getSignerError(NewSignerPS(PS384, rsapsPrivateKey256)), ErrInvalidKey)
+	f(getSignerError(NewSignerPS(PS384, rsapsPrivateKey512)), ErrInvalidKey)
+	f(getSignerError(NewSignerPS(PS512, rsapsPrivateKey256)), ErrInvalidKey)
+	f(getSignerError(NewSignerPS(PS512, rsapsPrivateKey384)), ErrInvalidKey)
 
 	f(getVerifierError(NewVerifierPS(PS256, nil)), ErrNilKey)
 	f(getVerifierError(NewVerifierPS(PS384, nil)), ErrNilKey)
 	f(getVerifierError(NewVerifierPS(PS512, nil)), ErrNilKey)
 
-	f(getVerifierError(NewVerifierPS("boo", rsaPublicKey384)), ErrUnsupportedAlg)
+	f(getVerifierError(NewVerifierPS("boo", rsapsPublicKey384)), ErrUnsupportedAlg)
 
-	f(getVerifierError(NewVerifierPS(PS256, rsaPublicKey384)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierPS(PS256, rsaPublicKey512)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierPS(PS384, rsaPublicKey256)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierPS(PS384, rsaPublicKey512)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierPS(PS512, rsaPublicKey256)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierPS(PS512, rsaPublicKey384)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierPS(PS256, rsapsPublicKey384)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierPS(PS256, rsapsPublicKey512)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierPS(PS384, rsapsPublicKey256)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierPS(PS384, rsapsPublicKey512)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierPS(PS512, rsapsPublicKey256)), ErrInvalidKey)
+	f(getVerifierError(NewVerifierPS(PS512, rsapsPublicKey384)), ErrInvalidKey)
 }
 
 func psSign(t *testing.T, alg Algorithm, privateKey *rsa.PrivateKey, payload string) []byte {

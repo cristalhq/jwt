@@ -50,10 +50,6 @@ func getHashRS(alg Algorithm, size int) (crypto.Hash, error) {
 	default:
 		return 0, ErrUnsupportedAlg
 	}
-
-	if alg.keySize() != size {
-		return 0, ErrInvalidKey
-	}
 	return hash, nil
 }
 
