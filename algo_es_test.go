@@ -5,6 +5,7 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"errors"
+	"sync"
 	"testing"
 )
 
@@ -16,25 +17,31 @@ var (
 	ecdsaPrivateKey256Another, ecdsaPrivateKey384Another, ecdsaPrivateKey521Another *ecdsa.PrivateKey
 )
 
-func init() {
-	f := func(f func() elliptic.Curve) (*ecdsa.PrivateKey, *ecdsa.PublicKey) {
-		privKey, err := ecdsa.GenerateKey(f(), rand.Reader)
-		if err != nil {
-			panic(err)
+var initESKeysOnce sync.Once
+
+func initESKeys() {
+	initESKeysOnce.Do(func() {
+		f := func(f func() elliptic.Curve) (*ecdsa.PrivateKey, *ecdsa.PublicKey) {
+			privKey, err := ecdsa.GenerateKey(f(), rand.Reader)
+			if err != nil {
+				panic(err)
+			}
+			return privKey, &privKey.PublicKey
 		}
-		return privKey, &privKey.PublicKey
-	}
 
-	ecdsaPrivateKey256, ecdsaPublicKey256 = f(elliptic.P256)
-	ecdsaPrivateKey384, ecdsaPublicKey384 = f(elliptic.P384)
-	ecdsaPrivateKey521, ecdsaPublicKey521 = f(elliptic.P521)
+		ecdsaPrivateKey256, ecdsaPublicKey256 = f(elliptic.P256)
+		ecdsaPrivateKey384, ecdsaPublicKey384 = f(elliptic.P384)
+		ecdsaPrivateKey521, ecdsaPublicKey521 = f(elliptic.P521)
 
-	ecdsaPrivateKey256Another, ecdsaPublicKey256Another = f(elliptic.P256)
-	ecdsaPrivateKey384Another, ecdsaPublicKey384Another = f(elliptic.P384)
-	ecdsaPrivateKey521Another, ecdsaPublicKey521Another = f(elliptic.P521)
+		ecdsaPrivateKey256Another, ecdsaPublicKey256Another = f(elliptic.P256)
+		ecdsaPrivateKey384Another, ecdsaPublicKey384Another = f(elliptic.P384)
+		ecdsaPrivateKey521Another, ecdsaPublicKey521Another = f(elliptic.P521)
+	})
 }
 
 func TestES(t *testing.T) {
+	initESKeys()
+
 	f := func(alg Algorithm, privateKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey, isCorrectSign bool) {
 		t.Helper()
 
@@ -44,10 +51,10 @@ func TestES(t *testing.T) {
 
 		err := esVerify(t, alg, publicKey, payload, sign)
 		if err != nil && isCorrectSign {
-			t.Fatal(err)
+			t.Error(err)
 		}
 		if err == nil && !isCorrectSign {
-			t.Fatal("must be not nil")
+			t.Error("must be not nil")
 		}
 	}
 
@@ -65,11 +72,13 @@ func TestES(t *testing.T) {
 }
 
 func TestES_BadKeys(t *testing.T) {
+	initESKeys()
+
 	f := func(err, wantErr error) {
 		t.Helper()
 
 		if !errors.Is(err, wantErr) {
-			t.Fatalf("expected %v, got %v", wantErr, err)
+			t.Errorf("expected %v, got %v", wantErr, err)
 		}
 	}
 

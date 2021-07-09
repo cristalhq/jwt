@@ -4,6 +4,7 @@ import (
 	"crypto/rand"
 	"crypto/rsa"
 	"errors"
+	"sync"
 	"testing"
 )
 
@@ -15,24 +16,31 @@ var (
 	rsapsPrivateKey256Another, rsapsPrivateKey384Another, rsapsPrivateKey512Another *rsa.PrivateKey
 )
 
-func init() {
-	f := func(bits int) (*rsa.PrivateKey, *rsa.PublicKey) {
-		privKey, err := rsa.GenerateKey(rand.Reader, bits)
-		if err != nil {
-			panic(err)
+var initPSKeysOnce sync.Once
+
+func initPSKeys() {
+	initPSKeysOnce.Do(func() {
+		f := func(bits int) (*rsa.PrivateKey, *rsa.PublicKey) {
+			privKey, err := rsa.GenerateKey(rand.Reader, bits)
+			if err != nil {
+				panic(err)
+			}
+			return privKey, &privKey.PublicKey
 		}
-		return privKey, &privKey.PublicKey
-	}
 
-	rsapsPrivateKey256, rsapsPublicKey256 = f(256 * 8)
-	rsapsPrivateKey384, rsapsPublicKey384 = f(384 * 8)
-	rsapsPrivateKey512, rsapsPublicKey512 = f(512 * 8)
+		rsapsPrivateKey256, rsapsPublicKey256 = f(256 * 8)
+		rsapsPrivateKey384, rsapsPublicKey384 = f(384 * 8)
+		rsapsPrivateKey512, rsapsPublicKey512 = f(512 * 8)
 
-	rsapsPrivateKey256Another, rsapsPublicKey256Another = f(256 * 8)
-	rsapsPrivateKey384Another, rsapsPublicKey384Another = f(384 * 8)
-	rsapsPrivateKey512Another, rsapsPublicKey512Another = f(512 * 8)
+		rsapsPrivateKey256Another, rsapsPublicKey256Another = f(256 * 8)
+		rsapsPrivateKey384Another, rsapsPublicKey384Another = f(384 * 8)
+		rsapsPrivateKey512Another, rsapsPublicKey512Another = f(512 * 8)
+	})
 }
+
 func TestPS(t *testing.T) {
+	initPSKeys()
+
 	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, isCorrectSign bool) {
 		t.Helper()
 
@@ -42,10 +50,10 @@ func TestPS(t *testing.T) {
 
 		err := psVerify(t, alg, publicKey, payload, sign)
 		if err != nil && isCorrectSign {
-			t.Fatal(err)
+			t.Error(err)
 		}
 		if err == nil && !isCorrectSign {
-			t.Fatal("must be not nil")
+			t.Error("must be not nil")
 		}
 	}
 
@@ -63,11 +71,13 @@ func TestPS(t *testing.T) {
 }
 
 func TestPS_BadKeys(t *testing.T) {
+	initPSKeys()
+
 	f := func(err, wantErr error) {
 		t.Helper()
 
 		if !errors.Is(err, wantErr) {
-			t.Fatalf("expected %v, got %v", wantErr, err)
+			t.Errorf("expected %v, got %v", wantErr, err)
 		}
 	}
 
