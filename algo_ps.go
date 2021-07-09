@@ -41,23 +41,16 @@ func NewVerifierPS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
 }
 
 func getParamsPS(alg Algorithm, size int) (crypto.Hash, *rsa.PSSOptions, error) {
-	var hash crypto.Hash
-	var opts *rsa.PSSOptions
 	switch alg {
 	case PS256:
-		hash, opts = crypto.SHA256, optsPS256
+		return crypto.SHA256, optsPS256, nil
 	case PS384:
-		hash, opts = crypto.SHA384, optsPS384
+		return crypto.SHA384, optsPS384, nil
 	case PS512:
-		hash, opts = crypto.SHA512, optsPS512
+		return crypto.SHA512, optsPS512, nil
 	default:
 		return 0, nil, ErrUnsupportedAlg
 	}
-
-	if alg.keySize() != size {
-		return 0, nil, ErrInvalidKey
-	}
-	return hash, opts, nil
 }
 
 var (
