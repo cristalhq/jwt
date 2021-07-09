@@ -1,7 +1,6 @@
 package jwt
 
 import (
-	"encoding/json"
 	"testing"
 )
 
@@ -9,7 +8,7 @@ func TestAudienceMarshal(t *testing.T) {
 	f := func(got Audience, want string) {
 		t.Helper()
 
-		raw, err := json.Marshal(got)
+		raw, err := got.MarshalJSON()
 		if err != nil {
 			t.Errorf("want no err, got: %#v", err)
 		}
@@ -30,7 +29,7 @@ func TestAudienceUnmarshal(t *testing.T) {
 		t.Helper()
 
 		var a Audience
-		err := json.Unmarshal([]byte(got), &a)
+		err := a.UnmarshalJSON([]byte(got))
 		if err != nil {
 			t.Errorf("want no err, got: %#v", err)
 		}
@@ -56,7 +55,7 @@ func TestAudienceUnmarshalMalformed(t *testing.T) {
 		t.Helper()
 
 		var a Audience
-		err := json.Unmarshal([]byte(got), &a)
+		err := a.UnmarshalJSON([]byte(got))
 		if err == nil {
 			t.Error("want err")
 		}

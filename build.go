@@ -127,7 +127,7 @@ func encodeHeader(header Header) []byte {
 		// another algorithm? encode below
 	}
 	// returned err is always nil, see *Header.MarshalJSON
-	buf, _ := json.Marshal(header)
+	buf, _ := header.MarshalJSON()
 
 	encoded := make([]byte, b64EncodedLen(len(buf)))
 	b64Encode(encoded, buf)

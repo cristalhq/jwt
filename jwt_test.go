@@ -2,7 +2,6 @@ package jwt
 
 import (
 	"encoding/base64"
-	"encoding/json"
 	"strings"
 	"testing"
 )
@@ -39,7 +38,7 @@ func TestMarshalHeader(t *testing.T) {
 	f := func(h *Header, want string) {
 		t.Helper()
 
-		raw, err := json.Marshal(h)
+		raw, err := h.MarshalJSON()
 		if err != nil {
 			t.Errorf("unexpected error: %v", err)
 		}
