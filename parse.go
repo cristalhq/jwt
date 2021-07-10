@@ -8,12 +8,9 @@ import (
 
 // Parse decodes a token and verifies it's signature.
 func Parse(raw []byte, verifier Verifier) (*Token, error) {
-	token, err := parse(raw)
+	token, err := ParseNoVerify(raw)
 	if err != nil {
 		return nil, err
-	}
-	if !constTimeAlgEqual(token.Header().Algorithm, verifier.Algorithm()) {
-		return nil, ErrAlgorithmMismatch
 	}
 	if err := verifier.Verify(token); err != nil {
 		return nil, err

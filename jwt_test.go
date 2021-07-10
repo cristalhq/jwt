@@ -1,44 +1,30 @@
 package jwt
 
 import (
+	"bytes"
 	"encoding/base64"
+	"strings"
 	"testing"
 )
 
-var bytesToBase64 = base64.RawURLEncoding.EncodeToString
-
-func strToBase64(s string) string {
-	return base64.RawURLEncoding.EncodeToString([]byte(s))
-}
-
-func getSignerError(_ Signer, err error) error {
-	return err
-}
-
-func getVerifierError(_ Verifier, err error) error {
-	return err
-}
-
-func mustBuild(s Signer, p interface{}) *Token {
-	t, err := NewBuilder(s).Build(p)
-	if err != nil {
-		panic(err)
+func TestToken(t *testing.T) {
+	// TODO
+	tokenStr := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`
+	token := &Token{
+		raw:  []byte(tokenStr),
+		dot1: strings.Index(tokenStr, "."),
+		dot2: strings.LastIndex(tokenStr, "."),
+		// signature:,
+		header: Header{},
+		claims: nil,
 	}
-	return t
-}
 
-func mustSigner(s Signer, err error) Signer {
-	if err != nil {
-		panic(err)
+	if token.String() != tokenStr {
+		t.Fatal()
 	}
-	return s
-}
-
-func mustVerifier(v Verifier, err error) Verifier {
-	if err != nil {
-		panic(err)
+	if !bytes.Equal(token.Bytes(), []byte(tokenStr)) {
+		t.Fatal()
 	}
-	return v
 }
 
 func TestMarshalHeader(t *testing.T) {
@@ -78,4 +64,40 @@ func TestMarshalHeader(t *testing.T) {
 		&Header{Algorithm: RS256, Type: "JwT", ContentType: "token", KeyID: "test"},
 		`{"alg":"RS256","typ":"JwT","cty":"token","kid":"test"}`,
 	)
+}
+
+var bytesToBase64 = base64.RawURLEncoding.EncodeToString
+
+func strToBase64(s string) string {
+	return bytesToBase64([]byte(s))
+}
+
+func getSignerError(_ Signer, err error) error {
+	return err
+}
+
+func getVerifierError(_ Verifier, err error) error {
+	return err
+}
+
+func mustBuild(s Signer, p interface{}) *Token {
+	t, err := NewBuilder(s).Build(p)
+	if err != nil {
+		panic(err)
+	}
+	return t
+}
+
+func mustSigner(s Signer, err error) Signer {
+	if err != nil {
+		panic(err)
+	}
+	return s
+}
+
+func mustVerifier(v Verifier, err error) Verifier {
+	if err != nil {
+		panic(err)
+	}
+	return v
 }
