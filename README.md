@@ -30,7 +30,7 @@ There are many JWT libraries, but many of them are hard to use (unclear or fixed
 
 ## Install
 
-Go version 1.13+
+Go version 1.16+
 
 ```
 go get github.com/cristalhq/jwt/v4
@@ -70,22 +70,18 @@ key := []byte(`secret`)
 verifier, err := jwt.NewVerifierHS(jwt.HS256, key)
 checkErr(err)
 
-// parse a Token (by example received from a request)
-tokenStr := `<header.payload.signature>`
-token, err := jwt.ParseString(tokenStr)
+// parse and verify a token
+tokenBytes := token.Bytes()
+newToken, err := jwt.Parse(tokenBytes, verifier)
 checkErr(err)
 
-// and verify it's signature
-err = verifier.Verify(token)
+// or just verify it's signature
+err = verifier.Verify(newToken)
 checkErr(err)
 
-// also you can parse and verify together
-newToken, err := jwt.ParseAndVerifyString(tokenStr, verifier)
-checkErr(err)
-
-// get standard claims
-var newClaims jwt.StandardClaims
-errClaims := json.Unmarshal(newToken.RawClaims(), &newClaims)
+// get Registered claims
+var newClaims jwt.RegisteredClaims
+errClaims := json.Unmarshal(newToken.Claims(), &newClaims)
 checkErr(errClaims)
 
 // verify claims as you wish
