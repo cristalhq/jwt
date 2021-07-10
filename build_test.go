@@ -159,14 +159,6 @@ func TestBuildHeader(t *testing.T) {
 		`{"alg":"RS512","typ":"JWT","cty":"jwk+json"}`,
 		WithContentType("jwk+json"),
 	)
-	// f(
-	// 	mustSigner(NewSignerPS(PS512, rsapsPrivateKey512)),
-	// 	`{"alg":"PS512","typ":"JWT"}`,
-	// )
-	// f(
-	// 	mustSigner(NewSignerES(ES512, ecdsaPrivateKey521)),
-	// 	`{"alg":"ES512","typ":"JWT"}`,
-	// )
 }
 
 func TestBuildClaims(t *testing.T) {

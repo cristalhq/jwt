@@ -71,19 +71,27 @@ func ExampleBuild() {
 	token, err := builder.Build(claims)
 	checkErr(err)
 
-	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
-	fmt.Printf("Type      %v\n", token.Header().Type)
-	fmt.Printf("Claims    %v\n", string(token.Claims()))
-	fmt.Printf("Payload   %v\n", string(token.PayloadPart()))
-	fmt.Printf("Token     %v\n", string(token.Bytes()))
+	fmt.Printf("Token     %s\n", token.String())
+	fmt.Printf("Algorithm %s\n", token.Header().Algorithm)
+	fmt.Printf("Type      %s\n", token.Header().Type)
+	fmt.Printf("Claims    %s\n", token.Claims())
+	fmt.Printf("HeaderPart    %s\n", token.HeaderPart())
+	fmt.Printf("ClaimsPart    %s\n", token.ClaimsPart())
+	fmt.Printf("PayloadPart   %s\n", token.PayloadPart())
+	fmt.Printf("SignaturePart %s\n", token.SignaturePart())
 
 	// Output:
+	// Token     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0.uNaqGEggmy02lZq8FM7KoUKXhOy-zrSF7inYuzIET9o
 	// Algorithm HS256
 	// Type      JWT
 	// Claims    {"jti":"random-unique-string","aud":"admin"}
-	// Payload   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0
-	// Token     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0.uNaqGEggmy02lZq8FM7KoUKXhOy-zrSF7inYuzIET9o
+	// HeaderPart    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+	// ClaimsPart    eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0
+	// PayloadPart   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0
+	// SignaturePart uNaqGEggmy02lZq8FM7KoUKXhOy-zrSF7inYuzIET9o
 }
+
+// Payload   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0
 
 type userClaims struct {
 	jwt.RegisteredClaims

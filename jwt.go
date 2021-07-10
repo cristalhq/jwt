@@ -32,7 +32,7 @@ func (t *Token) HeaderPart() []byte {
 
 // ClaimsPart returns token claims part.
 func (t *Token) ClaimsPart() []byte {
-	return t.raw[t.dot1:t.dot2]
+	return t.raw[t.dot1+1 : t.dot2]
 }
 
 // PayloadPart returns token payload part.
@@ -42,7 +42,7 @@ func (t *Token) PayloadPart() []byte {
 
 // SignaturePart returns token signature part.
 func (t *Token) SignaturePart() []byte {
-	return t.raw[t.dot2:]
+	return t.raw[t.dot2+1:]
 }
 
 // Header returns token's header.
