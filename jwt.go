@@ -76,7 +76,7 @@ type Header struct {
 }
 
 // MarshalJSON implements the json.Marshaler interface.
-func (h *Header) MarshalJSON() ([]byte, error) {
+func (h Header) MarshalJSON() ([]byte, error) {
 	buf := bytes.Buffer{}
 	buf.WriteString(`{"alg":"`)
 	buf.WriteString(string(h.Algorithm))
