@@ -22,7 +22,7 @@ func Parse(raw []byte, verifier Verifier) (*Token, error) {
 }
 
 // ParseNoVerify decodes a token from a raw bytes.
-// Consider to use Parse with a verifier to verify token signature.
+// NOTE: Consider to use Parse with a verifier to verify token signature.
 func ParseNoVerify(raw []byte) (*Token, error) {
 	return parse(raw)
 }

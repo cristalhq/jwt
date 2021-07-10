@@ -17,7 +17,7 @@ func TestParse(t *testing.T) {
 			t.Errorf("want nil, got %#v", err)
 		}
 
-		if gotHeader := string(tk.RawHeader()); partHeader != gotHeader {
+		if gotHeader := string(tk.HeaderPart()); partHeader != gotHeader {
 			t.Errorf("want header %q, got %q", partHeader, gotHeader)
 		}
 
@@ -25,7 +25,7 @@ func TestParse(t *testing.T) {
 			t.Errorf("want %#v, got %#v", header, tk.Header())
 		}
 
-		gotClaims := string(tk.RawClaims())
+		gotClaims := string(tk.Claims())
 		if gotClaims != claims {
 			t.Errorf("want claim %s, got %s", claims, gotClaims)
 		}

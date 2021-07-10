@@ -105,7 +105,7 @@ func TestBuildHeader(t *testing.T) {
 		}
 
 		want = strToBase64(want)
-		raw := string(token.RawHeader())
+		raw := string(token.HeaderPart())
 		if raw != want {
 			t.Errorf("\nwant %v,\n got %v", want, raw)
 		}

@@ -25,24 +25,39 @@ func (t *Token) Bytes() []byte {
 	return t.raw
 }
 
+// HeaderPart returns token header part.
+func (t *Token) HeaderPart() []byte {
+	return t.raw[:t.dot1]
+}
+
+// ClaimsPart returns token claims part.
+func (t *Token) ClaimsPart() []byte {
+	return t.raw[t.dot1:t.dot2]
+}
+
+// PayloadPart returns token payload part.
+func (t *Token) PayloadPart() []byte {
+	return t.raw[:t.dot2]
+}
+
+// SignaturePart returns token signature part.
+func (t *Token) SignaturePart() []byte {
+	return t.raw[t.dot2:]
+}
+
 // Header returns token's header.
 func (t *Token) Header() Header {
 	return t.header
 }
 
-// RawHeader returns token's header raw bytes.
-func (t *Token) RawHeader() []byte {
-	return t.raw[:t.dot1]
-}
-
-// RawClaims returns token's claims as a raw bytes.
-func (t *Token) RawClaims() []byte {
+// Claims returns token's claims.
+func (t *Token) Claims() json.RawMessage {
 	return t.claims
 }
 
-// Payload returns token's payload.
-func (t *Token) Payload() []byte {
-	return t.raw[:t.dot2]
+// DecodeClaims into a given parameter.
+func (t *Token) DecodeClaims(dst interface{}) error {
+	return json.Unmarshal(t.claims, dst)
 }
 
 // Signature returns token's signature.

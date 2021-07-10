@@ -59,8 +59,8 @@ builder := jwt.NewBuilder(signer)
 token, err := builder.Build(claims)
 checkErr(err)
 
-// here is token as byte slice
-var _ []byte = token.Bytes() // or just token.String() for string
+// here is token as a string
+var _ string = token.String()
 ```
 
 Parse and verify token:
@@ -76,7 +76,7 @@ token, err := jwt.ParseString(tokenStr)
 checkErr(err)
 
 // and verify it's signature
-err = verifier.Verify(token.Payload(), token.Signature())
+err = verifier.Verify(token)
 checkErr(err)
 
 // also you can parse and verify together
@@ -88,7 +88,7 @@ var newClaims jwt.StandardClaims
 errClaims := json.Unmarshal(newToken.RawClaims(), &newClaims)
 checkErr(errClaims)
 
-// verify claims as you 
+// verify claims as you wish
 var _ bool = newClaims.IsForAudience("admin")
 var _ bool = newClaims.IsValidAt(time.Now())
 ```

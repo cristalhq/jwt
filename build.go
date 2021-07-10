@@ -107,7 +107,7 @@ func encodeHeader(header Header) []byte {
 		}
 		// another algorithm? encode below
 	}
-	// returned err is always nil, see *Header.MarshalJSON
+	// returned err is always nil, see jwt.Header.MarshalJSON
 	buf, _ := header.MarshalJSON()
 
 	encoded := make([]byte, b64EncodedLen(len(buf)))

@@ -103,7 +103,7 @@ func (ps *psAlg) Verify(token *Token) error {
 	if !constTimeAlgEqual(token.Header().Algorithm, ps.alg) {
 		return ErrAlgorithmMismatch
 	}
-	return ps.verify(token.Payload(), token.Signature())
+	return ps.verify(token.PayloadPart(), token.Signature())
 }
 
 func (ps *psAlg) verify(payload, signature []byte) error {

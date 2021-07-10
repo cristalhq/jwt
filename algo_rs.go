@@ -85,7 +85,7 @@ func (rs *rsAlg) Verify(token *Token) error {
 	if !constTimeAlgEqual(token.Header().Algorithm, rs.alg) {
 		return ErrAlgorithmMismatch
 	}
-	return rs.verify(token.Payload(), token.Signature())
+	return rs.verify(token.PayloadPart(), token.Signature())
 }
 
 func (rs *rsAlg) verify(payload, signature []byte) error {

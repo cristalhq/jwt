@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cristalhq/jwt/v4"
+	"github.com/cristalhq/jwt/v3"
 )
 
 func BenchmarkAlgEDSA(b *testing.B) {
@@ -149,7 +149,7 @@ func runSignerBench(b *testing.B, builder *jwt.Builder) {
 		if tokenErr != nil {
 			b.Fatal(tokenErr)
 		}
-		sink += int(token.Payload()[0])
+		sink += int(token.PayloadPart()[0])
 	}
 
 	if mathRand.Intn(10000) > 9999 {

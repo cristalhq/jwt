@@ -100,7 +100,7 @@ func (es *esAlg) Verify(token *Token) error {
 	if !constTimeAlgEqual(token.Header().Algorithm, es.alg) {
 		return ErrAlgorithmMismatch
 	}
-	return es.verify(token.Payload(), token.Signature())
+	return es.verify(token.PayloadPart(), token.Signature())
 }
 
 func (es *esAlg) verify(payload, signature []byte) error {

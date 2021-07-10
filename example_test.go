@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cristalhq/jwt/v4"
+	"github.com/cristalhq/jwt/v3"
 )
 
-func Example() {
+func Example_Sign() {
 	// create a Signer (HMAC in this example)
 	key := []byte(`secret`)
 	signer, err := jwt.NewSignerHS(jwt.HS256, key)
@@ -24,35 +24,35 @@ func Example() {
 	builder := jwt.NewBuilder(signer)
 
 	// and build a Token
-	newToken, err := builder.Build(claims)
+	token, err := builder.Build(claims)
 	checkErr(err)
 
-	// here is token as byte slice
-	var _ []byte = newToken.Bytes() // or just token.String() for string
+	// here is token as a string
+	var _ string = token.String()
 
 	// create a Verifier (HMAC in this example)
 	verifier, err := jwt.NewVerifierHS(jwt.HS256, key)
 	checkErr(err)
 
-	// parse a Token (by example received from a request)
-	tokenStr := newToken.Bytes()
-	token, err := jwt.Parse(tokenStr, verifier)
+	// parse and verify a token
+	tokenBytes := token.Bytes()
+	newToken, err := jwt.Parse(tokenBytes, verifier)
 	checkErr(err)
 
-	// and verify it's signature
-	err = verifier.Verify(token)
+	// or just verify it's signature
+	err = verifier.Verify(newToken)
 	checkErr(err)
 
-	// also you can parse and verify together
-	newToken, err = jwt.Parse(tokenStr, verifier)
+	// also you can parse without verify (NOT RECOMMENDED!)
+	newToken, err = jwt.ParseNoVerify(tokenBytes)
 	checkErr(err)
 
-	// get standard claims
+	// get REGISTERED claims
 	var newClaims jwt.RegisteredClaims
-	errClaims := json.Unmarshal(newToken.RawClaims(), &newClaims)
+	errClaims := json.Unmarshal(newToken.Claims(), &newClaims)
 	checkErr(errClaims)
 
-	// verify claims as you
+	// verify claims as you wish
 	var _ bool = newClaims.IsForAudience("admin")
 	var _ bool = newClaims.IsValidAt(time.Now())
 
@@ -73,8 +73,8 @@ func ExampleBuild() {
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
-	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(token.Payload()))
+	fmt.Printf("Claims    %v\n", string(token.Claims()))
+	fmt.Printf("Payload   %v\n", string(token.PayloadPart()))
 	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
@@ -107,8 +107,8 @@ func ExampleBuild_WithUserClaims() {
 	token, err := builder.Build(claims)
 	checkErr(err)
 
-	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(token.Payload()))
+	fmt.Printf("Claims    %v\n", string(token.Claims()))
+	fmt.Printf("Payload   %v\n", string(token.PayloadPart()))
 	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
@@ -128,8 +128,8 @@ func ExampleParse() {
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
-	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(token.Payload()))
+	fmt.Printf("Claims    %v\n", string(token.Claims()))
+	fmt.Printf("Payload   %v\n", string(token.PayloadPart()))
 	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
@@ -148,8 +148,8 @@ func ExampleParseNoVerify() {
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
-	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(token.Payload()))
+	fmt.Printf("Claims    %v\n", string(token.Claims()))
+	fmt.Printf("Payload   %v\n", string(token.PayloadPart()))
 	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
