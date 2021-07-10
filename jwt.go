@@ -25,17 +25,6 @@ func (t *Token) Bytes() []byte {
 	return t.raw
 }
 
-// SecureString returns token without a signature (replaced with `.<signature>`).
-func (t *Token) SecureString() string {
-	dot := bytes.LastIndexByte(t.raw, '.')
-	return string(t.raw[:dot]) + `.<signature>`
-}
-
-// Raw returns token's raw bytes.
-func (t *Token) Raw() []byte {
-	return t.raw
-}
-
 // Header returns token's header.
 func (t *Token) Header() Header {
 	return t.header

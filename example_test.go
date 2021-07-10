@@ -28,7 +28,7 @@ func Example() {
 	checkErr(err)
 
 	// here is token as byte slice
-	var _ []byte = newToken.Raw() // or just token.String() for string
+	var _ []byte = newToken.Bytes() // or just token.String() for string
 
 	// create a Verifier (HMAC in this example)
 	verifier, err := jwt.NewVerifierHS(jwt.HS256, key)
@@ -48,7 +48,7 @@ func Example() {
 	checkErr(err)
 
 	// get standard claims
-	var newClaims jwt.StandardClaims
+	var newClaims jwt.RegisteredClaims
 	errClaims := json.Unmarshal(newToken.RawClaims(), &newClaims)
 	checkErr(errClaims)
 
@@ -75,7 +75,7 @@ func ExampleBuild() {
 	fmt.Printf("Type      %v\n", token.Header().Type)
 	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
 	fmt.Printf("Payload   %v\n", string(token.Payload()))
-	fmt.Printf("Token     %v\n", string(token.Raw()))
+	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
 	// Algorithm HS256
@@ -109,7 +109,7 @@ func ExampleBuild_WithUserClaims() {
 
 	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
 	fmt.Printf("Payload   %v\n", string(token.Payload()))
-	fmt.Printf("Token     %v\n", string(token.Raw()))
+	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
 	// Claims    {"jti":"random-unique-string","aud":"admin","is_admin":true,"email":"foo@bar.baz"}
@@ -130,7 +130,7 @@ func ExampleParse() {
 	fmt.Printf("Type      %v\n", token.Header().Type)
 	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
 	fmt.Printf("Payload   %v\n", string(token.Payload()))
-	fmt.Printf("Token     %v\n", string(token.Raw()))
+	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
 	// Algorithm HS256
@@ -150,7 +150,7 @@ func ExampleParseNoVerify() {
 	fmt.Printf("Type      %v\n", token.Header().Type)
 	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
 	fmt.Printf("Payload   %v\n", string(token.Payload()))
-	fmt.Printf("Token     %v\n", string(token.Raw()))
+	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
 	// Algorithm HS256

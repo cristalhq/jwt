@@ -99,7 +99,7 @@ func TestBuildHeader(t *testing.T) {
 	f := func(signer Signer, want string, opts ...BuilderOption) {
 		t.Helper()
 
-		token, err := NewBuilder(signer, opts...).Build(&StandardClaims{})
+		token, err := NewBuilder(signer, opts...).Build(&RegisteredClaims{})
 		if err != nil {
 			t.Error(err)
 		}
