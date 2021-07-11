@@ -1,6 +1,7 @@
 package jwt
 
 import (
+	"errors"
 	"testing"
 )
 
@@ -15,26 +16,26 @@ var (
 )
 
 func TestHS(t *testing.T) {
-	f := func(alg Algorithm, signKey, verifyKey []byte, isCorrectSign bool) {
+	f := func(alg Algorithm, signKey, verifyKey []byte, wantErr error) {
 		t.Helper()
 
 		signer := mustSigner(NewSignerHS(alg, signKey))
-		token := mustBuild(signer, simplePayload)
 		verifier := mustVerifier(NewVerifierHS(alg, verifyKey))
+		token := mustBuild(signer, simplePayload)
 
 		err := verifier.Verify(token)
-		if err == nil && !isCorrectSign {
-			t.Fatal("must be not nil")
+		if !errors.Is(err, wantErr) {
+			t.Errorf("want %v, got %v", wantErr, err)
 		}
 	}
 
-	f(HS256, hsKey256, hsKey256, true)
-	f(HS384, hsKey384, hsKey384, true)
-	f(HS512, hsKey512, hsKey512, true)
+	f(HS256, hsKey256, hsKey256, nil)
+	f(HS384, hsKey384, hsKey384, nil)
+	f(HS512, hsKey512, hsKey512, nil)
 
-	f(HS256, hsKey256, hsKeyAnother256, false)
-	f(HS384, hsKey384, hsKeyAnother384, false)
-	f(HS512, hsKey512, hsKeyAnother512, false)
+	f(HS256, hsKey256, hsKeyAnother256, ErrInvalidSignature)
+	f(HS384, hsKey384, hsKeyAnother384, ErrInvalidSignature)
+	f(HS512, hsKey512, hsKeyAnother512, ErrInvalidSignature)
 
-	f(HS256, hsKey256, hsKeyAnother256, false)
+	f(HS256, hsKey256, hsKeyAnother256, ErrInvalidSignature)
 }

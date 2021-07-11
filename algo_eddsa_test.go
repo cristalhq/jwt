@@ -36,22 +36,22 @@ func initEdDSAKeys() {
 func TestEdDSA(t *testing.T) {
 	initEdDSAKeys()
 
-	f := func(privateKey ed25519.PrivateKey, publicKey ed25519.PublicKey, isCorrectSign bool) {
+	f := func(privateKey ed25519.PrivateKey, publicKey ed25519.PublicKey, wantErr error) {
 		t.Helper()
 
 		signer := mustSigner(NewSignerEdDSA(privateKey))
-		token := mustBuild(signer, simplePayload)
 		verifier := mustVerifier(NewVerifierEdDSA(publicKey))
+		token := mustBuild(signer, simplePayload)
 
 		err := verifier.Verify(token)
-		if err == nil && !isCorrectSign {
-			t.Fatal("must be not nil")
+		if !errors.Is(err, wantErr) {
+			t.Errorf("want %v, got %v", wantErr, err)
 		}
 	}
 
-	f(ed25519PrivateKey, ed25519PublicKey, true)
-	f(ed25519PrivateKey, ed25519PublicKeyAnother, false)
-	f(ed25519PrivateKeyAnother, ed25519PublicKey, false)
+	f(ed25519PrivateKey, ed25519PublicKey, nil)
+	f(ed25519PrivateKey, ed25519PublicKeyAnother, ErrInvalidSignature)
+	f(ed25519PrivateKeyAnother, ed25519PublicKey, ErrInvalidSignature)
 }
 
 func TestEdDSA_BadKeys(t *testing.T) {

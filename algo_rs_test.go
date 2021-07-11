@@ -42,32 +42,32 @@ func initRSKeys() {
 func TestRS(t *testing.T) {
 	initRSKeys()
 
-	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, isCorrectSign bool) {
+	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, wantErr error) {
 		t.Helper()
 
 		signer := mustSigner(NewSignerRS(alg, privateKey))
-		token := mustBuild(signer, simplePayload)
 		verifier := mustVerifier(NewVerifierRS(alg, publicKey))
+		token := mustBuild(signer, simplePayload)
 
 		err := verifier.Verify(token)
-		if err == nil && !isCorrectSign {
-			t.Error("must be not nil")
+		if !errors.Is(err, wantErr) {
+			t.Errorf("want %v, got %v", wantErr, err)
 		}
 	}
 
-	f(RS256, rsaPrivateKey256, rsaPublicKey256, true)
-	f(RS384, rsaPrivateKey384, rsaPublicKey384, true)
-	f(RS512, rsaPrivateKey512, rsaPublicKey512, true)
-	f(RS512, rsaPrivateKey512Other, rsaPublicKey512Other, true)
+	f(RS256, rsaPrivateKey256, rsaPublicKey256, nil)
+	f(RS384, rsaPrivateKey384, rsaPublicKey384, nil)
+	f(RS512, rsaPrivateKey512, rsaPublicKey512, nil)
+	f(RS512, rsaPrivateKey512Other, rsaPublicKey512Other, nil)
 
-	f(RS256, rsaPrivateKey256, rsaPublicKey256Another, false)
-	f(RS384, rsaPrivateKey384, rsaPublicKey384Another, false)
-	f(RS512, rsaPrivateKey512, rsaPublicKey512Another, false)
+	f(RS256, rsaPrivateKey256, rsaPublicKey256Another, ErrInvalidSignature)
+	f(RS384, rsaPrivateKey384, rsaPublicKey384Another, ErrInvalidSignature)
+	f(RS512, rsaPrivateKey512, rsaPublicKey512Another, ErrInvalidSignature)
 
-	f(RS256, rsaPrivateKey256Another, rsaPublicKey256, false)
-	f(RS384, rsaPrivateKey384Another, rsaPublicKey384, false)
-	f(RS512, rsaPrivateKey512Another, rsaPublicKey512, false)
-	f(RS512, rsaPrivateKey512Other, rsaPublicKey512, false)
+	f(RS256, rsaPrivateKey256Another, rsaPublicKey256, ErrInvalidSignature)
+	f(RS384, rsaPrivateKey384Another, rsaPublicKey384, ErrInvalidSignature)
+	f(RS512, rsaPrivateKey512Another, rsaPublicKey512, ErrInvalidSignature)
+	f(RS512, rsaPrivateKey512Other, rsaPublicKey512, ErrInvalidSignature)
 }
 
 func TestRS_BadKeys(t *testing.T) {
