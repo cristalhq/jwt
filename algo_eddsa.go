@@ -54,7 +54,11 @@ func (ed *edDSAAlg) Verify(token *Token) error {
 	if !constTimeAlgEqual(token.Header().Algorithm, ed.alg) {
 		return ErrAlgorithmMismatch
 	}
-	if !ed25519.Verify(ed.publicKey, token.PayloadPart(), token.Signature()) {
+	return ed.verify(token.PayloadPart(), token.Signature())
+}
+
+func (ed *edDSAAlg) verify(payload, signature []byte) error {
+	if !ed25519.Verify(ed.publicKey, payload, signature) {
 		return ErrInvalidSignature
 	}
 	return nil

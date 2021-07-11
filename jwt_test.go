@@ -1,29 +1,31 @@
 package jwt
 
 import (
-	"bytes"
 	"encoding/base64"
-	"strings"
+	"reflect"
 	"testing"
 )
 
-func TestToken(t *testing.T) {
-	// TODO
-	tokenStr := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c`
-	token := &Token{
-		raw:  []byte(tokenStr),
-		dot1: strings.Index(tokenStr, "."),
-		dot2: strings.LastIndex(tokenStr, "."),
-		// signature:,
-		header: Header{},
-		claims: nil,
+func TestDecodeClaims(t *testing.T) {
+	tokenStr := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.jC1Ncd2FW0ZpoiHV9_Bk2eDWdfCqUIzfCgTHZfK0h_o`
+	token, err := ParseNoVerify([]byte(tokenStr))
+	if err != nil {
+		t.Fatal(err)
 	}
 
-	if token.String() != tokenStr {
-		t.Fatal()
+	claims := RegisteredClaims{}
+	if err := token.DecodeClaims(&claims); err != nil {
+		t.Fatal(err)
 	}
-	if !bytes.Equal(token.Bytes(), []byte(tokenStr)) {
-		t.Fatal()
+
+	iat := asNumericDate(1516239022)
+	wantClaims := RegisteredClaims{
+		IssuedAt: &iat,
+		Audience: Audience{"John Doe"},
+		Subject:  "1234567890",
+	}
+	if !reflect.DeepEqual(claims, wantClaims) {
+		t.Fatalf("want %v, got %v", wantClaims, claims)
 	}
 }
 
