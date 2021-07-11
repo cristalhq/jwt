@@ -25,16 +25,6 @@ type Builder struct {
 	headerRaw []byte
 }
 
-// BuildBytes is used to create and encode JWT with a provided claims.
-func BuildBytes(signer Signer, claims interface{}) ([]byte, error) {
-	return NewBuilder(signer).BuildBytes(claims)
-}
-
-// Build is used to create and encode JWT with a provided claims.
-func Build(signer Signer, claims interface{}) (*Token, error) {
-	return NewBuilder(signer).Build(claims)
-}
-
 // NewBuilder returns new instance of Builder.
 func NewBuilder(signer Signer, opts ...BuilderOption) *Builder {
 	b := &Builder{
@@ -51,15 +41,6 @@ func NewBuilder(signer Signer, opts ...BuilderOption) *Builder {
 
 	b.headerRaw = encodeHeader(b.header)
 	return b
-}
-
-// BuildBytes used to create and encode JWT with a provided claims.
-func (b *Builder) BuildBytes(claims interface{}) ([]byte, error) {
-	token, err := b.Build(claims)
-	if err != nil {
-		return nil, err
-	}
-	return token.Raw(), nil
 }
 
 // Build used to create and encode JWT with a provided claims.
@@ -126,7 +107,7 @@ func encodeHeader(header Header) []byte {
 		}
 		// another algorithm? encode below
 	}
-	// returned err is always nil, see *Header.MarshalJSON
+	// returned err is always nil, see jwt.Header.MarshalJSON
 	buf, _ := header.MarshalJSON()
 
 	encoded := make([]byte, b64EncodedLen(len(buf)))

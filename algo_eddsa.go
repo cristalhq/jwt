@@ -50,14 +50,14 @@ func (ed *edDSAAlg) Sign(payload []byte) ([]byte, error) {
 	return ed25519.Sign(ed.privateKey, payload), nil
 }
 
-func (ed *edDSAAlg) VerifyToken(token *Token) error {
-	if constTimeAlgEqual(token.Header().Algorithm, ed.alg) {
-		return ed.Verify(token.Payload(), token.Signature())
+func (ed *edDSAAlg) Verify(token *Token) error {
+	if !constTimeAlgEqual(token.Header().Algorithm, ed.alg) {
+		return ErrAlgorithmMismatch
 	}
-	return ErrAlgorithmMismatch
+	return ed.verify(token.PayloadPart(), token.Signature())
 }
 
-func (ed *edDSAAlg) Verify(payload, signature []byte) error {
+func (ed *edDSAAlg) verify(payload, signature []byte) error {
 	if !ed25519.Verify(ed.publicKey, payload, signature) {
 		return ErrInvalidSignature
 	}

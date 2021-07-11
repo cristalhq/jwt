@@ -11,12 +11,12 @@ func TestBuild(t *testing.T) {
 	f := func(signer Signer, verifier Verifier, claims interface{}) {
 		t.Helper()
 
-		token, err := Build(signer, claims)
+		token, err := NewBuilder(signer).Build(claims)
 		if err != nil {
 			t.Error(err)
 		}
 
-		errVerify := verifier.Verify(token.Payload(), token.Signature())
+		errVerify := verifier.Verify(token)
 		if errVerify != nil {
 			t.Error(errVerify)
 		}
@@ -99,13 +99,13 @@ func TestBuildHeader(t *testing.T) {
 	f := func(signer Signer, want string, opts ...BuilderOption) {
 		t.Helper()
 
-		token, err := NewBuilder(signer, opts...).Build(&StandardClaims{})
+		token, err := NewBuilder(signer, opts...).Build(&RegisteredClaims{})
 		if err != nil {
 			t.Error(err)
 		}
 
 		want = strToBase64(want)
-		raw := string(token.RawHeader())
+		raw := string(token.HeaderPart())
 		if raw != want {
 			t.Errorf("\nwant %v,\n got %v", want, raw)
 		}
@@ -172,7 +172,7 @@ func TestBuildClaims(t *testing.T) {
 			t.Fatal(err)
 		}
 
-		errVerify := v.Verify(token.Payload(), token.Signature())
+		errVerify := v.Verify(token)
 		if errVerify != nil {
 			t.Fatal(errVerify)
 		}
@@ -214,7 +214,7 @@ func TestBuildMalformed(t *testing.T) {
 	f := func(signer Signer, claims interface{}) {
 		t.Helper()
 
-		_, err := Build(signer, claims)
+		_, err := NewBuilder(signer).Build(claims)
 		if err == nil {
 			t.Error("want err, got nil")
 		}

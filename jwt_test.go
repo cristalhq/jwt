@@ -2,36 +2,31 @@ package jwt
 
 import (
 	"encoding/base64"
-	"strings"
+	"reflect"
 	"testing"
 )
 
-var bytesToBase64 = base64.RawURLEncoding.EncodeToString
-
-func strToBase64(s string) string {
-	return base64.RawURLEncoding.EncodeToString([]byte(s))
-}
-
-func getSignerError(_ Signer, err error) error {
-	return err
-}
-
-func getVerifierError(_ Verifier, err error) error {
-	return err
-}
-
-func mustSigner(s Signer, err error) Signer {
+func TestDecodeClaims(t *testing.T) {
+	tokenStr := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.jC1Ncd2FW0ZpoiHV9_Bk2eDWdfCqUIzfCgTHZfK0h_o`
+	token, err := ParseNoVerify([]byte(tokenStr))
 	if err != nil {
-		panic(err)
+		t.Fatal(err)
 	}
-	return s
-}
 
-func mustVerifier(v Verifier, err error) Verifier {
-	if err != nil {
-		panic(err)
+	claims := RegisteredClaims{}
+	if err := token.DecodeClaims(&claims); err != nil {
+		t.Fatal(err)
 	}
-	return v
+
+	iat := asNumericDate(1516239022)
+	wantClaims := RegisteredClaims{
+		IssuedAt: &iat,
+		Audience: Audience{"John Doe"},
+		Subject:  "1234567890",
+	}
+	if !reflect.DeepEqual(claims, wantClaims) {
+		t.Fatalf("want %v, got %v", wantClaims, claims)
+	}
 }
 
 func TestMarshalHeader(t *testing.T) {
@@ -73,33 +68,38 @@ func TestMarshalHeader(t *testing.T) {
 	)
 }
 
-func TestSecurePrint(t *testing.T) {
-	sign, _ := NewSignerHS(HS256, []byte(`test-key`))
-	claims := &StandardClaims{
-		ID:       "test-id",
-		Audience: Audience([]string{"test-user"}),
-	}
+var bytesToBase64 = base64.RawURLEncoding.EncodeToString
 
-	token, err := Build(sign, claims)
+func strToBase64(s string) string {
+	return bytesToBase64([]byte(s))
+}
+
+func getSignerError(_ Signer, err error) error {
+	return err
+}
+
+func getVerifierError(_ Verifier, err error) error {
+	return err
+}
+
+func mustBuild(s Signer, p interface{}) *Token {
+	t, err := NewBuilder(s).Build(p)
 	if err != nil {
-		t.Fatal(err)
+		panic(err)
 	}
+	return t
+}
 
-	secure := token.SecureString()
-	insecure := token.String()
+func mustSigner(s Signer, err error) Signer {
+	if err != nil {
+		panic(err)
+	}
+	return s
+}
 
-	pos := strings.Index(secure, `.<signature>`)
-
-	if secure[:pos] != insecure[:pos] {
-		t.Fatalf("parts must be equal, got %v and %v", secure[:pos], insecure[:pos])
+func mustVerifier(v Verifier, err error) Verifier {
+	if err != nil {
+		panic(err)
 	}
-	if secure[pos:] == insecure[pos:] {
-		t.Fatalf("parts must not be equal, got %v and %v", secure[:pos], insecure[:pos])
-	}
-	if !strings.HasSuffix(secure, `.<signature>`) {
-		t.Fatalf("must have safe suffix, got %v", secure)
-	}
-	if strings.HasSuffix(insecure, `.<signature>`) {
-		t.Fatalf("must not have safe suffix, got %v", insecure)
-	}
+	return v
 }

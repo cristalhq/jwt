@@ -96,14 +96,14 @@ func (es *esAlg) Sign(payload []byte) ([]byte, error) {
 	return signature, nil
 }
 
-func (es *esAlg) VerifyToken(token *Token) error {
-	if constTimeAlgEqual(token.Header().Algorithm, es.alg) {
-		return es.Verify(token.Payload(), token.Signature())
+func (es *esAlg) Verify(token *Token) error {
+	if !constTimeAlgEqual(token.Header().Algorithm, es.alg) {
+		return ErrAlgorithmMismatch
 	}
-	return ErrAlgorithmMismatch
+	return es.verify(token.PayloadPart(), token.Signature())
 }
 
-func (es *esAlg) Verify(payload, signature []byte) error {
+func (es *esAlg) verify(payload, signature []byte) error {
 	if len(signature) != es.SignSize() {
 		return ErrInvalidSignature
 	}
