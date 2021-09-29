@@ -16,33 +16,13 @@ type Signer interface {
 // Verifier is used to verify tokens.
 type Verifier interface {
 	Algorithm() Algorithm
-	Verify(payload, signature []byte) error
+	Verify(token *Token) error
 }
 
 // Algorithm for signing and verifying.
 type Algorithm string
 
 func (a Algorithm) String() string { return string(a) }
-
-// keySize of the algorithm's key (if exist). Is similar to Signer.SignSize.
-func (a Algorithm) keySize() int { return algsKeySize[a] }
-
-var algsKeySize = map[Algorithm]int{
-	// for EdDSA private and public key have different sizes, so 0
-	// for HS there is no limits for key size, so 0
-
-	RS256: 256,
-	RS384: 384,
-	RS512: 512,
-
-	ES256: 64,
-	ES384: 96,
-	ES512: 132,
-
-	PS256: 256,
-	PS384: 384,
-	PS512: 512,
-}
 
 // Algorithm names for signing and verifying.
 const (

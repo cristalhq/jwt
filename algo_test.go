@@ -4,7 +4,10 @@ import (
 	"testing"
 )
 
+const simplePayload = `simple-string-payload`
+
 func initKeys() {
+	initEdDSAKeys()
 	initRSKeys()
 	initPSKeys()
 	initESKeys()

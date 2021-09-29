@@ -3,7 +3,7 @@ package jwt
 import "encoding/json"
 
 // Audience is a special claim that be a single string or an array of strings
-// see RFC 7519.
+// See: https://tools.ietf.org/html/rfc7519
 type Audience []string
 
 // MarshalJSON implements a marshaling function for "aud" claim.

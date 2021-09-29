@@ -6,26 +6,28 @@ import (
 	"crypto/elliptic"
 	"crypto/rand"
 	"crypto/rsa"
-	mathRand "math/rand"
+	"fmt"
+	"io"
 	"testing"
 	"time"
 
-	"github.com/cristalhq/jwt/v3"
+	"github.com/cristalhq/jwt/v4"
 )
 
 func BenchmarkAlgEDSA(b *testing.B) {
-	pubKey, privKey, keyErr := ed25519.GenerateKey(rand.Reader)
-	if keyErr != nil {
-		b.Fatal(keyErr)
+	pubKey, privKey, errKey := ed25519.GenerateKey(rand.Reader)
+	if errKey != nil {
+		b.Fatal(errKey)
 	}
-	signer, signerErr := jwt.NewSignerEdDSA(privKey)
-	if signerErr != nil {
-		b.Fatal(signerErr)
+	signer, errSigner := jwt.NewSignerEdDSA(privKey)
+	if errSigner != nil {
+		b.Fatal(errSigner)
 	}
-	verifier, verifierErr := jwt.NewVerifierEdDSA(pubKey)
-	if verifierErr != nil {
-		b.Fatal(verifierErr)
+	verifier, errVerifier := jwt.NewVerifierEdDSA(pubKey)
+	if errVerifier != nil {
+		b.Fatal(errVerifier)
 	}
+
 	builder := jwt.NewBuilder(signer)
 	b.Run("Sign-"+string(jwt.EdDSA), func(b *testing.B) {
 		runSignerBench(b, builder)
@@ -42,18 +44,19 @@ func BenchmarkAlgES(b *testing.B) {
 		jwt.ES512: elliptic.P521(),
 	}
 	for algo, curve := range esAlgos {
-		key, keyErr := ecdsa.GenerateKey(curve, rand.Reader)
-		if keyErr != nil {
-			b.Fatal(keyErr)
+		key, errKey := ecdsa.GenerateKey(curve, rand.Reader)
+		if errKey != nil {
+			b.Fatal(errKey)
 		}
-		signer, signerErr := jwt.NewSignerES(algo, key)
-		if signerErr != nil {
-			b.Fatal(signerErr)
+		signer, errSigner := jwt.NewSignerES(algo, key)
+		if errSigner != nil {
+			b.Fatal(errSigner)
 		}
-		verifier, verifierErr := jwt.NewVerifierES(algo, &key.PublicKey)
-		if verifierErr != nil {
-			b.Fatal(verifierErr)
+		verifier, errVerifier := jwt.NewVerifierES(algo, &key.PublicKey)
+		if errVerifier != nil {
+			b.Fatal(errVerifier)
 		}
+
 		builder := jwt.NewBuilder(signer)
 		b.Run("Sign-"+string(algo), func(b *testing.B) {
 			runSignerBench(b, builder)
@@ -67,18 +70,19 @@ func BenchmarkAlgES(b *testing.B) {
 func BenchmarkAlgPS(b *testing.B) {
 	psAlgos := []jwt.Algorithm{jwt.PS256, jwt.PS384, jwt.PS512}
 	for _, algo := range psAlgos {
-		key, keyErr := rsa.GenerateKey(rand.Reader, 2048)
-		if keyErr != nil {
-			b.Fatal(keyErr)
+		key, errKey := rsa.GenerateKey(rand.Reader, 2048)
+		if errKey != nil {
+			b.Fatal(errKey)
 		}
-		signer, signerErr := jwt.NewSignerPS(algo, key)
-		if signerErr != nil {
-			b.Fatal(signerErr)
+		signer, errSigner := jwt.NewSignerPS(algo, key)
+		if errSigner != nil {
+			b.Fatal(errSigner)
 		}
-		verifier, verifierErr := jwt.NewVerifierPS(algo, &key.PublicKey)
-		if verifierErr != nil {
-			b.Fatal(verifierErr)
+		verifier, errVerifier := jwt.NewVerifierPS(algo, &key.PublicKey)
+		if errVerifier != nil {
+			b.Fatal(errVerifier)
 		}
+
 		builder := jwt.NewBuilder(signer)
 		b.Run("Sign-"+string(algo), func(b *testing.B) {
 			runSignerBench(b, builder)
@@ -92,18 +96,19 @@ func BenchmarkAlgPS(b *testing.B) {
 func BenchmarkAlgRS(b *testing.B) {
 	rsAlgos := []jwt.Algorithm{jwt.RS256, jwt.RS384, jwt.RS512}
 	for _, algo := range rsAlgos {
-		key, keyErr := rsa.GenerateKey(rand.Reader, 2048)
-		if keyErr != nil {
-			b.Fatal(keyErr)
+		key, errKey := rsa.GenerateKey(rand.Reader, 2048)
+		if errKey != nil {
+			b.Fatal(errKey)
 		}
-		signer, signerErr := jwt.NewSignerRS(algo, key)
-		if signerErr != nil {
-			b.Fatal(signerErr)
+		signer, errSigner := jwt.NewSignerRS(algo, key)
+		if errSigner != nil {
+			b.Fatal(errSigner)
 		}
-		verifier, verifierErr := jwt.NewVerifierRS(algo, &key.PublicKey)
-		if verifierErr != nil {
-			b.Fatal(verifierErr)
+		verifier, errVerifier := jwt.NewVerifierRS(algo, &key.PublicKey)
+		if errVerifier != nil {
+			b.Fatal(errVerifier)
 		}
+
 		builder := jwt.NewBuilder(signer)
 		b.Run("Sign-"+string(algo), func(b *testing.B) {
 			runSignerBench(b, builder)
@@ -118,14 +123,15 @@ func BenchmarkAlgHS(b *testing.B) {
 	key := []byte("12345")
 	hsAlgos := []jwt.Algorithm{jwt.HS256, jwt.HS384, jwt.HS512}
 	for _, algo := range hsAlgos {
-		signer, signerErr := jwt.NewSignerHS(algo, key)
-		if signerErr != nil {
-			b.Fatal(signerErr)
+		signer, errSigner := jwt.NewSignerHS(algo, key)
+		if errSigner != nil {
+			b.Fatal(errSigner)
 		}
-		verifier, verifierErr := jwt.NewVerifierHS(algo, key)
-		if verifierErr != nil {
-			b.Fatal(verifierErr)
+		verifier, errVerifier := jwt.NewVerifierHS(algo, key)
+		if errVerifier != nil {
+			b.Fatal(errVerifier)
 		}
+
 		builder := jwt.NewBuilder(signer)
 		b.Run("Sign-"+string(algo), func(b *testing.B) {
 			runSignerBench(b, builder)
@@ -139,51 +145,52 @@ func BenchmarkAlgHS(b *testing.B) {
 func runSignerBench(b *testing.B, builder *jwt.Builder) {
 	b.ReportAllocs()
 
-	sink := int(0)
-	for i := 0; i < b.N; i++ {
-		token, tokenErr := builder.Build(jwt.StandardClaims{
-			ID:       "id",
-			Issuer:   "sdf",
-			IssuedAt: jwt.NewNumericDate(time.Now()),
-		})
-		if tokenErr != nil {
-			b.Fatal(tokenErr)
-		}
-		sink += int(token.Payload()[0])
+	claims := jwt.RegisteredClaims{
+		ID:       "id",
+		Issuer:   "sdf",
+		IssuedAt: jwt.NewNumericDate(time.Now()),
 	}
 
-	if mathRand.Intn(10000) > 9999 {
-		b.Log(sink)
+	var dummy int
+	for i := 0; i < b.N; i++ {
+		token, err := builder.Build(claims)
+		if err != nil {
+			b.Fatal(err)
+		}
+		dummy += int(token.PayloadPart()[0])
 	}
+	sink(dummy)
 }
 
 func runVerifyBench(b *testing.B, builder *jwt.Builder, verifier jwt.Verifier) {
-	tokensCount := 32
+	const tokensCount = 32
 	tokens := make([]*jwt.Token, 0, tokensCount)
 	for i := 0; i < tokensCount; i++ {
-		token, tokenErr := builder.Build(jwt.StandardClaims{
+		token, err := builder.Build(jwt.RegisteredClaims{
 			ID:       "id",
 			Issuer:   "sdf",
 			IssuedAt: jwt.NewNumericDate(time.Now()),
 		})
-		if tokenErr != nil {
-			b.Fatal(tokenErr)
+		if err != nil {
+			b.Fatal(err)
 		}
 		tokens = append(tokens, token)
 	}
 
 	b.ReportAllocs()
-	sink := uintptr(0)
+	var dummy int
 	for i := 0; i < b.N/tokensCount; i++ {
 		for _, token := range tokens {
-			verificationErr := verifier.Verify(token.Payload(), token.Signature())
-			if verificationErr != nil {
-				b.Fatal(verificationErr)
+			err := verifier.Verify(token)
+			if err != nil {
+				b.Fatal(err)
 			}
+			dummy++
 		}
 	}
+	sink(dummy)
+}
 
-	if mathRand.Intn(10000) > 9999 {
-		b.Log(sink)
-	}
+func sink(v interface{}) {
+	fmt.Fprint(io.Discard, v)
 }
