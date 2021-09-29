@@ -7,7 +7,7 @@ import (
 )
 
 // NewSignerPS returns a new RSA-PSS-based signer.
-func NewSignerPS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
+func NewSignerPS(alg Algorithm, key *rsa.PrivateKey) (*PSAlg, error) {
 	if key == nil {
 		return nil, ErrNilKey
 	}
@@ -15,7 +15,7 @@ func NewSignerPS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &psAlg{
+	return &PSAlg{
 		alg:        alg,
 		hash:       hash,
 		privateKey: key,
@@ -24,7 +24,7 @@ func NewSignerPS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 }
 
 // NewVerifierPS returns a new RSA-PSS-based signer.
-func NewVerifierPS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
+func NewVerifierPS(alg Algorithm, key *rsa.PublicKey) (*PSAlg, error) {
 	if key == nil {
 		return nil, ErrNilKey
 	}
@@ -32,7 +32,7 @@ func NewVerifierPS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &psAlg{
+	return &PSAlg{
 		alg:       alg,
 		hash:      hash,
 		publicKey: key,
@@ -70,7 +70,7 @@ var (
 	}
 )
 
-type psAlg struct {
+type PSAlg struct {
 	alg        Algorithm
 	hash       crypto.Hash
 	publicKey  *rsa.PublicKey
@@ -78,15 +78,15 @@ type psAlg struct {
 	opts       *rsa.PSSOptions
 }
 
-func (ps *psAlg) SignSize() int {
+func (ps *PSAlg) SignSize() int {
 	return ps.privateKey.Size()
 }
 
-func (ps *psAlg) Algorithm() Algorithm {
+func (ps *PSAlg) Algorithm() Algorithm {
 	return ps.alg
 }
 
-func (ps *psAlg) Sign(payload []byte) ([]byte, error) {
+func (ps *PSAlg) Sign(payload []byte) ([]byte, error) {
 	digest, err := hashPayload(ps.hash, payload)
 	if err != nil {
 		return nil, err
@@ -99,14 +99,14 @@ func (ps *psAlg) Sign(payload []byte) ([]byte, error) {
 	return signature, nil
 }
 
-func (ps *psAlg) VerifyToken(token *Token) error {
-	if constTimeAlgEqual(token.Header().Algorithm, ps.alg) {
-		return ps.Verify(token.Payload(), token.Signature())
+func (ps *PSAlg) Verify(token *Token) error {
+	if !constTimeAlgEqual(token.Header().Algorithm, ps.alg) {
+		return ErrAlgorithmMismatch
 	}
-	return ErrAlgorithmMismatch
+	return ps.verify(token.PayloadPart(), token.Signature())
 }
 
-func (ps *psAlg) Verify(payload, signature []byte) error {
+func (ps *PSAlg) verify(payload, signature []byte) error {
 	digest, err := hashPayload(ps.hash, payload)
 	if err != nil {
 		return err
