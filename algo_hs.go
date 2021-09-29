@@ -8,25 +8,16 @@ import (
 )
 
 // NewSignerHS returns a new HMAC-based signer.
-func NewSignerHS(alg Algorithm, key []byte) (Signer, error) {
+func NewSignerHS(alg Algorithm, key []byte) (*HSAlg, error) {
 	return newHS(alg, key)
 }
 
 // NewVerifierHS returns a new HMAC-based verifier.
-func NewVerifierHS(alg Algorithm, key []byte) (Verifier, error) {
+func NewVerifierHS(alg Algorithm, key []byte) (*HSAlg, error) {
 	return newHS(alg, key)
 }
 
-type hmacAlgo interface {
-	// copy-pasted Signer & Verifier due to older Go versions
-	Algorithm() Algorithm
-	SignSize() int
-	Sign(payload []byte) ([]byte, error)
-	Verify(payload, signature []byte) error
-	VerifyToken(token *Token) error
-}
-
-func newHS(alg Algorithm, key []byte) (hmacAlgo, error) {
+func newHS(alg Algorithm, key []byte) (*HSAlg, error) {
 	if len(key) == 0 {
 		return nil, ErrNilKey
 	}
@@ -34,7 +25,7 @@ func newHS(alg Algorithm, key []byte) (hmacAlgo, error) {
 	if !ok {
 		return nil, ErrUnsupportedAlg
 	}
-	return &hsAlg{
+	return &HSAlg{
 		alg:  alg,
 		hash: hash,
 		key:  key,
@@ -59,33 +50,33 @@ func getHashHMAC(alg Algorithm) (crypto.Hash, bool) {
 	}
 }
 
-type hsAlg struct {
+type HSAlg struct {
 	alg      Algorithm
 	hash     crypto.Hash
 	key      []byte
 	hashPool *sync.Pool
 }
 
-func (hs *hsAlg) Algorithm() Algorithm {
+func (hs *HSAlg) Algorithm() Algorithm {
 	return hs.alg
 }
 
-func (hs *hsAlg) SignSize() int {
+func (hs *HSAlg) SignSize() int {
 	return hs.hash.Size()
 }
 
-func (hs *hsAlg) Sign(payload []byte) ([]byte, error) {
+func (hs *HSAlg) Sign(payload []byte) ([]byte, error) {
 	return hs.sign(payload)
 }
 
-func (hs *hsAlg) VerifyToken(token *Token) error {
-	if constTimeAlgEqual(token.Header().Algorithm, hs.alg) {
-		return hs.Verify(token.Payload(), token.Signature())
+func (hs *HSAlg) Verify(token *Token) error {
+	if !constTimeAlgEqual(token.Header().Algorithm, hs.alg) {
+		return ErrAlgorithmMismatch
 	}
-	return ErrAlgorithmMismatch
+	return hs.verify(token.PayloadPart(), token.Signature())
 }
 
-func (hs *hsAlg) Verify(payload, signature []byte) error {
+func (hs *HSAlg) verify(payload, signature []byte) error {
 	digest, err := hs.sign(payload)
 	if err != nil {
 		return err
@@ -96,15 +87,14 @@ func (hs *hsAlg) Verify(payload, signature []byte) error {
 	return nil
 }
 
-func (hs *hsAlg) sign(payload []byte) ([]byte, error) {
+func (hs *HSAlg) sign(payload []byte) ([]byte, error) {
 	hasher := hs.hashPool.Get().(hash.Hash)
 	defer func() {
 		hasher.Reset()
 		hs.hashPool.Put(hasher)
 	}()
 
-	_, err := hasher.Write(payload)
-	if err != nil {
+	if _, err := hasher.Write(payload); err != nil {
 		return nil, err
 	}
 	return hasher.Sum(nil), nil
