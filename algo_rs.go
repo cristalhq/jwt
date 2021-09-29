@@ -7,7 +7,7 @@ import (
 )
 
 // NewSignerRS returns a new RSA-based signer.
-func NewSignerRS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
+func NewSignerRS(alg Algorithm, key *rsa.PrivateKey) (*RSAlg, error) {
 	if key == nil {
 		return nil, ErrNilKey
 	}
@@ -15,7 +15,7 @@ func NewSignerRS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &rsAlg{
+	return &RSAlg{
 		alg:        alg,
 		hash:       hash,
 		privateKey: key,
@@ -23,7 +23,7 @@ func NewSignerRS(alg Algorithm, key *rsa.PrivateKey) (Signer, error) {
 }
 
 // NewVerifierRS returns a new RSA-based verifier.
-func NewVerifierRS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
+func NewVerifierRS(alg Algorithm, key *rsa.PublicKey) (*RSAlg, error) {
 	if key == nil {
 		return nil, ErrNilKey
 	}
@@ -31,7 +31,7 @@ func NewVerifierRS(alg Algorithm, key *rsa.PublicKey) (Verifier, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &rsAlg{
+	return &RSAlg{
 		alg:       alg,
 		hash:      hash,
 		publicKey: key,
@@ -53,22 +53,22 @@ func getHashRS(alg Algorithm, size int) (crypto.Hash, error) {
 	return hash, nil
 }
 
-type rsAlg struct {
+type RSAlg struct {
 	alg        Algorithm
 	hash       crypto.Hash
 	publicKey  *rsa.PublicKey
 	privateKey *rsa.PrivateKey
 }
 
-func (rs *rsAlg) Algorithm() Algorithm {
+func (rs *RSAlg) Algorithm() Algorithm {
 	return rs.alg
 }
 
-func (rs *rsAlg) SignSize() int {
+func (rs *RSAlg) SignSize() int {
 	return rs.privateKey.Size()
 }
 
-func (rs *rsAlg) Sign(payload []byte) ([]byte, error) {
+func (rs *RSAlg) Sign(payload []byte) ([]byte, error) {
 	digest, err := hashPayload(rs.hash, payload)
 	if err != nil {
 		return nil, err
@@ -81,14 +81,14 @@ func (rs *rsAlg) Sign(payload []byte) ([]byte, error) {
 	return signature, nil
 }
 
-func (rs *rsAlg) VerifyToken(token *Token) error {
-	if constTimeAlgEqual(token.Header().Algorithm, rs.alg) {
-		return rs.Verify(token.Payload(), token.Signature())
+func (rs *RSAlg) Verify(token *Token) error {
+	if !constTimeAlgEqual(token.Header().Algorithm, rs.alg) {
+		return ErrAlgorithmMismatch
 	}
-	return ErrAlgorithmMismatch
+	return rs.verify(token.PayloadPart(), token.Signature())
 }
 
-func (rs *rsAlg) Verify(payload, signature []byte) error {
+func (rs *RSAlg) verify(payload, signature []byte) error {
 	digest, err := hashPayload(rs.hash, payload)
 	if err != nil {
 		return err

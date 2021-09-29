@@ -42,35 +42,42 @@ func initRSKeys() {
 func TestRS(t *testing.T) {
 	initRSKeys()
 
-	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, isCorrectSign bool) {
+	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, wantErr error) {
 		t.Helper()
 
-		const payload = `simple-string-payload`
-
-		sign := rsSign(t, alg, privateKey, payload)
-
-		err := rsVerify(t, alg, publicKey, payload, sign)
-		if err != nil && isCorrectSign {
-			t.Error(err)
+		signer, errSigner := NewSignerRS(alg, privateKey)
+		if errSigner != nil {
+			t.Fatalf("NewSignerRS %v", errSigner)
 		}
-		if err == nil && !isCorrectSign {
-			t.Error("must be not nil")
+		verifier, errVerifier := NewVerifierRS(alg, publicKey)
+		if errVerifier != nil {
+			t.Fatalf("NewVerifierRS %v", errVerifier)
+		}
+
+		token, err := NewBuilder(signer).Build(simplePayload)
+		if err != nil {
+			t.Fatalf("Build %v", errVerifier)
+		}
+
+		errVerify := verifier.Verify(token)
+		if !errors.Is(errVerify, wantErr) {
+			t.Errorf("want %v, got %v", wantErr, errVerify)
 		}
 	}
 
-	f(RS256, rsaPrivateKey256, rsaPublicKey256, true)
-	f(RS384, rsaPrivateKey384, rsaPublicKey384, true)
-	f(RS512, rsaPrivateKey512, rsaPublicKey512, true)
-	f(RS512, rsaPrivateKey512Other, rsaPublicKey512Other, true)
+	f(RS256, rsaPrivateKey256, rsaPublicKey256, nil)
+	f(RS384, rsaPrivateKey384, rsaPublicKey384, nil)
+	f(RS512, rsaPrivateKey512, rsaPublicKey512, nil)
+	f(RS512, rsaPrivateKey512Other, rsaPublicKey512Other, nil)
 
-	f(RS256, rsaPrivateKey256, rsaPublicKey256Another, false)
-	f(RS384, rsaPrivateKey384, rsaPublicKey384Another, false)
-	f(RS512, rsaPrivateKey512, rsaPublicKey512Another, false)
+	f(RS256, rsaPrivateKey256, rsaPublicKey256Another, ErrInvalidSignature)
+	f(RS384, rsaPrivateKey384, rsaPublicKey384Another, ErrInvalidSignature)
+	f(RS512, rsaPrivateKey512, rsaPublicKey512Another, ErrInvalidSignature)
 
-	f(RS256, rsaPrivateKey256Another, rsaPublicKey256, false)
-	f(RS384, rsaPrivateKey384Another, rsaPublicKey384, false)
-	f(RS512, rsaPrivateKey512Another, rsaPublicKey512, false)
-	f(RS512, rsaPrivateKey512Other, rsaPublicKey512, false)
+	f(RS256, rsaPrivateKey256Another, rsaPublicKey256, ErrInvalidSignature)
+	f(RS384, rsaPrivateKey384Another, rsaPublicKey384, ErrInvalidSignature)
+	f(RS512, rsaPrivateKey512Another, rsaPublicKey512, ErrInvalidSignature)
+	f(RS512, rsaPrivateKey512Other, rsaPublicKey512, ErrInvalidSignature)
 }
 
 func TestRS_BadKeys(t *testing.T) {
@@ -93,30 +100,4 @@ func TestRS_BadKeys(t *testing.T) {
 	f(getVerifierError(NewVerifierRS(RS384, nil)), ErrNilKey)
 	f(getVerifierError(NewVerifierRS(RS512, nil)), ErrNilKey)
 	f(getVerifierError(NewVerifierRS("boo", rsaPublicKey384)), ErrUnsupportedAlg)
-
-}
-
-func rsSign(t *testing.T, alg Algorithm, privateKey *rsa.PrivateKey, payload string) []byte {
-	t.Helper()
-
-	signer, errSigner := NewSignerRS(alg, privateKey)
-	if errSigner != nil {
-		t.Fatalf("NewSignerRS %v", errSigner)
-	}
-
-	sign, errSign := signer.Sign([]byte(payload))
-	if errSign != nil {
-		t.Fatalf("SignRS %v", errSign)
-	}
-	return sign
-}
-
-func rsVerify(t *testing.T, alg Algorithm, publicKey *rsa.PublicKey, payload string, sign []byte) error {
-	t.Helper()
-
-	verifier, errVerifier := NewVerifierRS(alg, publicKey)
-	if errVerifier != nil {
-		t.Fatalf("NewVerifierRS %v", errVerifier)
-	}
-	return verifier.Verify([]byte(payload), sign)
 }
