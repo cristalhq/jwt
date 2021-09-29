@@ -7,7 +7,7 @@
 
 JSON Web Token for Go [RFC 7519](https://tools.ietf.org/html/rfc7519), also see [jwt.io](https://jwt.io) for more.
 
-The latest version is `v3`.
+The latest version is `v4`.
 
 ## Rationale
 
@@ -30,10 +30,10 @@ There are many JWT libraries, but many of them are hard to use (unclear or fixed
 
 ## Install
 
-Go version 1.13+
+Go version 1.17+
 
 ```
-GO111MODULE=on go get github.com/cristalhq/jwt/v3
+go get github.com/cristalhq/jwt/v4
 ```
 
 ## Example
@@ -59,8 +59,8 @@ builder := jwt.NewBuilder(signer)
 token, err := builder.Build(claims)
 checkErr(err)
 
-// here is token as byte slice
-var _ []byte = token.Bytes() // or just token.String() for string
+// here is token as a string
+var _ string = token.String()
 ```
 
 Parse and verify token:
@@ -70,25 +70,25 @@ key := []byte(`secret`)
 verifier, err := jwt.NewVerifierHS(jwt.HS256, key)
 checkErr(err)
 
-// parse a Token (by example received from a request)
-tokenStr := `<header.payload.signature>`
-token, err := jwt.ParseString(tokenStr)
+// parse and verify a token
+tokenBytes := token.Bytes()
+newToken, err := jwt.Parse(tokenBytes, verifier)
 checkErr(err)
 
-// and verify it's signature
-err = verifier.Verify(token.Payload(), token.Signature())
+// or just verify it's signature
+err = verifier.Verify(newToken)
 checkErr(err)
 
-// also you can parse and verify together
-newToken, err := jwt.ParseAndVerifyString(tokenStr, verifier)
-checkErr(err)
-
-// get standard claims
-var newClaims jwt.StandardClaims
-errClaims := json.Unmarshal(newToken.RawClaims(), &newClaims)
+// get Registered claims
+var newClaims jwt.RegisteredClaims
+errClaims := json.Unmarshal(newToken.Claims(), &newClaims)
 checkErr(errClaims)
 
-// verify claims as you 
+// or parse only claims
+err = jwt.ParseClaims(tokenBytes, verifier, &newClaims)
+checkErr(errClaims)
+
+// verify claims as you wish
 var _ bool = newClaims.IsForAudience("admin")
 var _ bool = newClaims.IsValidAt(time.Now())
 ```
@@ -105,8 +105,8 @@ See [these docs][pkg-url].
 
 [build-img]: https://github.com/cristalhq/jwt/workflows/build/badge.svg
 [build-url]: https://github.com/cristalhq/jwt/actions
-[pkg-img]: https://pkg.go.dev/badge/cristalhq/jwt/v3
-[pkg-url]: https://pkg.go.dev/github.com/cristalhq/jwt/v3
+[pkg-img]: https://pkg.go.dev/badge/cristalhq/jwt/v4
+[pkg-url]: https://pkg.go.dev/github.com/cristalhq/jwt/v4
 [reportcard-img]: https://goreportcard.com/badge/cristalhq/jwt
 [reportcard-url]: https://goreportcard.com/report/cristalhq/jwt
 [coverage-img]: https://codecov.io/gh/cristalhq/jwt/branch/master/graph/badge.svg

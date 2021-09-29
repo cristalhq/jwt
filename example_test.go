@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/cristalhq/jwt/v3"
+	"github.com/cristalhq/jwt/v4"
 )
 
-func Example() {
+func ExampleSignAndVerify() {
 	// create a Signer (HMAC in this example)
 	key := []byte(`secret`)
 	signer, err := jwt.NewSignerHS(jwt.HS256, key)
@@ -24,35 +24,39 @@ func Example() {
 	builder := jwt.NewBuilder(signer)
 
 	// and build a Token
-	newToken, err := builder.Build(claims)
+	token, err := builder.Build(claims)
 	checkErr(err)
 
-	// here is token as byte slice
-	var _ []byte = newToken.Raw() // or just token.String() for string
+	// here is token as a string
+	var _ string = token.String()
 
 	// create a Verifier (HMAC in this example)
 	verifier, err := jwt.NewVerifierHS(jwt.HS256, key)
 	checkErr(err)
 
-	// parse a Token (by example received from a request)
-	tokenStr := newToken.String()
-	token, err := jwt.ParseAndVerifyString(tokenStr, verifier)
+	// parse and verify a token
+	tokenBytes := token.Bytes()
+	newToken, err := jwt.Parse(tokenBytes, verifier)
 	checkErr(err)
 
-	// and verify it's signature
-	err = verifier.Verify(token.Payload(), token.Signature())
+	// or just verify it's signature
+	err = verifier.Verify(newToken)
 	checkErr(err)
 
-	// also you can parse and verify together
-	newToken, err = jwt.ParseAndVerifyString(tokenStr, verifier)
+	// also you can parse without verify (NOT RECOMMENDED!)
+	newToken, err = jwt.ParseNoVerify(tokenBytes)
 	checkErr(err)
 
-	// get standard claims
-	var newClaims jwt.StandardClaims
-	errClaims := json.Unmarshal(newToken.RawClaims(), &newClaims)
+	// get REGISTERED claims
+	var newClaims jwt.RegisteredClaims
+	errClaims := json.Unmarshal(newToken.Claims(), &newClaims)
 	checkErr(errClaims)
 
-	// verify claims as you
+	// or parse only claims
+	err = jwt.ParseClaims(tokenBytes, verifier, &newClaims)
+	checkErr(errClaims)
+
+	// verify claims as you wish
 	var _ bool = newClaims.IsForAudience("admin")
 	var _ bool = newClaims.IsValidAt(time.Now())
 
@@ -71,19 +75,27 @@ func ExampleBuild() {
 	token, err := builder.Build(claims)
 	checkErr(err)
 
-	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
-	fmt.Printf("Type      %v\n", token.Header().Type)
-	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(token.Payload()))
-	fmt.Printf("Token     %v\n", string(token.Raw()))
+	fmt.Printf("Token     %s\n", token.String())
+	fmt.Printf("Algorithm %s\n", token.Header().Algorithm)
+	fmt.Printf("Type      %s\n", token.Header().Type)
+	fmt.Printf("Claims    %s\n", token.Claims())
+	fmt.Printf("HeaderPart    %s\n", token.HeaderPart())
+	fmt.Printf("ClaimsPart    %s\n", token.ClaimsPart())
+	fmt.Printf("PayloadPart   %s\n", token.PayloadPart())
+	fmt.Printf("SignaturePart %s\n", token.SignaturePart())
 
 	// Output:
+	// Token     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0.uNaqGEggmy02lZq8FM7KoUKXhOy-zrSF7inYuzIET9o
 	// Algorithm HS256
 	// Type      JWT
 	// Claims    {"jti":"random-unique-string","aud":"admin"}
-	// Payload   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0
-	// Token     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0.uNaqGEggmy02lZq8FM7KoUKXhOy-zrSF7inYuzIET9o
+	// HeaderPart    eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+	// ClaimsPart    eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0
+	// PayloadPart   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0
+	// SignaturePart uNaqGEggmy02lZq8FM7KoUKXhOy-zrSF7inYuzIET9o
 }
+
+// Payload   eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJyYW5kb20tdW5pcXVlLXN0cmluZyIsImF1ZCI6ImFkbWluIn0
 
 type userClaims struct {
 	jwt.RegisteredClaims
@@ -107,9 +119,9 @@ func ExampleBuild_WithUserClaims() {
 	token, err := builder.Build(claims)
 	checkErr(err)
 
-	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(token.Payload()))
-	fmt.Printf("Token     %v\n", string(token.Raw()))
+	fmt.Printf("Claims    %v\n", string(token.Claims()))
+	fmt.Printf("Payload   %v\n", string(token.PayloadPart()))
+	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
 	// Claims    {"jti":"random-unique-string","aud":"admin","is_admin":true,"email":"foo@bar.baz"}
@@ -120,14 +132,17 @@ func ExampleBuild_WithUserClaims() {
 func ExampleParse() {
 	rawToken := []byte(`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs`)
 
-	token, err := jwt.Parse(rawToken)
+	key := []byte(`secret`)
+	verifier, _ := jwt.NewVerifierHS(jwt.HS256, key)
+
+	token, err := jwt.Parse(rawToken, verifier)
 	checkErr(err)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
-	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(token.Payload()))
-	fmt.Printf("Token     %v\n", string(token.Raw()))
+	fmt.Printf("Claims    %v\n", string(token.Claims()))
+	fmt.Printf("Payload   %v\n", string(token.PayloadPart()))
+	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
 	// Algorithm HS256
@@ -137,20 +152,17 @@ func ExampleParse() {
 	// Token     eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs
 }
 
-func ExampleParseAndVerify() {
+func ExampleParseNoVerify() {
 	rawToken := []byte(`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJhdWQiOiJhZG1pbiIsImp0aSI6InJhbmRvbS11bmlxdWUtc3RyaW5nIn0.dv9-XpY9P8ypm1uWQwB6eKvq3jeyodLA7brhjsf4JVs`)
 
-	key := []byte(`secret`)
-	verifier, _ := jwt.NewVerifierHS(jwt.HS256, key)
-
-	token, err := jwt.ParseAndVerify(rawToken, verifier)
+	token, err := jwt.ParseNoVerify(rawToken)
 	checkErr(err)
 
 	fmt.Printf("Algorithm %v\n", token.Header().Algorithm)
 	fmt.Printf("Type      %v\n", token.Header().Type)
-	fmt.Printf("Claims    %v\n", string(token.RawClaims()))
-	fmt.Printf("Payload   %v\n", string(token.Payload()))
-	fmt.Printf("Token     %v\n", string(token.Raw()))
+	fmt.Printf("Claims    %v\n", string(token.Claims()))
+	fmt.Printf("Payload   %v\n", string(token.PayloadPart()))
+	fmt.Printf("Token     %v\n", string(token.Bytes()))
 
 	// Output:
 	// Algorithm HS256
