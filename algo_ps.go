@@ -11,7 +11,7 @@ func NewSignerPS(alg Algorithm, key *rsa.PrivateKey) (*PSAlg, error) {
 	if key == nil {
 		return nil, ErrNilKey
 	}
-	hash, opts, err := getParamsPS(alg, key.Size())
+	hash, opts, err := getParamsPS(alg)
 	if err != nil {
 		return nil, err
 	}
@@ -28,7 +28,7 @@ func NewVerifierPS(alg Algorithm, key *rsa.PublicKey) (*PSAlg, error) {
 	if key == nil {
 		return nil, ErrNilKey
 	}
-	hash, opts, err := getParamsPS(alg, key.Size())
+	hash, opts, err := getParamsPS(alg)
 	if err != nil {
 		return nil, err
 	}
@@ -40,7 +40,7 @@ func NewVerifierPS(alg Algorithm, key *rsa.PublicKey) (*PSAlg, error) {
 	}, nil
 }
 
-func getParamsPS(alg Algorithm, size int) (crypto.Hash, *rsa.PSSOptions, error) {
+func getParamsPS(alg Algorithm) (crypto.Hash, *rsa.PSSOptions, error) {
 	switch alg {
 	case PS256:
 		return crypto.SHA256, optsPS256, nil

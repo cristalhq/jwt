@@ -53,8 +53,8 @@ func ExampleSignAndVerify() {
 	checkErr(errClaims)
 
 	// or parse only claims
-	err = jwt.ParseClaims(tokenBytes, verifier, &newClaims)
-	checkErr(errClaims)
+	errParseClaims := jwt.ParseClaims(tokenBytes, verifier, &newClaims)
+	checkErr(errParseClaims)
 
 	// verify claims as you wish
 	var _ bool = newClaims.IsForAudience("admin")

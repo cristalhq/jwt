@@ -20,6 +20,7 @@ func NewSignerES(alg Algorithm, key *ecdsa.PrivateKey) (*ESAlg, error) {
 		alg:        alg,
 		hash:       hash,
 		privateKey: key,
+		publicKey:  nil,
 		signSize:   roundBytes(key.PublicKey.Params().BitSize) * 2,
 	}, nil
 }
@@ -34,10 +35,11 @@ func NewVerifierES(alg Algorithm, key *ecdsa.PublicKey) (*ESAlg, error) {
 		return nil, err
 	}
 	return &ESAlg{
-		alg:       alg,
-		hash:      hash,
-		publicKey: key,
-		signSize:  roundBytes(key.Params().BitSize) * 2,
+		alg:        alg,
+		hash:       hash,
+		privateKey: nil,
+		publicKey:  key,
+		signSize:   roundBytes(key.Params().BitSize) * 2,
 	}, nil
 }
 

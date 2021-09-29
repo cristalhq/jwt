@@ -11,7 +11,7 @@ func NewSignerRS(alg Algorithm, key *rsa.PrivateKey) (*RSAlg, error) {
 	if key == nil {
 		return nil, ErrNilKey
 	}
-	hash, err := getHashRS(alg, key.Size())
+	hash, err := getHashRS(alg)
 	if err != nil {
 		return nil, err
 	}
@@ -19,6 +19,7 @@ func NewSignerRS(alg Algorithm, key *rsa.PrivateKey) (*RSAlg, error) {
 		alg:        alg,
 		hash:       hash,
 		privateKey: key,
+		publicKey:  nil,
 	}, nil
 }
 
@@ -27,18 +28,19 @@ func NewVerifierRS(alg Algorithm, key *rsa.PublicKey) (*RSAlg, error) {
 	if key == nil {
 		return nil, ErrNilKey
 	}
-	hash, err := getHashRS(alg, key.Size())
+	hash, err := getHashRS(alg)
 	if err != nil {
 		return nil, err
 	}
 	return &RSAlg{
-		alg:       alg,
-		hash:      hash,
-		publicKey: key,
+		alg:        alg,
+		hash:       hash,
+		privateKey: nil,
+		publicKey:  key,
 	}, nil
 }
 
-func getHashRS(alg Algorithm, size int) (crypto.Hash, error) {
+func getHashRS(alg Algorithm) (crypto.Hash, error) {
 	var hash crypto.Hash
 	switch alg {
 	case RS256:

@@ -48,8 +48,7 @@ const (
 func hashPayload(hash crypto.Hash, payload []byte) ([]byte, error) {
 	hasher := hash.New()
 
-	_, err := hasher.Write(payload)
-	if err != nil {
+	if _, err := hasher.Write(payload); err != nil {
 		return nil, err
 	}
 	signed := hasher.Sum(nil)

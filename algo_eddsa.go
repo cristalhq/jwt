@@ -13,6 +13,7 @@ func NewSignerEdDSA(key ed25519.PrivateKey) (*EdDSAAlg, error) {
 		return nil, ErrInvalidKey
 	}
 	return &EdDSAAlg{
+		publicKey:  nil,
 		privateKey: key,
 	}, nil
 }
@@ -26,7 +27,8 @@ func NewVerifierEdDSA(key ed25519.PublicKey) (*EdDSAAlg, error) {
 		return nil, ErrInvalidKey
 	}
 	return &EdDSAAlg{
-		publicKey: key,
+		publicKey:  key,
+		privateKey: nil,
 	}, nil
 }
 

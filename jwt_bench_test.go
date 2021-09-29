@@ -143,6 +143,7 @@ func BenchmarkAlgHS(b *testing.B) {
 }
 
 func runSignerBench(b *testing.B, builder *jwt.Builder) {
+	b.Helper()
 	b.ReportAllocs()
 
 	claims := jwt.RegisteredClaims{
@@ -163,6 +164,7 @@ func runSignerBench(b *testing.B, builder *jwt.Builder) {
 }
 
 func runVerifyBench(b *testing.B, builder *jwt.Builder, verifier jwt.Verifier) {
+	b.Helper()
 	const tokensCount = 32
 	tokens := make([]*jwt.Token, 0, tokensCount)
 	for i := 0; i < tokensCount; i++ {
