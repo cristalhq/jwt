@@ -2,46 +2,11 @@ package jwt
 
 import (
 	"crypto/ecdsa"
-	"crypto/elliptic"
-	"crypto/rand"
 	"errors"
-	"sync"
 	"testing"
 )
 
-var (
-	ecdsaPublicKey256, ecdsaPublicKey384, ecdsaPublicKey521    *ecdsa.PublicKey
-	ecdsaPrivateKey256, ecdsaPrivateKey384, ecdsaPrivateKey521 *ecdsa.PrivateKey
-
-	ecdsaPublicKey256Another, ecdsaPublicKey384Another, ecdsaPublicKey521Another    *ecdsa.PublicKey
-	ecdsaPrivateKey256Another, ecdsaPrivateKey384Another, ecdsaPrivateKey521Another *ecdsa.PrivateKey
-)
-
-var initESKeysOnce sync.Once
-
-func initESKeys() {
-	initESKeysOnce.Do(func() {
-		f := func(f func() elliptic.Curve) (*ecdsa.PrivateKey, *ecdsa.PublicKey) {
-			privKey, err := ecdsa.GenerateKey(f(), rand.Reader)
-			if err != nil {
-				panic(err)
-			}
-			return privKey, &privKey.PublicKey
-		}
-
-		ecdsaPrivateKey256, ecdsaPublicKey256 = f(elliptic.P256)
-		ecdsaPrivateKey384, ecdsaPublicKey384 = f(elliptic.P384)
-		ecdsaPrivateKey521, ecdsaPublicKey521 = f(elliptic.P521)
-
-		ecdsaPrivateKey256Another, ecdsaPublicKey256Another = f(elliptic.P256)
-		ecdsaPrivateKey384Another, ecdsaPublicKey384Another = f(elliptic.P384)
-		ecdsaPrivateKey521Another, ecdsaPublicKey521Another = f(elliptic.P521)
-	})
-}
-
 func TestES(t *testing.T) {
-	initESKeys()
-
 	f := func(alg Algorithm, privateKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey, wantErr error) {
 		t.Helper()
 
@@ -79,8 +44,6 @@ func TestES(t *testing.T) {
 }
 
 func TestES_BadKeys(t *testing.T) {
-	initESKeys()
-
 	f := func(err, wantErr error) {
 		t.Helper()
 
@@ -115,3 +78,73 @@ func TestES_BadKeys(t *testing.T) {
 	f(getVerifierError(NewVerifierES(ES512, ecdsaPublicKey256)), ErrInvalidKey)
 	f(getVerifierError(NewVerifierES(ES512, ecdsaPublicKey384)), ErrInvalidKey)
 }
+
+var (
+	ecdsaPrivateKey256 = mustParseECKey(testKeyES256)
+	ecdsaPrivateKey384 = mustParseECKey(testKeyES384)
+	ecdsaPrivateKey521 = mustParseECKey(testKeyES521)
+
+	ecdsaPublicKey256 = &ecdsaPrivateKey256.PublicKey
+	ecdsaPublicKey384 = &ecdsaPrivateKey384.PublicKey
+	ecdsaPublicKey521 = &ecdsaPrivateKey521.PublicKey
+
+	ecdsaPrivateKey256Another = mustParseECKey(testKeyES256Another)
+	ecdsaPrivateKey384Another = mustParseECKey(testKeyES384Another)
+	ecdsaPrivateKey521Another = mustParseECKey(testKeyES521Another)
+
+	ecdsaPublicKey256Another = &ecdsaPrivateKey256Another.PublicKey
+	ecdsaPublicKey384Another = &ecdsaPrivateKey384Another.PublicKey
+	ecdsaPublicKey521Another = &ecdsaPrivateKey521Another.PublicKey
+)
+
+// To generate keys:
+// ES256
+// openssl ecparam -name prime256v1 -genkey -noout -out es256-private.pem
+// ES384
+// openssl ecparam -name secp384r1 -genkey -noout -out es384-private.pem
+// ES512
+// openssl ecparam -name secp521r1 -genkey -noout -out es521-private.pem
+//
+const (
+	testKeyES256 = `-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIM+a8cZ6BjdZBYy7pMIqmWsHKSmAZhZ/RTeSkmzPKohfoAoGCCqGSM49
+AwEHoUQDQgAE18xDMC6wYt4TJakM3DeHBmLoyEin/vNaJl3g2V3xfGSmuZ1GL2Pm
+DO00CX84Vj/pHaIGQYgXLm8zuxiBMaNIXA==
+-----END EC PRIVATE KEY-----`
+
+	testKeyES384 = `-----BEGIN EC PRIVATE KEY-----
+MIGkAgEBBDCi1H43WBIeJVC2kN/asAJAte564UyXAb+ZIjyB+jF92BfcOrDkQkJV
+8er9/kZCSCegBwYFK4EEACKhZANiAAQP3m6j/r1X70mQ38BEArSwFkr/jztwHB9/
+kHDd8paBykz4wjI2TqIANZ+7d6EWQNL/kEcxfd6CUsq0vRMi8cVG1+Yw1ogLcKgd
+hdoGc7IiV1oD6w6iX5PfqUdj2lfP6qU=
+-----END EC PRIVATE KEY-----`
+
+	testKeyES521 = `-----BEGIN EC PRIVATE KEY-----
+MIHcAgEBBEIBxKNCQAGpI4T9l6yxN8jCTc5KzF4wlnDF1M8uNebQfsgl9RXwAb34
+8YF1Bip5kkf6OFh6hFBDK/J5VgqSrgFMXNigBwYFK4EEACOhgYkDgYYABACju/hE
+QgtvmUP6ZToxo2f7nO/Z9b2dOArvZE9qLqUKi8p8vhLd085YJ+PUAc9BRPSSUAsR
+0g4FvPJKFBzO5KcdIAD/Rnqt4sjBiU+SsVqeG0YWbuotFqbzYu9J0vMhPiwaZa73
+HIoOXZT7jXPe6TePSmBodJuj3i0hgtlbvC3dQDccyw==
+-----END EC PRIVATE KEY-----`
+
+	testKeyES256Another = `-----BEGIN EC PRIVATE KEY-----
+MHcCAQEEIM9p5Ce0A5nPx4LxiA92TP3wDNiXDyK17sn8zZsvaseSoAoGCCqGSM49
+AwEHoUQDQgAEiX+f1oVkt5F2lvpFmerr2OoFRalnqK0yNx0d6vph6MsAcfDC309P
+TjEIWn3NQNHI8XROvhODPxiSbXumbnuoOw==
+-----END EC PRIVATE KEY-----`
+
+	testKeyES384Another = `-----BEGIN EC PRIVATE KEY-----
+MIGkAgEBBDCRwcoUBpkkIp1geqykLRqrsoQ0swsJJTVyVNu6lDshoOYAOz4NwUw2
+iRl0o/Xm5cCgBwYFK4EEACKhZANiAARz6nE/bj22RdSKRENMDeF5V+VE20tN1Nzk
+tvbmDePQD8538gBGQJzv+lVWNNmsx5MD0To1BBc2HbemdKrXmnLnwOJ2a+zsLqCa
+JlXGCIn5G1gL2sfMbeNn/WB3MPOQna0=
+-----END EC PRIVATE KEY-----`
+
+	testKeyES521Another = `-----BEGIN EC PRIVATE KEY-----
+MIHbAgEBBEGSdts6vIYr2KEQxjkfMys7RfxDUidql0AHl7RvbzdiVVDaVjx7g+Cl
+tZpqDMe/sYE813duYRpd9xXCFSRVDjHBXqAHBgUrgQQAI6GBiQOBhgAEAQsdOs3W
+huEJWa6h86aTP980Pdbme6fkdTERq9mvI1zn8L4211scGA6cbqNeLNn6wt/v7iGb
+HNjmL7z8CLwOgqHDASUN5UtdJC+gPDJi7WllkCz7uM2iwvZQ339bTN+bywiHQUrQ
+MvbD7c0RONrhLoch5W6TlWCMj9f4EkQQEfk63Q8F
+-----END EC PRIVATE KEY-----`
+)

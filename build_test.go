@@ -6,8 +6,6 @@ import (
 )
 
 func TestBuild(t *testing.T) {
-	initKeys()
-
 	f := func(signer Signer, verifier Verifier, claims interface{}) {
 		t.Helper()
 
@@ -94,8 +92,6 @@ func TestBuild(t *testing.T) {
 }
 
 func TestBuildHeader(t *testing.T) {
-	initKeys()
-
 	f := func(signer Signer, want string, opts ...BuilderOption) {
 		t.Helper()
 
@@ -104,7 +100,7 @@ func TestBuildHeader(t *testing.T) {
 			t.Error(err)
 		}
 
-		want = strToBase64(want)
+		want = bytesToBase64([]byte(want))
 		raw := string(token.HeaderPart())
 		if raw != want {
 			t.Errorf("\nwant %v,\n got %v", want, raw)

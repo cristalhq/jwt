@@ -1,7 +1,11 @@
 package jwt
 
 import (
+	"crypto/ecdsa"
+	"crypto/rsa"
+	"crypto/x509"
 	"encoding/base64"
+	"encoding/pem"
 	"reflect"
 	"testing"
 )
@@ -70,8 +74,9 @@ func TestMarshalHeader(t *testing.T) {
 
 var bytesToBase64 = base64.RawURLEncoding.EncodeToString
 
-func strToBase64(s string) string {
-	return bytesToBase64([]byte(s))
+func base64ToBytes(s string) []byte {
+	b, _ := base64.RawURLEncoding.DecodeString(s)
+	return b
 }
 
 func getSignerError(_ Signer, err error) error {
@@ -94,4 +99,30 @@ func mustVerifier(v Verifier, err error) Verifier {
 		panic(err)
 	}
 	return v
+}
+
+func mustParseRSAKey(s string) *rsa.PrivateKey {
+	block, _ := pem.Decode([]byte(s))
+	if block == nil {
+		panic("invalid PEM")
+	}
+
+	key, err := x509.ParsePKCS1PrivateKey(block.Bytes)
+	if err != nil {
+		panic(err)
+	}
+	return key
+}
+
+func mustParseECKey(s string) *ecdsa.PrivateKey {
+	block, _ := pem.Decode([]byte(s))
+	if block == nil {
+		panic("invalid PEM")
+	}
+
+	key, err := x509.ParseECPrivateKey(block.Bytes)
+	if err != nil {
+		panic(err)
+	}
+	return key
 }

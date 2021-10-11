@@ -1,47 +1,12 @@
 package jwt
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
 	"errors"
-	"sync"
 	"testing"
 )
 
-var (
-	rsapsPublicKey256, rsapsPublicKey384, rsapsPublicKey512, rsapsPublicKey512Other     *rsa.PublicKey
-	rsapsPrivateKey256, rsapsPrivateKey384, rsapsPrivateKey512, rsapsPrivateKey512Other *rsa.PrivateKey
-
-	rsapsPublicKey256Another, rsapsPublicKey384Another, rsapsPublicKey512Another    *rsa.PublicKey
-	rsapsPrivateKey256Another, rsapsPrivateKey384Another, rsapsPrivateKey512Another *rsa.PrivateKey
-)
-
-var initPSKeysOnce sync.Once
-
-func initPSKeys() {
-	initPSKeysOnce.Do(func() {
-		f := func(bits int) (*rsa.PrivateKey, *rsa.PublicKey) {
-			privKey, err := rsa.GenerateKey(rand.Reader, bits)
-			if err != nil {
-				panic(err)
-			}
-			return privKey, &privKey.PublicKey
-		}
-
-		rsapsPrivateKey256, rsapsPublicKey256 = f(256 * 8)
-		rsapsPrivateKey384, rsapsPublicKey384 = f(384 * 8)
-		rsapsPrivateKey512, rsapsPublicKey512 = f(512 * 8)
-		rsapsPrivateKey512Other, rsapsPublicKey512Other = f(256 * 8)
-
-		rsapsPrivateKey256Another, rsapsPublicKey256Another = f(256 * 8)
-		rsapsPrivateKey384Another, rsapsPublicKey384Another = f(384 * 8)
-		rsapsPrivateKey512Another, rsapsPublicKey512Another = f(512 * 8)
-	})
-}
-
 func TestPS(t *testing.T) {
-	initPSKeys()
-
 	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, wantErr error) {
 		t.Helper()
 
@@ -81,8 +46,6 @@ func TestPS(t *testing.T) {
 }
 
 func TestPS_BadKeys(t *testing.T) {
-	initPSKeys()
-
 	f := func(err, wantErr error) {
 		t.Helper()
 
@@ -101,3 +64,23 @@ func TestPS_BadKeys(t *testing.T) {
 	f(getVerifierError(NewVerifierPS(PS512, nil)), ErrNilKey)
 	f(getVerifierError(NewVerifierPS("boo", rsapsPublicKey384)), ErrUnsupportedAlg)
 }
+
+var (
+	rsapsPrivateKey256      = mustParseRSAKey(testKeyRSA1024)
+	rsapsPrivateKey384      = mustParseRSAKey(testKeyRSA2048)
+	rsapsPrivateKey512      = mustParseRSAKey(testKeyRSA4096)
+	rsapsPrivateKey512Other = mustParseRSAKey(testKeyRSA4096Other)
+
+	rsapsPublicKey256      = &rsapsPrivateKey256.PublicKey
+	rsapsPublicKey384      = &rsapsPrivateKey384.PublicKey
+	rsapsPublicKey512      = &rsapsPrivateKey512.PublicKey
+	rsapsPublicKey512Other = &rsapsPrivateKey512Other.PublicKey
+
+	rsapsPrivateKey256Another = mustParseRSAKey(testKeyRSA1024Another)
+	rsapsPrivateKey384Another = mustParseRSAKey(testKeyRSA2048Another)
+	rsapsPrivateKey512Another = mustParseRSAKey(testKeyRSA4096Another)
+
+	rsapsPublicKey256Another = &rsapsPrivateKey256Another.PublicKey
+	rsapsPublicKey384Another = &rsapsPrivateKey384Another.PublicKey
+	rsapsPublicKey512Another = &rsapsPrivateKey512Another.PublicKey
+)
