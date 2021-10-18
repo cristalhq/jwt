@@ -8,7 +8,7 @@ import (
 )
 
 // NewSignerES returns a new ECDSA-based signer.
-func NewSignerES(alg Algorithm, key *ecdsa.PrivateKey) (Signer, error) {
+func NewSignerES(alg Algorithm, key *ecdsa.PrivateKey) (*ESAlg, error) {
 	if key == nil {
 		return nil, ErrNilKey
 	}
@@ -16,16 +16,17 @@ func NewSignerES(alg Algorithm, key *ecdsa.PrivateKey) (Signer, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &esAlg{
+	return &ESAlg{
 		alg:        alg,
 		hash:       hash,
 		privateKey: key,
+		publicKey:  nil,
 		signSize:   roundBytes(key.PublicKey.Params().BitSize) * 2,
 	}, nil
 }
 
 // NewVerifierES returns a new ECDSA-based verifier.
-func NewVerifierES(alg Algorithm, key *ecdsa.PublicKey) (Verifier, error) {
+func NewVerifierES(alg Algorithm, key *ecdsa.PublicKey) (*ESAlg, error) {
 	if key == nil {
 		return nil, ErrNilKey
 	}
@@ -33,34 +34,37 @@ func NewVerifierES(alg Algorithm, key *ecdsa.PublicKey) (Verifier, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &esAlg{
-		alg:       alg,
-		hash:      hash,
-		publicKey: key,
-		signSize:  roundBytes(key.Params().BitSize) * 2,
+	return &ESAlg{
+		alg:        alg,
+		hash:       hash,
+		privateKey: nil,
+		publicKey:  key,
+		signSize:   roundBytes(key.Params().BitSize) * 2,
 	}, nil
 }
 
 func getParamsES(alg Algorithm, size int) (crypto.Hash, error) {
 	var hash crypto.Hash
+	var keySize int
+
 	switch alg {
 	case ES256:
-		hash = crypto.SHA256
+		hash, keySize = crypto.SHA256, 64
 	case ES384:
-		hash = crypto.SHA384
+		hash, keySize = crypto.SHA384, 96
 	case ES512:
-		hash = crypto.SHA512
+		hash, keySize = crypto.SHA512, 132
 	default:
 		return 0, ErrUnsupportedAlg
 	}
 
-	if alg.keySize() != size {
+	if keySize != size {
 		return 0, ErrInvalidKey
 	}
 	return hash, nil
 }
 
-type esAlg struct {
+type ESAlg struct {
 	alg        Algorithm
 	hash       crypto.Hash
 	publicKey  *ecdsa.PublicKey
@@ -68,15 +72,15 @@ type esAlg struct {
 	signSize   int
 }
 
-func (es *esAlg) Algorithm() Algorithm {
+func (es *ESAlg) Algorithm() Algorithm {
 	return es.alg
 }
 
-func (es *esAlg) SignSize() int {
+func (es *ESAlg) SignSize() int {
 	return es.signSize
 }
 
-func (es *esAlg) Sign(payload []byte) ([]byte, error) {
+func (es *ESAlg) Sign(payload []byte) ([]byte, error) {
 	digest, err := hashPayload(es.hash, payload)
 	if err != nil {
 		return nil, err
@@ -96,14 +100,14 @@ func (es *esAlg) Sign(payload []byte) ([]byte, error) {
 	return signature, nil
 }
 
-func (es *esAlg) VerifyToken(token *Token) error {
-	if constTimeAlgEqual(token.Header().Algorithm, es.alg) {
-		return es.Verify(token.Payload(), token.Signature())
+func (es *ESAlg) Verify(token *Token) error {
+	if !constTimeAlgEqual(token.Header().Algorithm, es.alg) {
+		return ErrAlgorithmMismatch
 	}
-	return ErrAlgorithmMismatch
+	return es.verify(token.PayloadPart(), token.Signature())
 }
 
-func (es *esAlg) Verify(payload, signature []byte) error {
+func (es *ESAlg) verify(payload, signature []byte) error {
 	if len(signature) != es.SignSize() {
 		return ErrInvalidSignature
 	}

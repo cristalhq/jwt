@@ -16,15 +16,12 @@ type NumericDate struct {
 
 // NewNumericDate creates a new NumericDate value from time.Time.
 func NewNumericDate(t time.Time) *NumericDate {
-	if t.IsZero() {
-		return nil
-	}
 	return &NumericDate{t}
 }
 
 // MarshalJSON implements the json.Marshaler interface.
-func (t *NumericDate) MarshalJSON() ([]byte, error) {
-	if t == nil || t.IsZero() {
+func (t NumericDate) MarshalJSON() ([]byte, error) {
+	if t.IsZero() {
 		return []byte("null"), nil
 	}
 	return []byte(strconv.FormatInt(t.Unix(), 10)), nil

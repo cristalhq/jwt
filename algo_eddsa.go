@@ -5,59 +5,58 @@ import (
 )
 
 // NewSignerEdDSA returns a new ed25519-based signer.
-func NewSignerEdDSA(key ed25519.PrivateKey) (Signer, error) {
+func NewSignerEdDSA(key ed25519.PrivateKey) (*EdDSAAlg, error) {
 	if len(key) == 0 {
 		return nil, ErrNilKey
 	}
 	if len(key) != ed25519.PrivateKeySize {
 		return nil, ErrInvalidKey
 	}
-	return &edDSAAlg{
-		alg:        EdDSA,
+	return &EdDSAAlg{
+		publicKey:  nil,
 		privateKey: key,
 	}, nil
 }
 
 // NewVerifierEdDSA returns a new ed25519-based verifier.
-func NewVerifierEdDSA(key ed25519.PublicKey) (Verifier, error) {
+func NewVerifierEdDSA(key ed25519.PublicKey) (*EdDSAAlg, error) {
 	if len(key) == 0 {
 		return nil, ErrNilKey
 	}
 	if len(key) != ed25519.PublicKeySize {
 		return nil, ErrInvalidKey
 	}
-	return &edDSAAlg{
-		alg:       EdDSA,
-		publicKey: key,
+	return &EdDSAAlg{
+		publicKey:  key,
+		privateKey: nil,
 	}, nil
 }
 
-type edDSAAlg struct {
-	alg        Algorithm
+type EdDSAAlg struct {
 	publicKey  ed25519.PublicKey
 	privateKey ed25519.PrivateKey
 }
 
-func (ed *edDSAAlg) Algorithm() Algorithm {
-	return ed.alg
+func (ed *EdDSAAlg) Algorithm() Algorithm {
+	return EdDSA
 }
 
-func (ed *edDSAAlg) SignSize() int {
+func (ed *EdDSAAlg) SignSize() int {
 	return ed25519.SignatureSize
 }
 
-func (ed *edDSAAlg) Sign(payload []byte) ([]byte, error) {
+func (ed *EdDSAAlg) Sign(payload []byte) ([]byte, error) {
 	return ed25519.Sign(ed.privateKey, payload), nil
 }
 
-func (ed *edDSAAlg) VerifyToken(token *Token) error {
-	if constTimeAlgEqual(token.Header().Algorithm, ed.alg) {
-		return ed.Verify(token.Payload(), token.Signature())
+func (ed *EdDSAAlg) Verify(token *Token) error {
+	if !constTimeAlgEqual(token.Header().Algorithm, EdDSA) {
+		return ErrAlgorithmMismatch
 	}
-	return ErrAlgorithmMismatch
+	return ed.verify(token.PayloadPart(), token.Signature())
 }
 
-func (ed *edDSAAlg) Verify(payload, signature []byte) error {
+func (ed *EdDSAAlg) verify(payload, signature []byte) error {
 	if !ed25519.Verify(ed.publicKey, payload, signature) {
 		return ErrInvalidSignature
 	}

@@ -1,81 +1,51 @@
 package jwt
 
 import (
-	"crypto/rand"
 	"crypto/rsa"
 	"errors"
-	"sync"
 	"testing"
 )
 
-var (
-	rsaPublicKey256, rsaPublicKey384, rsaPublicKey512, rsaPublicKey512Other     *rsa.PublicKey
-	rsaPrivateKey256, rsaPrivateKey384, rsaPrivateKey512, rsaPrivateKey512Other *rsa.PrivateKey
-
-	rsaPublicKey256Another, rsaPublicKey384Another, rsaPublicKey512Another    *rsa.PublicKey
-	rsaPrivateKey256Another, rsaPrivateKey384Another, rsaPrivateKey512Another *rsa.PrivateKey
-)
-
-var initRSKeysOnce sync.Once
-
-func initRSKeys() {
-	initRSKeysOnce.Do(func() {
-		f := func(bits int) (*rsa.PrivateKey, *rsa.PublicKey) {
-			privKey, err := rsa.GenerateKey(rand.Reader, bits)
-			if err != nil {
-				panic(err)
-			}
-			return privKey, &privKey.PublicKey
-		}
-
-		rsaPrivateKey256, rsaPublicKey256 = f(256 * 8)
-		rsaPrivateKey384, rsaPublicKey384 = f(384 * 8)
-		rsaPrivateKey512, rsaPublicKey512 = f(512 * 8)
-		rsaPrivateKey512Other, rsaPublicKey512Other = f(256 * 8) // 256 just for the example
-
-		rsaPrivateKey256Another, rsaPublicKey256Another = f(256 * 8)
-		rsaPrivateKey384Another, rsaPublicKey384Another = f(384 * 8)
-		rsaPrivateKey512Another, rsaPublicKey512Another = f(512 * 8)
-	})
-}
-
 func TestRS(t *testing.T) {
-	initRSKeys()
-
-	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, isCorrectSign bool) {
+	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, wantErr error) {
 		t.Helper()
 
-		const payload = `simple-string-payload`
-
-		sign := rsSign(t, alg, privateKey, payload)
-
-		err := rsVerify(t, alg, publicKey, payload, sign)
-		if err != nil && isCorrectSign {
-			t.Error(err)
+		signer, errSigner := NewSignerRS(alg, privateKey)
+		if errSigner != nil {
+			t.Fatalf("NewSignerRS %v", errSigner)
 		}
-		if err == nil && !isCorrectSign {
-			t.Error("must be not nil")
+		verifier, errVerifier := NewVerifierRS(alg, publicKey)
+		if errVerifier != nil {
+			t.Fatalf("NewVerifierRS %v", errVerifier)
+		}
+
+		token, err := NewBuilder(signer).Build(simplePayload)
+		if err != nil {
+			t.Fatalf("Build %v", errVerifier)
+		}
+
+		errVerify := verifier.Verify(token)
+		if !errors.Is(errVerify, wantErr) {
+			t.Errorf("want %v, got %v", wantErr, errVerify)
 		}
 	}
 
-	f(RS256, rsaPrivateKey256, rsaPublicKey256, true)
-	f(RS384, rsaPrivateKey384, rsaPublicKey384, true)
-	f(RS512, rsaPrivateKey512, rsaPublicKey512, true)
-	f(RS512, rsaPrivateKey512Other, rsaPublicKey512Other, true)
+	f(RS256, rsaPrivateKey256, rsaPublicKey256, nil)
+	f(RS384, rsaPrivateKey384, rsaPublicKey384, nil)
+	f(RS512, rsaPrivateKey512, rsaPublicKey512, nil)
+	f(RS512, rsaPrivateKey512Other, rsaPublicKey512Other, nil)
 
-	f(RS256, rsaPrivateKey256, rsaPublicKey256Another, false)
-	f(RS384, rsaPrivateKey384, rsaPublicKey384Another, false)
-	f(RS512, rsaPrivateKey512, rsaPublicKey512Another, false)
+	f(RS256, rsaPrivateKey256, rsaPublicKey256Another, ErrInvalidSignature)
+	f(RS384, rsaPrivateKey384, rsaPublicKey384Another, ErrInvalidSignature)
+	f(RS512, rsaPrivateKey512, rsaPublicKey512Another, ErrInvalidSignature)
 
-	f(RS256, rsaPrivateKey256Another, rsaPublicKey256, false)
-	f(RS384, rsaPrivateKey384Another, rsaPublicKey384, false)
-	f(RS512, rsaPrivateKey512Another, rsaPublicKey512, false)
-	f(RS512, rsaPrivateKey512Other, rsaPublicKey512, false)
+	f(RS256, rsaPrivateKey256Another, rsaPublicKey256, ErrInvalidSignature)
+	f(RS384, rsaPrivateKey384Another, rsaPublicKey384, ErrInvalidSignature)
+	f(RS512, rsaPrivateKey512Another, rsaPublicKey512, ErrInvalidSignature)
+	f(RS512, rsaPrivateKey512Other, rsaPublicKey512, ErrInvalidSignature)
 }
 
 func TestRS_BadKeys(t *testing.T) {
-	initRSKeys()
-
 	f := func(err, wantErr error) {
 		t.Helper()
 
@@ -93,30 +63,280 @@ func TestRS_BadKeys(t *testing.T) {
 	f(getVerifierError(NewVerifierRS(RS384, nil)), ErrNilKey)
 	f(getVerifierError(NewVerifierRS(RS512, nil)), ErrNilKey)
 	f(getVerifierError(NewVerifierRS("boo", rsaPublicKey384)), ErrUnsupportedAlg)
-
 }
 
-func rsSign(t *testing.T, alg Algorithm, privateKey *rsa.PrivateKey, payload string) []byte {
-	t.Helper()
+var (
+	rsaPrivateKey256      = mustParseRSAKey(testKeyRSA1024)
+	rsaPrivateKey384      = mustParseRSAKey(testKeyRSA2048)
+	rsaPrivateKey512      = mustParseRSAKey(testKeyRSA4096)
+	rsaPrivateKey512Other = mustParseRSAKey(testKeyRSA4096Other)
 
-	signer, errSigner := NewSignerRS(alg, privateKey)
-	if errSigner != nil {
-		t.Fatalf("NewSignerRS %v", errSigner)
-	}
+	rsaPublicKey256      = &rsaPrivateKey256.PublicKey
+	rsaPublicKey384      = &rsaPrivateKey384.PublicKey
+	rsaPublicKey512      = &rsaPrivateKey512.PublicKey
+	rsaPublicKey512Other = &rsaPrivateKey512Other.PublicKey
 
-	sign, errSign := signer.Sign([]byte(payload))
-	if errSign != nil {
-		t.Fatalf("SignRS %v", errSign)
-	}
-	return sign
-}
+	rsaPrivateKey256Another = mustParseRSAKey(testKeyRSA1024Another)
+	rsaPrivateKey384Another = mustParseRSAKey(testKeyRSA2048Another)
+	rsaPrivateKey512Another = mustParseRSAKey(testKeyRSA4096Another)
 
-func rsVerify(t *testing.T, alg Algorithm, publicKey *rsa.PublicKey, payload string, sign []byte) error {
-	t.Helper()
+	rsaPublicKey256Another = &rsaPrivateKey256Another.PublicKey
+	rsaPublicKey384Another = &rsaPrivateKey384Another.PublicKey
+	rsaPublicKey512Another = &rsaPrivateKey512Another.PublicKey
+)
 
-	verifier, errVerifier := NewVerifierRS(alg, publicKey)
-	if errVerifier != nil {
-		t.Fatalf("NewVerifierRS %v", errVerifier)
-	}
-	return verifier.Verify([]byte(payload), sign)
-}
+// To generate keys:
+// RS256
+// openssl genrsa -out rs256-1024-private.rsa 1024
+// RS384
+// openssl genrsa -out rs384-2048-private.rsa 2048
+// RS512
+// openssl genrsa -out rs512-4096-private.rsa 4096
+//
+const (
+	testKeyRSA1024 = `-----BEGIN RSA PRIVATE KEY-----
+MIICXQIBAAKBgQDZY2zMlYH8Onz1eAxYc6IdyPT5AmVsae/Q2+wuhFcf6DrGRrBj
+cHDFBuVYm7zwlCdqjfGIxN4iYLG+TCRHhwY2dGCtDysgsQE4QiLZom5xRLW1CSJV
+Z0rmL3/wmWdrCJQd7FMreaqwZyHMOAt/jHEZGMz09LpVL/OtOHxvwhmY8wIDAQAB
+AoGAOm0cesfcDbxyhU7kkolRkwvFu39HXyIB0HKrQb1T5UF3On8ZPUClLm8yCOSi
+nU5UYbEQr5+pzDeMzgaM4aSKqG0z13BTHwDF5nNXz7gPj8VOEfzKP3tdCh9vqlNQ
+VbYc4/JSXBI+JbreUB3NaqFh4nCFy5vhYcs+64gAYdr3ioECQQDzfNLUgqhgcOlO
+1Q4+xUimuVp7VAPrkVCQkdff57QMv6mBrBvoRrciFx50l1pkYeEZyBMct1Fokns9
+JyPrafrTAkEA5I9BgSscQjDrUSjzPjtfQIGNd9s4brlcAGW+OOwm2+8NCLCPbam8
+nplUQxjdsj1/SyTpudMz9s7T4D5G0cDVYQJBANZO0HZRRggUeZV0OySOmkJ8tCIG
+saieb02/wEUH+FacP4KtzKZlz3yG4rx2Fw5xhCIgEopc459qBmSt1ZS35BcCQEqu
+XHL+SR9/qIQ+YyyEbd0/95+gK9JSErO2iu9Cinf2pkWem17zxUP1SckayOXCnmNJ
+Tm1/i00ry6NL9gv3fEECQQCOsRAgxrlBxAmSqxdS9o2CF1gh5ngb/c7GcRrsPXTZ
+lCqhuIGtMXpXUngLV2suQHVBIg2yuKBuVWRKFgVgOLZj
+-----END RSA PRIVATE KEY-----`
+
+	testKeyRSA2048 = `-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEAtuc37fBR8CjO6jSeV7eYW5yEwQ3ltzYQHjS5SQlR/MkhFrzX
+Y36bB3eSrkv+cIz0PmreFvIDBR1qpJgnEcVyM1DY1imzB48m6TGmz12A5jQEo1T3
+KRLtjX6pmbEk/ZPVg8C8Rk+n+L0//w2Cz3ZrttdPoMcv0jZPqf2JM57yuTHm7vVC
+6gA22iQbg8kD7zhP6iQqs4+AyfFY1mwxhX/GgOrXYRksfNSt+GvOLkzmyZ68LLMy
+gBKysIU4FJzm4L9OacPSkeJ3jvQmlsFfPpKvoXohxh1n/NS+ylyPtf/GPQ5AQMgg
+Anu8QibDhZd7TMrtHjz3zhT8ed0ikV5LW06f4QIDAQABAoIBAQCEn5o1hRnU+7I1
+rxvV3QG0BAVa+xnDxIbhcDeeFw0FME427416zpXZT0Hj8qS3te1wyQrrNmcsMU1f
+thg2UaZiQVBJ0ojHhWygkOk02ccapUNrr7NcbCYmgF64W/PHj4e19m5OyXmx6oBa
+D9D3YBXwyaUqnuQ1GD6hs37mGG5GDAhRa7PONCNmNbIVP91Ria1t9locZ3tW2Cv2
+8OQuFh4xM/pYCeTcFgAjD8So9i+394DvG+rlW3bE1cXirr01B4oiD6Uxj/4ITQWN
+JK69E7mewbLdhDfxl88rK+Trt9n5nxCC5FCQFUvV5H2bakXw18drY1+S83RLylu8
+QzblDZTBAoGBAN3Dhn8y/770C6DcUUxq08aBQGbPA23X5RyXyHCIRTSFXIAoHiDG
+3v1Br5V1UqzNHJ1Yr1Oc3eSgX2cnE+UEk9WQqATgOchZjq9fwEqj7SRcwFi1/w2m
+azKU+p3VoxBDGAwLjR2EjQVxTNBzAqKN6Y4Obe0N1kfDirpImun5uZlJAoGBANMj
+27peZo+vs57SynnHZxyplaACulQ2uD2mbZuIaHjfJiKfeAK7CP20ruq9kAx0Lmv1
+D3KOmDvbFPpCtQaaF9XSFyXN2/5F+j9HoKWT0Zcr3NHXv2Gglqe0UBuQVo946epO
+25t2LmPWYdSwnMepm7Wdga2cnVQvWaUQPfqe9ynZAoGAf1JyFve14/GD96BmwOQY
+oMC2tBAo3Nj2fvsaJpnmeegTmrTtz02+21LqN3o7tGCzDBfN2ciXkVsOS1AhWPzO
+z/AUt2/xXPkmNcRYx8HkNltWR9h+Dl088LaeSR5OV9jdppS/OXJP8Q8C1i8iFSg7
+LsdUD6VBIMTBEoD7CFjLWZkCgYAz4QCxZ1aeAZcJ9FNJ3uQIF+cq3OC5poRYqZcO
++1JoOLRfF33edeR8qjO8e/10AewSHLHB/SWMt4UNBO0EBULMCAYmBNIERV96wvfH
+F24NTfrBGNjufQ3ngReZ3jpWoGghaWTuavh1EY0SPJ8ZNCSNWHkvlmbV85h8RWRl
+O0AR6QKBgAebaRIrmV8mEEk5Ku7al/y/Wx0V0QGNwlSnXmHKlR3fQP7BhGnr0ozZ
+JS/w9ZdEsPa+4h7Lfum3vNYA7COzEzwIoYJBJG1r8H2h6PCdhXc2448XXobWozay
+5dk2svfo9r7fY6We5cfDYHbOfnaQ+/FDvhkHdobzEYMtt/KPe9tk
+-----END RSA PRIVATE KEY-----`
+
+	testKeyRSA4096 = `-----BEGIN RSA PRIVATE KEY-----
+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
+-----END RSA PRIVATE KEY-----
+`
+
+	testKeyRSA4096Other = `-----BEGIN RSA PRIVATE KEY-----
+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
+-----END RSA PRIVATE KEY-----
+`
+
+	testKeyRSA1024Another = `-----BEGIN RSA PRIVATE KEY-----
+MIICXAIBAAKBgQDCzQ4MMppUkCXTi/BjPWO2gLnaVmPhyMdo7rnccfoBnH5lCTdY
+x2aK2vNkVVLi4w8zITBXAXwKB7O5iQaaXImnUD2KPReRKbyGbvkGwQGpU1UsZjzZ
+uPFfbDtdWr+d2CxQUdPjKu886Lad4BsJFWSJYt06K1byYCGAYyN5hosmOQIDAQAB
+AoGAO5EIYqJ2nrUVXALGlxIGk5/5NNKF6FzE3UlifA4+LI/19l9DFVqj+IHLOzr8
+BXT5COF1LqW9kDOauXk1E66ISJ/vAFYvS+hIugKDqUhpBTpgPa2nyJGOjUHScvIP
+sVdo1unpYU40bvhhy7HD4kwQvohYq9w5KW732jpqPJK5TKECQQD3XpZGlXAJ+O/5
+p97Xwt6Rz7peG1Aqx3TlzVUvOPCXT8rnycEub0j52sYZUwg3dtf763R385pJmBJs
+TJc2oN9PAkEAyZjyDqGUM6IJy7O55Ylsy3dxply7NIym+BM4p8MiEwzHZb5dXgX3
+pxuPlLX3DojlGWNcLB5+gw1ZSq9Y5dz/9wJBAOQoQtUBemBIUhbj5d795sl4Xn30
+FUIPy9s1Qy+WBhqZxx148gxBKn8BcRvkgLyfieDasAb/Ebx1XfCzx/jj8nMCQBNr
+WT3RkL4ciMcHjAuxXjqHSfpVim74cYkKCPYYFOsy2u5RFRtehcmiHQWdNaw/wZnd
+eV6CnXswSP6pv219CWcCQBv3wKhme0RkuPuyG4MUFFeHxOcilasHx/nWiz8U90Tm
+hP30X1iUlekEFj/2oneT6qWqtH4nVX18/WehPQoDoLg=
+-----END RSA PRIVATE KEY-----`
+
+	testKeyRSA2048Another = `-----BEGIN RSA PRIVATE KEY-----
+MIIEowIBAAKCAQEA8NBRypbuyT1o2p7Ze94kmZTrwu2TsqZ1u7BOcY97xn6cc7/e
+c9aZI+S4Ure57XNvKQAZlULWjWhEfY8vhP1m2hDzVCV0DnNRCPmMJxx212b2iTmA
+1IsMmRYFHOYgVVUdx5QzS1xIQMZgyLP++CBkYJXZZCC1MBqyW93BkBcNzt0+70ZT
+mMpXOYKoq/pFcxVMllKY41JCcDqpKcJnSmWyS+DQX5X4CcNecXxCMoL7WGeMVrng
+7NTFJmv4Iyh19/WRERqQUqlPPQoWd0Wrw/Ih+p38PlxvdxxcGIgG8gZC1eZ441MR
+4KeHEnx7nQ08TtzdsTULYlx3kM173h1yI+HuBwIDAQABAoIBAQCyX5w2E9aL+ZDR
+Xxh5R/KUUFrR6Giey+4pOE7ijwV/4gjBND3yT+LfU2u02aI+4GJWXFyW0wtZcwJI
+fucT+x9UJ3oVuihdC83ad/34en0M0JeMzas/xD9wpX7kCRGqI4ILcxsLly9ty4Ol
+Jq6V3Gh9ooGESTXsi9nRclEOCgWQU6F8BeDGbI19aqkFi67wZqvOYrlUXfznRwQQ
+iaffaeh+wH5qp79dd+MoSPJLmhuhNH6Q/T70tVqTvlslufcro1/7YYuq9X2/IO+u
+O1Nd1/nyT46xYQ16HqLdH2KPN2jsmbWFCMM4leTbyk18ldDnU3LG7BMwwoW7vemE
+gU8KuX4BAoGBAP4zMVT+M1421fXUTyxK1ViQprdqT5zksFwK0cMdy1upE0EFqUrr
+TtN5mao+7rGFp7R/0xuVSwYs+LX7jsrRPXn5JgB2JdPg9UakdKkULAfGVCLJouXm
+/32C9YlFuqPjJWxr5Ndb1aqvPNfIvsfmys1O+GJ39x9R+iFezvuKN2BvAoGBAPKE
+3E9fSWjXg9N+y2QazeU6wJjJYhIGtceuTwPPW1n3IfOzgB1QHXZhH7YM07OoI2jF
+NFBM99ygjdfRbKCosEQoUQCF78avHYJJDhdPhjAWiaIZg7X4gfgWqEMJ0SWXyCAM
+cxQ0XEC0AHocWNipWv8zVFEC62K3omMXS/9leefpAoGAB/eGxkkpRvyk/A1pZdP6
+l8oAz6LPV/V66YeVR245n2fPKKyKv8RcNhiLjmBmjr3HocqXzTeCoHDsYpe9w/GG
+4bnDTSRmzxsv1MT2uw3cy2mV3XlAV8BDpaVjGKhMzzIhTCKdi3pfWfggCgtKn21G
+UeT1t/BWmG6zTjRwfEW6spUCgYAUsXF69E53O6xr523DZOYcoR696rELiLcKCr2D
+PbY1vviOqspLtgJNj4v9JKsLsVUUI3+LOoYLtUdlGuGB8+LWbfo7aTJEabzC2Sjy
+pD526/Vid3rdlA7C9Gv3DGdkJcdVtLo9Bxq4CqPfx3ttQUYacG7JWs5q5fBdNCev
+6yCzwQKBgHZRiC82Bzd10OgIL4WadlNphmMnGgROgNhwBu2bd5loPc+26omBAVtC
+mQ9Ug7u6QOshlvxmqrgRFlWkLAwozqvS6RC4yru8FRqYnmtW7QgxO1pOj9VEzHSw
+iugbqlkWvaTnn5JZoHZ+60PZc8Z4UJvzi0/h9ksnWhp5l6u1KBmc
+-----END RSA PRIVATE KEY-----`
+
+	testKeyRSA4096Another = `-----BEGIN RSA PRIVATE KEY-----
+MIIJKAIBAAKCAgEAkoI1+IvFs5gf3077fcPAKZZPBuWf4ylzYyPcZTXEHyn/uzN9
+K3wp4/7rjhVKEowG1z5stb1SACXKtbCFM8a11w9mFDu9Nu6pfFpl+skD4p4ISUk6
+etXj9bzrco3URihTCIWQoab0HxnS1UFKcbgd6jQ5pQqbAWnaUwgNQjIJWdMmz3na
+yg6LTjwGLzFGNJKLCUcaQcDQo3uRjN5EgS5mRiUPQm5ql5UNMqCNPMmLChmtH9QG
+stklLoHzaBUbGFLBa+jTSu6ObXvZjZ3vM9UzoOjpZPyxY9OZ9pDYKCABKBWmuZAU
+/lXvDxHOqmmzuOMfNxSFTC1CJNj1tW/z1SMU4gwzgRJK0vU1V14+FW0OSTdsMO8k
+cPUsoITef1gugesGwHqf8+tXlryLNa2fa7RbpIajGj/8/SeZ99T60DJf1P2HLEiH
+shyCeh6L1Uilk6Vsq30n4LMHoH7ctAsPcLpwDXQj4ueUDSc8kplpolV7Zte/R9Eg
+GBfYFZZZABkS6KHvdd/ZXE1ygsm5AZ0Krd9VBLnxp20YYhE43GJH2Zh8A2/DwTc9
+/R2sBuY4ANYWcjea0JCVub2J+CuPSh6IDQnZtwAfxsHAXs6c72dO486rI4w4WKfk
+9mDxXJfmGa+Sg+eLbnUytoDFkmULYAO/MSNVwoeZj5zhcktYjK5NW5O4ye0CAwEA
+AQKCAgAsumQPxVxOQBs66boN4z0/dQwbZu8xQu5fTgtzOr7tZL0WQdns9LM1UBZK
+AmXi060i+YPm2C24rdD9Ny7zZ68MQT9A3hweMS69MDwCHGx7OxP8i8a2yaYW195p
+0rMD2DvBVkWZlIbjF9cuFAjOPw+i+N7AbER2YgKtZr/lfbEtIzGuFd2d4mLVN64L
+qldspXCdHH//owYPYyJEh3cSmT/QGnBWL6+LJ44n7qwv6rfwFXatSOXipDidwj61
+f/wNqPY0I5ieP8Zr1mvMuHLWuDhS38ihdCQT/f37MK1NUrgHrNSBwmMmYsXhK+aU
+UED2KSDWiAVKBGc1KKebBNrELzmocUP+jc5Q27vzyoTNBd0muxgrxt4POqXEB6gm
+K2lvOw6+HMjm5ooNyoGsnxrfw1QzVa4OAvwWpujdOAjfy6fmks0J4lCsXWmU+3Ca
+7xtayCmQLUSSZxLYdEfJlSQxNcmlcszjMmv+57zo9f7fl4ZXYPZhiAD+vLlDWUaO
+JdEbuZoWcRBDLGSSUM4jMCAZgSgkneXhdY5u8JG06rTL7HHc8A7oY+fGfgn47XxA
+3antYCgVHvxkR/usCGRShNdRYFeCDXO4HjIhCUzOSpRCw1hs/sHR8h1sYNYHDdPs
+KzL/T0Uu6420TBWtdX4/b/I9d3XLKKuZXZ1ibTIoKMYqWRcrYQKCAQEA5znmTJiE
+xW4Z7gomkvkkYCJZbeR7qi6Zdl8VJ/6cKCgoredC5blCOigZjXvVWYI1rPXQ6I5R
+PfWMMFi6xqz+pQ3YERQrCLmxbkWFESLkEdn+DtpBVR1JOlX6UFBTPdWA84vlJuDA
+S5atz6olgHKatO64uVhhtgPrPCBDI+tdAPRlSan7Wvs9ptv/CyKbKakxFg4BSQYt
+Adsak+sE2C0d7lLU1Bwoy3CBGGmsRxUXsS0yhASM9F0eZtEuaSW/tf+qvOA1ne+b
+c1XijFJh2t0NSfh0mTD6rW5qyG4UlCcoK3d2CmxoY8nagMM7AfK7v5emZcmWUY8D
+JMZ6/7RSx4NV6wKCAQEAojSrBjkG6yLbgA+Z9k5NyA0OExaG8No4BGm+E7yBShyb
+irZkdurxD3HcWIuZPnH3EO7Z9ioR7SDwSfeoc+QlVQzEt6ypL/WWKUs/VM6csog7
+hSu+8vxCf/5pHB5Uh9OfsF2R4AhX96VFRoabWwx/EYtvR6bfDEGwTtXd3H7WhV8r
+4E9CsQ/NNHaZkmBS+Z3U/vT0tWwfk8+CmBckXuQEFh6e98FgYFokKQtBSmOUVNEK
++JZ0sDM/diBV75pQtbIY5EmhFVqmjL6cXuT/wbXtBL83bgHl0ZMEL4u/7HJ9yo41
+0rZWynTkRmWPlf4899CAQkavK7WEaIiVYXDEbm2xhwKCAQAxOLsUrRb+bCyq5pBF
+kzGyIT3GTfAhTyAt+ZmoVOPrDHl0Y5lzC5fUh3rBCo5lKnnAoudgygLzXJUGKa1A
+48ylWCgZoqBykAz8O2JTPoksX6pcgQuNUdmnyGursx21OQDlV29lckydCqtfXIn1
+KPBT+clq8yyBsZ3ew8NnHxBCRsRVBRFT0c3S+lv1g91h5flkB4EwiVcFYR3sRQhX
++Gq5s/pIWOI6RG3Gw5//1bagac2qGsnirvvsyTTG/1krJgyzfksLntkJmUvLsTHR
+hGLyzygLAEksqCelGQHac+dyMVD4cRFbxLl11Zl3FbPv2hl664nLPNVfe7ztN/az
+L/sXAoIBAHrYbJY/5k96jMbGChKSZzIVQQ2PyA7tFfOxqfUElN5uIBbD3/54HK1X
+zEt7Hko+waEfZA+c+QqgIZvDZt6ucN+i1fFNYK0jz9/iT0qJV/+WUY2f/fPEvRB2
+u2BCUD62NYC6vNnxN74kevzYwRwJsMq20UZwyQhdT4vFSUvO++TymSY+oQG8N+t9
+zv0e2niV4lRdbF9iTeACDqPlEvSSt82Qz1BQMg+G9U/oaEBQfmxmDWsLd8Bib7Ok
+9bCLLIkPIu7yHH8xsmVxjrgHsvMgNyubLf2wjj9UmpzvuCD47O/VGEpHMiAOuzvd
+ewtcCwyb6idHpS7zQB5zIr8zSnFfvk0CggEBAKXrLOgZprxYsPxb3DHOyQmtp8IK
+nq8uYeKELpsExsXh00w68kWqcpQTYwm6faebdXKQmw4lJPm/jwrWMqGHFZvddRfE
+kgcJeFztWI6QDp8pbh0W+W9LBBNvO26GIK9gXb7g7tvR40RCJZSpp/2VKKUYw/JC
+0CEhQuoZmJ8fD3jZPVsKptRqC914y1ZV/sjO7mvhO8uktdJBhUBy7vILdjDuxW4e
+zy+yxL9GXRV+vvJLdKOJfTWihiG8i2qiIMmX0XSV8qUuvNCfruCfr4vGtWDRuFs/
+EeRpjDtIq46JS/EMcvoetl0Ch8l2tGLC1fpOD4kQsd9TSaTMO3MSy/5WIGg=
+-----END RSA PRIVATE KEY-----`
+)

@@ -4,15 +4,9 @@ import (
 	"testing"
 )
 
-func initKeys() {
-	initRSKeys()
-	initPSKeys()
-	initESKeys()
-}
+const simplePayload = `simple-string-payload`
 
 func TestSignerAlg(t *testing.T) {
-	initKeys()
-
 	f := func(s Signer, want Algorithm) {
 		t.Helper()
 		if alg := s.Algorithm(); alg != want {
@@ -38,8 +32,6 @@ func TestSignerAlg(t *testing.T) {
 }
 
 func TestVerifierAlg(t *testing.T) {
-	initKeys()
-
 	f := func(v Verifier, want Algorithm) {
 		t.Helper()
 		if alg := v.Algorithm(); alg != want {
@@ -65,8 +57,6 @@ func TestVerifierAlg(t *testing.T) {
 }
 
 func TestSignerBadParams(t *testing.T) {
-	initKeys()
-
 	f := func(_ Signer, err error) {
 		t.Helper()
 		if err == nil {
@@ -91,8 +81,6 @@ func TestSignerBadParams(t *testing.T) {
 }
 
 func TestVerifierBadParams(t *testing.T) {
-	initKeys()
-
 	f := func(_ Verifier, err error) {
 		t.Helper()
 		if err == nil {
