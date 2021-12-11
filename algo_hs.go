@@ -70,10 +70,14 @@ func (hs *HSAlg) Sign(payload []byte) ([]byte, error) {
 }
 
 func (hs *HSAlg) Verify(token *Token) error {
-	if !constTimeAlgEqual(token.Header().Algorithm, hs.alg) {
+	switch {
+	case !token.isValid():
+		return ErrUninitializedToken
+	case !constTimeAlgEqual(token.Header().Algorithm, hs.alg):
 		return ErrAlgorithmMismatch
+	default:
+		return hs.verify(token.PayloadPart(), token.Signature())
 	}
-	return hs.verify(token.PayloadPart(), token.Signature())
 }
 
 func (hs *HSAlg) verify(payload, signature []byte) error {
