@@ -65,6 +65,11 @@ func (t *Token) Signature() []byte {
 	return t.signature
 }
 
+// unexported method to check that token was created via Parse func.
+func (t *Token) isValid() bool {
+	return t != nil && len(t.raw) > 0
+}
+
 // Header representa JWT header data.
 // See: https://tools.ietf.org/html/rfc7519#section-5, https://tools.ietf.org/html/rfc7517
 //

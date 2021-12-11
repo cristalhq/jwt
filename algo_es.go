@@ -101,10 +101,14 @@ func (es *ESAlg) Sign(payload []byte) ([]byte, error) {
 }
 
 func (es *ESAlg) Verify(token *Token) error {
-	if !constTimeAlgEqual(token.Header().Algorithm, es.alg) {
+	switch {
+	case !token.isValid():
+		return ErrUninitializedToken
+	case !constTimeAlgEqual(token.Header().Algorithm, es.alg):
 		return ErrAlgorithmMismatch
+	default:
+		return es.verify(token.PayloadPart(), token.Signature())
 	}
-	return es.verify(token.PayloadPart(), token.Signature())
 }
 
 func (es *ESAlg) verify(payload, signature []byte) error {

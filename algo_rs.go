@@ -84,10 +84,14 @@ func (rs *RSAlg) Sign(payload []byte) ([]byte, error) {
 }
 
 func (rs *RSAlg) Verify(token *Token) error {
-	if !constTimeAlgEqual(token.Header().Algorithm, rs.alg) {
+	switch {
+	case !token.isValid():
+		return ErrUninitializedToken
+	case !constTimeAlgEqual(token.Header().Algorithm, rs.alg):
 		return ErrAlgorithmMismatch
+	default:
+		return rs.verify(token.PayloadPart(), token.Signature())
 	}
-	return rs.verify(token.PayloadPart(), token.Signature())
 }
 
 func (rs *RSAlg) verify(payload, signature []byte) error {

@@ -100,10 +100,14 @@ func (ps *PSAlg) Sign(payload []byte) ([]byte, error) {
 }
 
 func (ps *PSAlg) Verify(token *Token) error {
-	if !constTimeAlgEqual(token.Header().Algorithm, ps.alg) {
+	switch {
+	case !token.isValid():
+		return ErrUninitializedToken
+	case !constTimeAlgEqual(token.Header().Algorithm, ps.alg):
 		return ErrAlgorithmMismatch
+	default:
+		return ps.verify(token.PayloadPart(), token.Signature())
 	}
-	return ps.verify(token.PayloadPart(), token.Signature())
 }
 
 func (ps *PSAlg) verify(payload, signature []byte) error {

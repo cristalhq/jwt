@@ -50,10 +50,14 @@ func (ed *EdDSAAlg) Sign(payload []byte) ([]byte, error) {
 }
 
 func (ed *EdDSAAlg) Verify(token *Token) error {
-	if !constTimeAlgEqual(token.Header().Algorithm, EdDSA) {
+	switch {
+	case !token.isValid():
+		return ErrUninitializedToken
+	case !constTimeAlgEqual(token.Header().Algorithm, EdDSA):
 		return ErrAlgorithmMismatch
+	default:
+		return ed.verify(token.PayloadPart(), token.Signature())
 	}
-	return ed.verify(token.PayloadPart(), token.Signature())
 }
 
 func (ed *EdDSAAlg) verify(payload, signature []byte) error {
