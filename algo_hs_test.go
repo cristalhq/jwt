@@ -43,13 +43,13 @@ func TestHS(t *testing.T) {
 func TestNewKey(t *testing.T) {
 	key, err := GenerateRandom512Bit()
 	if err != nil {
-		t.Fatalf(" %e", err)
+		t.Fatalf("Error returned directly from GenerateRandom512Bit: %e", err)
 	}
 
 	// 8 bits to 1 byte
 	const byteCount = int(512.0 / 8)
 	if l := len(key); l != byteCount {
-		t.Fatalf("Elength of key is %d, want %d", l, byteCount)
+		t.Fatalf("length of key is %d, want %d", l, byteCount)
 	}
 }
 
