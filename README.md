@@ -28,6 +28,8 @@ There are many JWT libraries, but many of them are hard to use (unclear or fixed
   * EdDSA (EdDSA)
   * or your own!
 
+See [GUIDE.md](https://github.com/cristalhq/jwt/blob/main/GUIDE.md) for more details.
+
 ## Install
 
 Go version 1.17+

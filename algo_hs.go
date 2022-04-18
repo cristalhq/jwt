@@ -3,30 +3,9 @@ package jwt
 import (
 	"crypto"
 	"crypto/hmac"
-	"crypto/rand"
 	"hash"
 	"sync"
 )
-
-func generateRandomBytes(n int) ([]byte, error) {
-	b := make([]byte, n)
-	_, err := rand.Read(b)
-	if err != nil {
-		return nil, err
-	}
-	return b, nil
-}
-
-// Generates a key of random 512 bits
-func GenerateRandom512Bit() ([]byte, error) {
-	const byteSize = int(512.0 / 8)
-	key, err := generateRandomBytes(byteSize)
-	if err != nil {
-		return nil, err
-	}
-
-	return key, nil
-}
 
 // NewSignerHS returns a new HMAC-based signer.
 func NewSignerHS(alg Algorithm, key []byte) (*HSAlg, error) {

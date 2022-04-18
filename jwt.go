@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"bytes"
+	"crypto/rand"
 	"encoding/json"
 )
 
@@ -101,4 +102,13 @@ func (h Header) MarshalJSON() ([]byte, error) {
 	buf.WriteString(`"}`)
 
 	return buf.Bytes(), nil
+}
+
+// Generates a random key of the given bits length.
+func GenerateRandomBits(bits int) ([]byte, error) {
+	key := make([]byte, bits/8)
+	if _, err := rand.Read(key); err != nil {
+		return nil, err
+	}
+	return key, nil
 }
