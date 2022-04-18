@@ -72,6 +72,19 @@ func TestMarshalHeader(t *testing.T) {
 	)
 }
 
+func TestNewKey(t *testing.T) {
+	key, err := GenerateRandomBits(512)
+	if err != nil {
+		t.Fatalf("Error returned directly from GenerateRandom512Bit: %e", err)
+	}
+
+	// 8 bits to 1 byte
+	const byteCount = int(512.0 / 8)
+	if l := len(key); l != byteCount {
+		t.Fatalf("length of key is %d, want %d", l, byteCount)
+	}
+}
+
 var bytesToBase64 = base64.RawURLEncoding.EncodeToString
 
 func base64ToBytes(s string) []byte {
