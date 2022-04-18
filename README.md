@@ -4,6 +4,7 @@
 [![pkg-img]][pkg-url]
 [![reportcard-img]][reportcard-url]
 [![coverage-img]][coverage-url]
+[![version-img]][version-url]
 
 JSON Web Token for Go [RFC 7519](https://tools.ietf.org/html/rfc7519), also see [jwt.io](https://jwt.io) for more.
 
@@ -113,3 +114,5 @@ See [these docs][pkg-url].
 [reportcard-url]: https://goreportcard.com/report/cristalhq/jwt
 [coverage-img]: https://codecov.io/gh/cristalhq/jwt/branch/master/graph/badge.svg
 [coverage-url]: https://codecov.io/gh/cristalhq/jwt
+[version-img]: https://img.shields.io/github/v/release/cristalhq/jwt
+[version-url]: https://github.com/cristalhq/jwt/releases
