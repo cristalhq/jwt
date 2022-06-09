@@ -24,9 +24,6 @@ func ParseClaims(raw []byte, verifier Verifier, claims interface{}) error {
 	if err != nil {
 		return err
 	}
-	if err := verifier.Verify(token); err != nil {
-		return err
-	}
 	return token.DecodeClaims(claims)
 }
 
