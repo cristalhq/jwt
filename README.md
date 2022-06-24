@@ -96,7 +96,7 @@ var _ bool = newClaims.IsForAudience("admin")
 var _ bool = newClaims.IsValidAt(time.Now())
 ```
 
-Also see examples: [example_test.go](https://github.com/cristalhq/jwt/blob/master/example_test.go).
+Also see examples: [example_test.go](https://github.com/cristalhq/jwt/blob/main/example_test.go).
 
 ## Documentation
 
@@ -112,7 +112,7 @@ See [these docs][pkg-url].
 [pkg-url]: https://pkg.go.dev/github.com/cristalhq/jwt/v4
 [reportcard-img]: https://goreportcard.com/badge/cristalhq/jwt
 [reportcard-url]: https://goreportcard.com/report/cristalhq/jwt
-[coverage-img]: https://codecov.io/gh/cristalhq/jwt/branch/master/graph/badge.svg
+[coverage-img]: https://codecov.io/gh/cristalhq/jwt/branch/main/graph/badge.svg
 [coverage-url]: https://codecov.io/gh/cristalhq/jwt
 [version-img]: https://img.shields.io/github/v/release/cristalhq/jwt
 [version-url]: https://github.com/cristalhq/jwt/releases
