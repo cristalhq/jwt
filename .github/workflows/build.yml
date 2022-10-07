@@ -12,6 +12,8 @@ on:
         description: 'Tag to create'
         required: true
         default: 'v0.0.0'
+  schedule:
+    - cron: '0 0 * * 0'
 
 # See https://github.com/cristalhq/.github/.github/workflows
 jobs:
