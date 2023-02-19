@@ -7,7 +7,6 @@ import (
 
 // RegisteredClaims represents claims for JWT.
 // See: https://tools.ietf.org/html/rfc7519#section-4.1
-//
 type RegisteredClaims struct {
 	// ID claim provides a unique identifier for the JWT.
 	ID string `json:"jti,omitempty"`

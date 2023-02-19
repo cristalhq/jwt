@@ -104,7 +104,6 @@ var (
 // openssl ecparam -name secp384r1 -genkey -noout -out es384-private.pem
 // ES512
 // openssl ecparam -name secp521r1 -genkey -noout -out es521-private.pem
-//
 const (
 	testKeyES256 = `-----BEGIN EC PRIVATE KEY-----
 MHcCAQEEIM+a8cZ6BjdZBYy7pMIqmWsHKSmAZhZ/RTeSkmzPKohfoAoGCCqGSM49

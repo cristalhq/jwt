@@ -92,7 +92,6 @@ var (
 // openssl genrsa -out rs384-2048-private.rsa 2048
 // RS512
 // openssl genrsa -out rs512-4096-private.rsa 4096
-//
 const (
 	testKeyRSA1024 = `-----BEGIN RSA PRIVATE KEY-----
 MIICXQIBAAKBgQDZY2zMlYH8Onz1eAxYc6IdyPT5AmVsae/Q2+wuhFcf6DrGRrBj
