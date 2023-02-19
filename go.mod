@@ -1,3 +1,3 @@
-module github.com/cristalhq/jwt/v4
+module github.com/cristalhq/jwt/v5
 
 go 1.19

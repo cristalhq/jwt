@@ -8,7 +8,7 @@
 
 JSON Web Token for Go [RFC 7519](https://tools.ietf.org/html/rfc7519), also see [jwt.io](https://jwt.io) for more.
 
-The latest version is `v4`.
+The latest version is `v5`.
 
 ## Rationale
 
@@ -36,7 +36,7 @@ See [GUIDE.md](https://github.com/cristalhq/jwt/blob/main/GUIDE.md) for more det
 Go version 1.17+
 
 ```
-go get github.com/cristalhq/jwt/v4
+go get github.com/cristalhq/jwt/v5
 ```
 
 ## Example
@@ -108,8 +108,8 @@ See [these docs][pkg-url].
 
 [build-img]: https://github.com/cristalhq/jwt/workflows/build/badge.svg
 [build-url]: https://github.com/cristalhq/jwt/actions
-[pkg-img]: https://pkg.go.dev/badge/cristalhq/jwt/v4
-[pkg-url]: https://pkg.go.dev/github.com/cristalhq/jwt/v4
+[pkg-img]: https://pkg.go.dev/badge/cristalhq/jwt/v5
+[pkg-url]: https://pkg.go.dev/github.com/cristalhq/jwt/v5
 [reportcard-img]: https://goreportcard.com/badge/cristalhq/jwt
 [reportcard-url]: https://goreportcard.com/report/cristalhq/jwt
 [coverage-img]: https://codecov.io/gh/cristalhq/jwt/branch/main/graph/badge.svg

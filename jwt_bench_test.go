@@ -11,7 +11,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cristalhq/jwt/v4"
+	"github.com/cristalhq/jwt/v5"
 )
 
 func BenchmarkAlgEDSA(b *testing.B) {
