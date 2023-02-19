@@ -1,8 +1,5 @@
 name: build
 
-permissions:
-  security-events: write
-
 on:
   push:
     branches: [main]
