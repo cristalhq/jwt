@@ -8,7 +8,6 @@ import (
 
 // Token represents a JWT token.
 // See: https://tools.ietf.org/html/rfc7519
-//
 type Token struct {
 	raw       []byte
 	dot1      int
@@ -73,7 +72,6 @@ func (t *Token) isValid() bool {
 
 // Header representa JWT header data.
 // See: https://tools.ietf.org/html/rfc7519#section-5, https://tools.ietf.org/html/rfc7517
-//
 type Header struct {
 	Algorithm   Algorithm `json:"alg"`
 	Type        string    `json:"typ,omitempty"` // only "JWT" can be here
