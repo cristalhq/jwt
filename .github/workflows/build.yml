@@ -22,6 +22,9 @@ jobs:
   codeql:
     uses: cristalhq/.github/.github/workflows/codeql.yml@main
 
+  vuln:
+    uses: cristalhq/.github/.github/workflows/vuln.yml@main
+
   release:
     if: github.event_name == 'workflow_dispatch'
     uses: cristalhq/.github/.github/workflows/release.yml@main
