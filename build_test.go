@@ -2,6 +2,7 @@ package jwt
 
 import (
 	"errors"
+	"sync"
 	"testing"
 )
 
@@ -224,6 +225,42 @@ func TestBuildMalformed(t *testing.T) {
 		mustSigner(NewSignerHS(HS256, []byte("test-key"))),
 		badSigner.Algorithm,
 	)
+}
+
+func TestBuilderConcurrently(t *testing.T) {
+	signer, err := NewSignerHS(HS256, []byte("test-key"))
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	builder := NewBuilder(signer)
+
+	errCh := make(chan error, 10)
+	claims := "string-claims"
+
+	var wg sync.WaitGroup
+	wg.Add(10)
+	for i := 0; i < 10; i++ {
+		go func() {
+			defer wg.Done()
+
+			token, err := builder.Build(claims)
+			errCh <- err
+
+			if token.String() == "" {
+				panic("should not be empty")
+			}
+		}()
+	}
+
+	wg.Wait()
+	close(errCh)
+
+	for err := range errCh {
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 }
 
 type badSigner struct{}

@@ -26,6 +26,7 @@ type Builder struct {
 }
 
 // NewBuilder returns new instance of Builder.
+// Safe to use concurrently.
 func NewBuilder(signer Signer, opts ...BuilderOption) *Builder {
 	b := &Builder{
 		signer: signer,
