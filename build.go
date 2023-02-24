@@ -19,6 +19,7 @@ func WithContentType(cty string) BuilderOption {
 }
 
 // Builder is used to create a new token.
+// Safe to use concurrently.
 type Builder struct {
 	signer    Signer
 	header    Header
