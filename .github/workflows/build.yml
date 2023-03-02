@@ -17,13 +17,13 @@ on:
 # See https://github.com/cristalhq/.github/.github/workflows
 jobs:
   build:
-    uses: cristalhq/.github/.github/workflows/build.yml@3f2ea32d08cea472a5d81a15769eb911595118af # v0.2.1
+    uses: cristalhq/.github/.github/workflows/build.yml@0231b807f746a1e46fe1ef279acd444f12b137c5 # v0.2.2
 
   vuln:
-    uses: cristalhq/.github/.github/workflows/vuln.yml@3f2ea32d08cea472a5d81a15769eb911595118af # v0.2.1
+    uses: cristalhq/.github/.github/workflows/vuln.yml@0231b807f746a1e46fe1ef279acd444f12b137c5 # v0.2.2
 
   release:
     if: github.event_name == 'workflow_dispatch'
-    uses: cristalhq/.github/.github/workflows/release.yml@3f2ea32d08cea472a5d81a15769eb911595118af # v0.2.1
+    uses: cristalhq/.github/.github/workflows/release.yml@0231b807f746a1e46fe1ef279acd444f12b137c5 # v0.2.2
     with:
       tag: ${{ github.event.input.tag }}
