@@ -8,7 +8,7 @@ import (
 	"github.com/cristalhq/jwt/v5"
 )
 
-func ExampleSignAndVerify() {
+func Example_signAndVerify() {
 	// create a Signer (HMAC in this example)
 	key := []byte(`secret`)
 	signer, err := jwt.NewSignerHS(jwt.HS256, key)
@@ -63,7 +63,7 @@ func ExampleSignAndVerify() {
 	// Output:
 }
 
-func ExampleBuild() {
+func ExampleBuilder() {
 	key := []byte(`secret`)
 	signer, _ := jwt.NewSignerHS(jwt.HS256, key)
 	builder := jwt.NewBuilder(signer)
@@ -103,7 +103,7 @@ type userClaims struct {
 	Email           string `json:"email"`
 }
 
-func ExampleBuild_WithUserClaims() {
+func ExampleBuilder_withUserClaims() {
 	key := []byte(`secret`)
 	signer, _ := jwt.NewSignerHS(jwt.HS256, key)
 	builder := jwt.NewBuilder(signer)

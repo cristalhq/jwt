@@ -80,4 +80,6 @@ func parse(token []byte) (*Token, error) {
 	return tk, nil
 }
 
-var b64Decode = base64.RawURLEncoding.Decode
+func b64Decode(dst, src []byte) (n int, err error) {
+	return base64.RawURLEncoding.Decode(dst, src)
+}
