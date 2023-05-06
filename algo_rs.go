@@ -76,9 +76,9 @@ func (rs *RSAlg) Sign(payload []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	signature, errSign := rsa.SignPKCS1v15(rand.Reader, rs.privateKey, rs.hash, digest)
-	if errSign != nil {
-		return nil, errSign
+	signature, err := rsa.SignPKCS1v15(rand.Reader, rs.privateKey, rs.hash, digest)
+	if err != nil {
+		return nil, err
 	}
 	return signature, nil
 }
@@ -100,8 +100,8 @@ func (rs *RSAlg) verify(payload, signature []byte) error {
 		return err
 	}
 
-	errVerify := rsa.VerifyPKCS1v15(rs.publicKey, rs.hash, digest, signature)
-	if errVerify != nil {
+	err = rsa.VerifyPKCS1v15(rs.publicKey, rs.hash, digest, signature)
+	if err != nil {
 		return ErrInvalidSignature
 	}
 	return nil

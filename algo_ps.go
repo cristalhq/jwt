@@ -92,9 +92,9 @@ func (ps *PSAlg) Sign(payload []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	signature, errSign := rsa.SignPSS(rand.Reader, ps.privateKey, ps.hash, digest, ps.opts)
-	if errSign != nil {
-		return nil, errSign
+	signature, err := rsa.SignPSS(rand.Reader, ps.privateKey, ps.hash, digest, ps.opts)
+	if err != nil {
+		return nil, err
 	}
 	return signature, nil
 }
@@ -116,8 +116,8 @@ func (ps *PSAlg) verify(payload, signature []byte) error {
 		return err
 	}
 
-	errVerify := rsa.VerifyPSS(ps.publicKey, ps.hash, digest, signature, ps.opts)
-	if errVerify != nil {
+	err = rsa.VerifyPSS(ps.publicKey, ps.hash, digest, signature, ps.opts)
+	if err != nil {
 		return ErrInvalidSignature
 	}
 	return nil

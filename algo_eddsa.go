@@ -6,30 +6,32 @@ import (
 
 // NewSignerEdDSA returns a new ed25519-based signer.
 func NewSignerEdDSA(key ed25519.PrivateKey) (*EdDSAAlg, error) {
-	if len(key) == 0 {
+	switch {
+	case len(key) == 0:
 		return nil, ErrNilKey
-	}
-	if len(key) != ed25519.PrivateKeySize {
+	case len(key) != ed25519.PrivateKeySize:
 		return nil, ErrInvalidKey
+	default:
+		return &EdDSAAlg{
+			publicKey:  nil,
+			privateKey: key,
+		}, nil
 	}
-	return &EdDSAAlg{
-		publicKey:  nil,
-		privateKey: key,
-	}, nil
 }
 
 // NewVerifierEdDSA returns a new ed25519-based verifier.
 func NewVerifierEdDSA(key ed25519.PublicKey) (*EdDSAAlg, error) {
-	if len(key) == 0 {
+	switch {
+	case len(key) == 0:
 		return nil, ErrNilKey
-	}
-	if len(key) != ed25519.PublicKeySize {
+	case len(key) != ed25519.PublicKeySize:
 		return nil, ErrInvalidKey
+	default:
+		return &EdDSAAlg{
+			publicKey:  key,
+			privateKey: nil,
+		}, nil
 	}
-	return &EdDSAAlg{
-		publicKey:  key,
-		privateKey: nil,
-	}, nil
 }
 
 type EdDSAAlg struct {
@@ -55,14 +57,9 @@ func (ed *EdDSAAlg) Verify(token *Token) error {
 		return ErrUninitializedToken
 	case !constTimeAlgEqual(token.Header().Algorithm, EdDSA):
 		return ErrAlgorithmMismatch
-	default:
-		return ed.verify(token.PayloadPart(), token.Signature())
-	}
-}
-
-func (ed *EdDSAAlg) verify(payload, signature []byte) error {
-	if !ed25519.Verify(ed.publicKey, payload, signature) {
+	case !ed25519.Verify(ed.publicKey, token.PayloadPart(), token.Signature()):
 		return ErrInvalidSignature
+	default:
+		return nil
 	}
-	return nil
 }

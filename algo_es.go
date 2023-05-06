@@ -86,9 +86,9 @@ func (es *ESAlg) Sign(payload []byte) ([]byte, error) {
 		return nil, err
 	}
 
-	r, s, errSign := ecdsa.Sign(rand.Reader, es.privateKey, digest)
+	r, s, err := ecdsa.Sign(rand.Reader, es.privateKey, digest)
 	if err != nil {
-		return nil, errSign
+		return nil, err
 	}
 
 	pivot := es.SignSize() / 2
