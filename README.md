@@ -49,7 +49,7 @@ key := []byte(`secret`)
 signer, err := jwt.NewSignerHS(jwt.HS256, key)
 checkErr(err)
 
-// create claims (you can create your own, see: Example_BuildUserClaims)
+// create claims (you can create your own, see: ExampleBuilder_withUserClaims)
 claims := &jwt.RegisteredClaims{
     Audience: []string{"admin"},
     ID:       "random-unique-string",
