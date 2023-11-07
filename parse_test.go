@@ -67,6 +67,16 @@ func TestParseAnotherAlgorithm(t *testing.T) {
 	}
 }
 
+func TestParseWrongType(t *testing.T) {
+	tokenHS256 := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkJPTUJPTSJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`
+	verifier := mustVerifier(NewVerifierHS(HS256, []byte("key")))
+
+	_, err := Parse([]byte(tokenHS256), verifier)
+	if err == nil {
+		t.Fatal()
+	}
+}
+
 func TestParseMalformed(t *testing.T) {
 	f := func(got string) {
 		t.Helper()
@@ -81,7 +91,7 @@ func TestParseMalformed(t *testing.T) {
 	f(`eyJ.xyz`)
 	f(`eyJ!.x!yz.e30`)
 	f(`eyJ.xyz.xyz`)
-	f(`eyJhIjoxMjN9.x!yz.e30`) // `e30` is JSON `{}` in base64
+	f(`eyJhIjoxMjN9.x!yz.e30`) // `e30` is JSON `{}` in base64.
 	f(`eyJhIjoxMjN9.e30.x!yz`)
 }
 

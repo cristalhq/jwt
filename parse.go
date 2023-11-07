@@ -77,6 +77,9 @@ func parse(token []byte) (*Token, error) {
 		header:    header,
 		claims:    claims,
 	}
+	if !constTimeEqual(tk.header.Type, "JWT") {
+		return nil, ErrNotJWTType
+	}
 	return tk, nil
 }
 
