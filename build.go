@@ -47,7 +47,7 @@ func NewBuilder(signer Signer, opts ...BuilderOption) *Builder {
 // Build used to create and encode JWT with a provided claims.
 // If claims param is of type []byte or string then it's treated as a marshaled JSON.
 // In other words you can pass already marshaled claims.
-func (b *Builder) Build(claims interface{}) (*Token, error) {
+func (b *Builder) Build(claims any) (*Token, error) {
 	rawClaims, err := encodeClaims(claims)
 	if err != nil {
 		return nil, err
@@ -89,7 +89,7 @@ func (b *Builder) Build(claims interface{}) (*Token, error) {
 	return t, nil
 }
 
-func encodeClaims(claims interface{}) ([]byte, error) {
+func encodeClaims(claims any) ([]byte, error) {
 	switch claims := claims.(type) {
 	case []byte:
 		return claims, nil

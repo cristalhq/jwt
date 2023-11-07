@@ -56,7 +56,7 @@ func (t *Token) Claims() json.RawMessage {
 }
 
 // DecodeClaims into a given parameter.
-func (t *Token) DecodeClaims(dst interface{}) error {
+func (t *Token) DecodeClaims(dst any) error {
 	return json.Unmarshal(t.claims, dst)
 }
 
