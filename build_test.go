@@ -7,7 +7,7 @@ import (
 )
 
 func TestBuild(t *testing.T) {
-	f := func(signer Signer, verifier Verifier, claims interface{}) {
+	f := func(signer Signer, verifier Verifier, claims any) {
 		t.Helper()
 
 		token, err := NewBuilder(signer).Build(claims)
@@ -163,7 +163,7 @@ func TestBuildClaims(t *testing.T) {
 	s := mustSigner(NewSignerHS(HS256, key))
 	v := mustVerifier(NewVerifierHS(HS256, key))
 
-	f := func(claims interface{}, want string) {
+	f := func(claims any, want string) {
 		token, err := NewBuilder(s).Build(claims)
 		if err != nil {
 			t.Fatal(err)
@@ -208,7 +208,7 @@ func TestBuildClaims(t *testing.T) {
 }
 
 func TestBuildMalformed(t *testing.T) {
-	f := func(signer Signer, claims interface{}) {
+	f := func(signer Signer, claims any) {
 		t.Helper()
 
 		_, err := NewBuilder(signer).Build(claims)

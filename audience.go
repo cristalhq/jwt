@@ -20,7 +20,7 @@ func (a Audience) MarshalJSON() ([]byte, error) {
 
 // UnmarshalJSON implements json.Unmarshaler interface.
 func (a *Audience) UnmarshalJSON(b []byte) error {
-	var v interface{}
+	var v any
 	if err := json.Unmarshal(b, &v); err != nil {
 		return ErrAudienceInvalidFormat
 	}
@@ -29,7 +29,7 @@ func (a *Audience) UnmarshalJSON(b []byte) error {
 	case string:
 		*a = Audience{v}
 		return nil
-	case []interface{}:
+	case []any:
 		aud := make(Audience, len(v))
 		for i := range v {
 			v, ok := v[i].(string)

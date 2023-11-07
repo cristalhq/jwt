@@ -30,7 +30,7 @@ func newHS(alg Algorithm, key []byte) (*HSAlg, error) {
 		hash: hash,
 		key:  key,
 		hashPool: &sync.Pool{
-			New: func() interface{} {
+			New: func() any {
 				return hmac.New(hash.New, key)
 			},
 		},
