@@ -13,27 +13,11 @@ func TestParse(t *testing.T) {
 		partHeader, _, _ := parts[0], parts[1], parts[2]
 
 		tk, err := Parse([]byte(token), nopVerifier{})
-		if err != nil {
-			t.Errorf("want nil, got %#v", err)
-		}
-
-		if gotHeader := string(tk.HeaderPart()); partHeader != gotHeader {
-			t.Errorf("want header %q, got %q", partHeader, gotHeader)
-		}
-
-		if tk.Header() != header {
-			t.Errorf("want %#v, got %#v", header, tk.Header())
-		}
-
-		gotClaims := string(tk.Claims())
-		if gotClaims != claims {
-			t.Errorf("want claim %s, got %s", claims, gotClaims)
-		}
-
-		sign := bytesToBase64(tk.Signature())
-		if sign != signature {
-			t.Errorf("want signature %#v, got %#v", signature, sign)
-		}
+		mustOk(t, err)
+		mustEqual(t, string(tk.HeaderPart()), partHeader)
+		mustEqual(t, tk.Header(), header)
+		mustEqual(t, string(tk.Claims()), claims)
+		mustEqual(t, bytesToBase64(tk.Signature()), signature)
 	}
 
 	f(
@@ -58,23 +42,19 @@ func TestParse(t *testing.T) {
 }
 
 func TestParseAnotherAlgorithm(t *testing.T) {
-	tokenHS256 := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`
-	verifier := mustVerifier(NewVerifierHS(HS512, []byte("key")))
+	const tokenHS256 = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`
+	verifier := must(NewVerifierHS(HS512, []byte("key")))
 
 	_, err := Parse([]byte(tokenHS256), verifier)
-	if err == nil {
-		t.Fatal()
-	}
+	mustEqual(t, err, ErrAlgorithmMismatch)
 }
 
 func TestParseWrongType(t *testing.T) {
-	tokenHS256 := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkJPTUJPTSJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`
-	verifier := mustVerifier(NewVerifierHS(HS256, []byte("key")))
+	const tokenHS256 = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkJPTUJPTSJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`
+	verifier := must(NewVerifierHS(HS256, []byte("key")))
 
 	_, err := Parse([]byte(tokenHS256), verifier)
-	if err == nil {
-		t.Fatal()
-	}
+	mustEqual(t, err, ErrNotJWTType)
 }
 
 func TestParseMalformed(t *testing.T) {
@@ -82,9 +62,7 @@ func TestParseMalformed(t *testing.T) {
 		t.Helper()
 
 		_, err := Parse([]byte(got), nopVerifier{})
-		if err == nil {
-			t.Error("got nil want err")
-		}
+		mustEqual(t, err, ErrInvalidFormat)
 	}
 
 	f(`xyz.xyz`)

@@ -2,7 +2,6 @@ package jwt
 
 import (
 	"crypto/rsa"
-	"errors"
 	"testing"
 )
 
@@ -11,23 +10,16 @@ func TestPS(t *testing.T) {
 		t.Helper()
 
 		signer, errSigner := NewSignerPS(alg, privateKey)
-		if errSigner != nil {
-			t.Fatalf("NewSignerPS %v", errSigner)
-		}
+		mustOk(t, errSigner)
+
 		verifier, errVerifier := NewVerifierPS(alg, publicKey)
-		if errVerifier != nil {
-			t.Fatalf("NewVerifierPS %v", errVerifier)
-		}
+		mustOk(t, errVerifier)
 
 		token, err := NewBuilder(signer).Build(simplePayload)
-		if err != nil {
-			t.Fatalf("Build %v", errVerifier)
-		}
+		mustOk(t, err)
 
-		errVerify := verifier.Verify(token)
-		if !errors.Is(errVerify, wantErr) {
-			t.Errorf("want %v, got %v", wantErr, errVerify)
-		}
+		err = verifier.Verify(token)
+		mustEqual(t, err, wantErr)
 	}
 
 	f(PS256, rsapsPrivateKey256, rsapsPublicKey256, nil)
@@ -48,10 +40,7 @@ func TestPS(t *testing.T) {
 func TestPS_BadKeys(t *testing.T) {
 	f := func(err, wantErr error) {
 		t.Helper()
-
-		if !errors.Is(err, wantErr) {
-			t.Errorf("expected %v, got %v", wantErr, err)
-		}
+		mustEqual(t, err, wantErr)
 	}
 
 	f(getSignerError(NewSignerPS(PS256, nil)), ErrNilKey)

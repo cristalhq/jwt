@@ -2,7 +2,6 @@ package jwt
 
 import (
 	"crypto/ecdsa"
-	"errors"
 	"testing"
 )
 
@@ -10,24 +9,17 @@ func TestES(t *testing.T) {
 	f := func(alg Algorithm, privateKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey, wantErr error) {
 		t.Helper()
 
-		signer, errSigner := NewSignerES(alg, privateKey)
-		if errSigner != nil {
-			t.Fatalf("NewSignerES %v", errSigner)
-		}
-		verifier, errVerifier := NewVerifierES(alg, publicKey)
-		if errVerifier != nil {
-			t.Fatalf("NewVerifierES %v", errVerifier)
-		}
+		signer, err := NewSignerES(alg, privateKey)
+		mustOk(t, err)
+
+		verifier, err := NewVerifierES(alg, publicKey)
+		mustOk(t, err)
 
 		token, err := NewBuilder(signer).Build(simplePayload)
-		if err != nil {
-			t.Fatalf("Build %v", errVerifier)
-		}
+		mustOk(t, err)
 
-		errVerify := verifier.Verify(token)
-		if !errors.Is(errVerify, wantErr) {
-			t.Errorf("want %v, got %v", wantErr, errVerify)
-		}
+		err = verifier.Verify(token)
+		mustEqual(t, err, wantErr)
 	}
 
 	f(ES256, ecdsaPrivateKey256, ecdsaPublicKey256, nil)
@@ -46,10 +38,7 @@ func TestES(t *testing.T) {
 func TestES_BadKeys(t *testing.T) {
 	f := func(err, wantErr error) {
 		t.Helper()
-
-		if !errors.Is(err, wantErr) {
-			t.Errorf("expected %v, got %v", wantErr, err)
-		}
+		mustEqual(t, err, wantErr)
 	}
 
 	f(getSignerError(NewSignerES(ES256, nil)), ErrNilKey)

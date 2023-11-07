@@ -9,13 +9,8 @@ func TestAudienceMarshal(t *testing.T) {
 		t.Helper()
 
 		raw, err := got.MarshalJSON()
-		if err != nil {
-			t.Errorf("want no err, got: %#v", err)
-		}
-
-		if string(raw) != want {
-			t.Errorf("want %#v, got: %#v", want, string(raw))
-		}
+		mustOk(t, err)
+		mustEqual(t, string(raw), want)
 	}
 
 	f(nil, `""`)
@@ -30,17 +25,11 @@ func TestAudienceUnmarshal(t *testing.T) {
 
 		var a Audience
 		err := a.UnmarshalJSON([]byte(got))
-		if err != nil {
-			t.Errorf("want no err, got: %#v", err)
-		}
+		mustOk(t, err)
+		mustEqual(t, len(a), len(want))
 
-		if len(want) != len(a) {
-			t.Errorf("want %#v, got: %#v", len(want), len(a))
-		}
 		for i := range a {
-			if a[i] != want[i] {
-				t.Errorf("want %#v, got: %#v", want[i], a[i])
-			}
+			mustEqual(t, a[i], want[i])
 		}
 	}
 
@@ -56,9 +45,7 @@ func TestAudienceUnmarshalMalformed(t *testing.T) {
 
 		var a Audience
 		err := a.UnmarshalJSON([]byte(got))
-		if err == nil {
-			t.Error("want err")
-		}
+		mustFail(t, err)
 	}
 
 	f(``)
