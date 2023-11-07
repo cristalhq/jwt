@@ -2,7 +2,6 @@ package jwt
 
 import (
 	"crypto/ed25519"
-	"errors"
 	"testing"
 )
 
@@ -10,24 +9,17 @@ func TestEdDSA(t *testing.T) {
 	f := func(privateKey ed25519.PrivateKey, publicKey ed25519.PublicKey, wantErr error) {
 		t.Helper()
 
-		signer, errSigner := NewSignerEdDSA(privateKey)
-		if errSigner != nil {
-			t.Fatalf("NewSignerEdDSA %v", errSigner)
-		}
-		verifier, errVerifier := NewVerifierEdDSA(publicKey)
-		if errVerifier != nil {
-			t.Fatalf("NewVerifierEdDSA %v", errVerifier)
-		}
+		signer, err := NewSignerEdDSA(privateKey)
+		mustOk(t, err)
+
+		verifier, err := NewVerifierEdDSA(publicKey)
+		mustOk(t, err)
 
 		token, err := NewBuilder(signer).Build(simplePayload)
-		if err != nil {
-			t.Fatalf("Build %v", errVerifier)
-		}
+		mustOk(t, err)
 
-		errVerify := verifier.Verify(token)
-		if !errors.Is(errVerify, wantErr) {
-			t.Errorf("want %v, got %v", wantErr, errVerify)
-		}
+		err = verifier.Verify(token)
+		mustEqual(t, err, wantErr)
 	}
 
 	f(ed25519PrivateKey, ed25519PublicKey, nil)
@@ -37,9 +29,8 @@ func TestEdDSA(t *testing.T) {
 
 func TestEdDSA_BadKeys(t *testing.T) {
 	f := func(err, wantErr error) {
-		if !errors.Is(err, wantErr) {
-			t.Fatalf("expected %v, got %v", wantErr, err)
-		}
+		t.Helper()
+		mustEqual(t, err, wantErr)
 	}
 
 	f(getSignerError(NewSignerEdDSA(nil)), ErrNilKey)

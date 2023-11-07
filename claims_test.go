@@ -8,11 +8,7 @@ import (
 func TestClaims(t *testing.T) {
 	f := func(claims *RegisteredClaims, f func(claims *RegisteredClaims) bool, want bool) {
 		t.Helper()
-
-		got := f(claims)
-		if got != want {
-			t.Errorf("got %#v, want %#v", got, want)
-		}
+		mustEqual(t, f(claims), want)
 	}
 
 	f(
@@ -65,11 +61,7 @@ func TestTimingClaims(t *testing.T) {
 
 	f := func(claims *RegisteredClaims, f func(claims *RegisteredClaims) bool, want bool) {
 		t.Helper()
-
-		got := f(claims)
-		if got != want {
-			t.Errorf("got %#v, want %#v", got, want)
-		}
+		mustEqual(t, f(claims), want)
 	}
 
 	// IsValidExpiresAt
@@ -151,11 +143,7 @@ func TestIsValidAt(t *testing.T) {
 
 	f := func(claims *RegisteredClaims, f func(claims *RegisteredClaims) bool, want bool) {
 		t.Helper()
-
-		got := f(claims)
-		if got != want {
-			t.Errorf("got %#v, want %#v", got, want)
-		}
+		mustEqual(t, f(claims), want)
 	}
 
 	f(

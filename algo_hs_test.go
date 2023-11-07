@@ -1,7 +1,6 @@
 package jwt
 
 import (
-	"errors"
 	"testing"
 )
 
@@ -9,24 +8,17 @@ func TestHS(t *testing.T) {
 	f := func(alg Algorithm, signKey, verifyKey []byte, wantErr error) {
 		t.Helper()
 
-		signer, errSigner := NewSignerHS(alg, signKey)
-		if errSigner != nil {
-			t.Fatalf("NewSignerHS %v", errSigner)
-		}
-		verifier, errVerifier := NewVerifierHS(alg, verifyKey)
-		if errVerifier != nil {
-			t.Fatalf("NewVerifierHS %v", errVerifier)
-		}
+		signer, err := NewSignerHS(alg, signKey)
+		mustOk(t, err)
+
+		verifier, err := NewVerifierHS(alg, verifyKey)
+		mustOk(t, err)
 
 		token, err := NewBuilder(signer).Build(simplePayload)
-		if err != nil {
-			t.Fatalf("Build %v", errVerifier)
-		}
+		mustOk(t, err)
 
-		errVerify := verifier.Verify(token)
-		if !errors.Is(errVerify, wantErr) {
-			t.Errorf("want %v, got %v", wantErr, errVerify)
-		}
+		err = verifier.Verify(token)
+		mustEqual(t, err, wantErr)
 	}
 
 	f(HS256, hsKey256, hsKey256, nil)

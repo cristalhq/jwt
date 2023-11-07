@@ -11,13 +11,8 @@ func TestNumericDateMarshal(t *testing.T) {
 		t.Helper()
 
 		raw, err := got.MarshalJSON()
-		if err != nil {
-			t.Errorf("want no err, got: %#v", err)
-		}
-
-		if string(raw) != want {
-			t.Errorf("want %#v, got: %#v", want, string(raw))
-		}
+		mustOk(t, err)
+		mustEqual(t, string(raw), want)
 	}
 
 	now := time.Now()
@@ -33,12 +28,8 @@ func TestNumericDateUnmarshal(t *testing.T) {
 
 		var got NumericDate
 		err := got.UnmarshalJSON([]byte(s))
-		if err != nil {
-			t.Errorf("want no err, got: %#v", err)
-		}
-		if got.Unix() != want.Unix() {
-			t.Errorf("want %#v, got %#v", want.Unix(), got.Unix())
-		}
+		mustOk(t, err)
+		mustEqual(t, got.Unix(), want.Unix())
 	}
 
 	f(`1588707274`, asNumericDate(1588707274))
@@ -52,9 +43,7 @@ func TestNumericDateUnmarshalMalformed(t *testing.T) {
 
 		var nd NumericDate
 		err := nd.UnmarshalJSON([]byte(got))
-		if err == nil {
-			t.Error("want err")
-		}
+		mustFail(t, err)
 	}
 
 	f(``)

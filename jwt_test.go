@@ -13,14 +13,10 @@ import (
 func TestDecodeClaims(t *testing.T) {
 	tokenStr := `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwiYXVkIjoiSm9obiBEb2UiLCJpYXQiOjE1MTYyMzkwMjJ9.jC1Ncd2FW0ZpoiHV9_Bk2eDWdfCqUIzfCgTHZfK0h_o`
 	token, err := ParseNoVerify([]byte(tokenStr))
-	if err != nil {
-		t.Fatal(err)
-	}
+	mustOk(t, err)
 
 	claims := RegisteredClaims{}
-	if err := token.DecodeClaims(&claims); err != nil {
-		t.Fatal(err)
-	}
+	mustOk(t, token.DecodeClaims(&claims))
 
 	iat := asNumericDate(1516239022)
 	wantClaims := RegisteredClaims{
@@ -28,9 +24,7 @@ func TestDecodeClaims(t *testing.T) {
 		Audience: Audience{"John Doe"},
 		Subject:  "1234567890",
 	}
-	if !reflect.DeepEqual(claims, wantClaims) {
-		t.Fatalf("want %v, got %v", wantClaims, claims)
-	}
+	mustEqual(t, claims, wantClaims)
 }
 
 func TestMarshalHeader(t *testing.T) {
@@ -38,12 +32,8 @@ func TestMarshalHeader(t *testing.T) {
 		t.Helper()
 
 		raw, err := h.MarshalJSON()
-		if err != nil {
-			t.Errorf("unexpected error: %v", err)
-		}
-		if string(raw) != want {
-			t.Errorf("got: %v, want %v", string(raw), want)
-		}
+		mustOk(t, err)
+		mustEqual(t, string(raw), want)
 	}
 
 	f(
@@ -74,22 +64,17 @@ func TestMarshalHeader(t *testing.T) {
 
 func TestNewKey(t *testing.T) {
 	key, err := GenerateRandomBits(512)
-	if err != nil {
-		t.Fatalf("Error returned directly from GenerateRandom512Bit: %e", err)
-	}
+	mustOk(t, err)
 
 	// 8 bits to 1 byte
 	const byteCount = int(512.0 / 8)
-	if l := len(key); l != byteCount {
-		t.Fatalf("length of key is %d, want %d", l, byteCount)
-	}
+	mustEqual(t, len(key), byteCount)
 }
 
 var bytesToBase64 = base64.RawURLEncoding.EncodeToString
 
 func base64ToBytes(s string) []byte {
-	b, _ := base64.RawURLEncoding.DecodeString(s)
-	return b
+	return must(base64.RawURLEncoding.DecodeString(s))
 }
 
 func getSignerError(_ Signer, err error) error {
@@ -100,14 +85,7 @@ func getVerifierError(_ Verifier, err error) error {
 	return err
 }
 
-func mustSigner(s Signer, err error) Signer {
-	if err != nil {
-		panic(err)
-	}
-	return s
-}
-
-func mustVerifier(v Verifier, err error) Verifier {
+func must[T any](v T, err error) T {
 	if err != nil {
 		panic(err)
 	}
@@ -138,4 +116,25 @@ func mustParseECKey(s string) *ecdsa.PrivateKey {
 		panic(err)
 	}
 	return key
+}
+
+func mustOk(tb testing.TB, err error) {
+	tb.Helper()
+	if err != nil {
+		tb.Fatal(err)
+	}
+}
+
+func mustFail(tb testing.TB, err error) {
+	tb.Helper()
+	if err == nil {
+		tb.Fatal()
+	}
+}
+
+func mustEqual[T any](tb testing.TB, have, want T) {
+	tb.Helper()
+	if !reflect.DeepEqual(have, want) {
+		tb.Fatalf("\nhave: %+v\nwant: %+v\n", have, want)
+	}
 }
