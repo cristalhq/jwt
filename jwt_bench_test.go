@@ -193,6 +193,6 @@ func runVerifyBench(b *testing.B, builder *jwt.Builder, verifier jwt.Verifier) {
 	sink(dummy)
 }
 
-func sink(v interface{}) {
+func sink(v any) {
 	fmt.Fprint(io.Discard, v)
 }

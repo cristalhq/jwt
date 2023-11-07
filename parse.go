@@ -19,7 +19,7 @@ func Parse(raw []byte, verifier Verifier) (*Token, error) {
 }
 
 // ParseClaims decodes a token claims and verifies it's signature.
-func ParseClaims(raw []byte, verifier Verifier, claims interface{}) error {
+func ParseClaims(raw []byte, verifier Verifier, claims any) error {
 	token, err := Parse(raw, verifier)
 	if err != nil {
 		return err
