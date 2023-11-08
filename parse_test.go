@@ -49,17 +49,6 @@ func TestParseAnotherAlgorithm(t *testing.T) {
 	mustEqual(t, err, ErrAlgorithmMismatch)
 }
 
-func TestParseWrongType(t *testing.T) {
-	const tokenHS256 = `eyJhbGciOiJIUzI1NiIsInR5cCI6IkJPTUJPTSJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`
-	verifier := must(NewVerifierHS(HS256, []byte("key")))
-
-	token, err := Parse([]byte(tokenHS256), verifier)
-	mustEqual(t, err, ErrNotJWTType)
-	if token == nil {
-		t.Fatal()
-	}
-}
-
 func TestParseMalformed(t *testing.T) {
 	f := func(got string) {
 		t.Helper()

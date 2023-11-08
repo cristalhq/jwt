@@ -14,6 +14,7 @@ var (
 	ErrUnsupportedAlg = errors.New("algorithm is not supported")
 
 	// ErrNotJWTType indicates that JWT token type is not JWT.
+	// Deprecated: leftover after a wrong feature, present due to backward compatibility.
 	ErrNotJWTType = errors.New("token of not JWT type")
 
 	// ErrInvalidFormat indicates that token format is not valid.
