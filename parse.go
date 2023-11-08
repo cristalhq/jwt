@@ -4,12 +4,17 @@ import (
 	"bytes"
 	"encoding/base64"
 	"encoding/json"
+	"errors"
 )
 
 // Parse decodes a token and verifies it's signature.
 func Parse(raw []byte, verifier Verifier) (*Token, error) {
 	token, err := ParseNoVerify(raw)
 	if err != nil {
+		// See: https://github.com/cristalhq/jwt/issues/147
+		if errors.Is(err, ErrNotJWTType) {
+			return token, ErrNotJWTType
+		}
 		return nil, err
 	}
 	if err := verifier.Verify(token); err != nil {
@@ -78,7 +83,8 @@ func parse(token []byte) (*Token, error) {
 		claims:    claims,
 	}
 	if !constTimeEqual(tk.header.Type, "JWT") {
-		return nil, ErrNotJWTType
+		// See: https://github.com/cristalhq/jwt/issues/147
+		return tk, ErrNotJWTType
 	}
 	return tk, nil
 }
