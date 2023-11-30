@@ -6,132 +6,142 @@ import (
 )
 
 func TestClaims(t *testing.T) {
-	f := func(claims *RegisteredClaims, f func(claims *RegisteredClaims) bool, want bool) {
-		t.Helper()
-		mustEqual(t, f(claims), want)
+	testCases := []struct {
+		claims *RegisteredClaims
+		f      func(claims *RegisteredClaims) bool
+		want   bool
+	}{
+		{
+			&RegisteredClaims{Audience: Audience([]string{"winner"})},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsForAudience("winner")
+			},
+			true,
+		},
+		{
+			&RegisteredClaims{Audience: Audience([]string{"oops", "winner"})},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsForAudience("winner")
+			},
+			true,
+		},
+		{
+			&RegisteredClaims{Audience: Audience([]string{"w0nner"})},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsForAudience("winner")
+			},
+			false,
+		},
+		{
+			&RegisteredClaims{ID: "test-id"},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsID("test-id")
+			},
+			true,
+		},
+		{
+			&RegisteredClaims{Issuer: "test-issuer"},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsIssuer("test-issuer")
+			},
+			true,
+		},
+		{
+			&RegisteredClaims{Subject: "test-subject"},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsSubject("test-subject")
+			},
+			true,
+		},
 	}
 
-	f(
-		&RegisteredClaims{Audience: Audience([]string{"winner"})},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsForAudience("winner")
-		},
-		true,
-	)
-	f(
-		&RegisteredClaims{Audience: Audience([]string{"oops", "winner"})},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsForAudience("winner")
-		},
-		true,
-	)
-	f(
-		&RegisteredClaims{Audience: Audience([]string{"w0nner"})},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsForAudience("winner")
-		},
-		false,
-	)
-	f(
-		&RegisteredClaims{ID: "test-id"},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsID("test-id")
-		},
-		true,
-	)
-	f(
-		&RegisteredClaims{Issuer: "test-issuer"},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsIssuer("test-issuer")
-		},
-		true,
-	)
-	f(
-		&RegisteredClaims{Subject: "test-subject"},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsSubject("test-subject")
-		},
-		true,
-	)
+	for _, tc := range testCases {
+		mustEqual(t, tc.f(tc.claims), tc.want)
+	}
 }
 
 func TestTimingClaims(t *testing.T) {
 	before := time.Now()
 	after := before.Add(time.Minute)
 
-	f := func(claims *RegisteredClaims, f func(claims *RegisteredClaims) bool, want bool) {
-		t.Helper()
-		mustEqual(t, f(claims), want)
+	testCases := []struct {
+		claims *RegisteredClaims
+		f      func(claims *RegisteredClaims) bool
+		want   bool
+	}{
+		// IsValidExpiresAt
+		{
+			&RegisteredClaims{},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsValidExpiresAt(after)
+			},
+			true,
+		},
+		{
+			&RegisteredClaims{ExpiresAt: NewNumericDate(before)},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsValidExpiresAt(after)
+			},
+			false,
+		},
+		{
+			&RegisteredClaims{ExpiresAt: NewNumericDate(after)},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsValidExpiresAt(before)
+			},
+			true,
+		},
+
+		// IsValidIssuedAt
+		{
+			&RegisteredClaims{},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsValidIssuedAt(after)
+			},
+			true,
+		},
+		{
+			&RegisteredClaims{IssuedAt: NewNumericDate(before)},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsValidIssuedAt(after)
+			},
+			true,
+		},
+		{
+			&RegisteredClaims{IssuedAt: NewNumericDate(after)},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsValidIssuedAt(before)
+			},
+			false,
+		},
+
+		// IsValidNotBefore
+		{
+			&RegisteredClaims{},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsValidNotBefore(after)
+			},
+			true,
+		},
+		{
+			&RegisteredClaims{NotBefore: NewNumericDate(before)},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsValidNotBefore(after)
+			},
+			true,
+		},
+		{
+			&RegisteredClaims{NotBefore: NewNumericDate(after)},
+			func(claims *RegisteredClaims) bool {
+				return claims.IsValidNotBefore(before)
+			},
+			false,
+		},
 	}
 
-	// IsValidExpiresAt
-	f(
-		&RegisteredClaims{},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsValidExpiresAt(after)
-		},
-		true,
-	)
-	f(
-		&RegisteredClaims{ExpiresAt: NewNumericDate(before)},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsValidExpiresAt(after)
-		},
-		false,
-	)
-	f(
-		&RegisteredClaims{ExpiresAt: NewNumericDate(after)},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsValidExpiresAt(before)
-		},
-		true,
-	)
-
-	// IsValidIssuedAt
-	f(
-		&RegisteredClaims{},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsValidIssuedAt(after)
-		},
-		true,
-	)
-	f(
-		&RegisteredClaims{IssuedAt: NewNumericDate(before)},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsValidIssuedAt(after)
-		},
-		true,
-	)
-	f(
-		&RegisteredClaims{IssuedAt: NewNumericDate(after)},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsValidIssuedAt(before)
-		},
-		false,
-	)
-
-	// IsValidNotBefore
-	f(
-		&RegisteredClaims{},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsValidNotBefore(after)
-		},
-		true,
-	)
-	f(
-		&RegisteredClaims{NotBefore: NewNumericDate(before)},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsValidNotBefore(after)
-		},
-		true,
-	)
-	f(
-		&RegisteredClaims{NotBefore: NewNumericDate(after)},
-		func(claims *RegisteredClaims) bool {
-			return claims.IsValidNotBefore(before)
-		},
-		false,
-	)
+	for _, tc := range testCases {
+		mustEqual(t, tc.f(tc.claims), tc.want)
+	}
 }
 
 func TestIsValidAt(t *testing.T) {
@@ -141,32 +151,37 @@ func TestIsValidAt(t *testing.T) {
 	afterNow := now.Add(10 * time.Second)
 	after := now.Add(time.Minute)
 
-	f := func(claims *RegisteredClaims, f func(claims *RegisteredClaims) bool, want bool) {
-		t.Helper()
-		mustEqual(t, f(claims), want)
+	testCases := []struct {
+		claims *RegisteredClaims
+		f      func(claims *RegisteredClaims) bool
+		want   bool
+	}{
+		{
+			&RegisteredClaims{},
+			func(claims *RegisteredClaims) bool { return claims.IsValidAt(after) },
+			true,
+		},
+		{
+			&RegisteredClaims{
+				ExpiresAt: NewNumericDate(after),
+				NotBefore: NewNumericDate(before),
+				IssuedAt:  NewNumericDate(beforeNow),
+			},
+			func(claims *RegisteredClaims) bool { return claims.IsValidAt(now) },
+			true,
+		},
+		{
+			&RegisteredClaims{
+				ExpiresAt: NewNumericDate(after),
+				NotBefore: NewNumericDate(before),
+				IssuedAt:  NewNumericDate(afterNow),
+			},
+			func(claims *RegisteredClaims) bool { return claims.IsValidAt(now) },
+			false,
+		},
 	}
 
-	f(
-		&RegisteredClaims{},
-		func(claims *RegisteredClaims) bool { return claims.IsValidAt(after) },
-		true,
-	)
-	f(
-		&RegisteredClaims{
-			ExpiresAt: NewNumericDate(after),
-			NotBefore: NewNumericDate(before),
-			IssuedAt:  NewNumericDate(beforeNow),
-		},
-		func(claims *RegisteredClaims) bool { return claims.IsValidAt(now) },
-		true,
-	)
-	f(
-		&RegisteredClaims{
-			ExpiresAt: NewNumericDate(after),
-			NotBefore: NewNumericDate(before),
-			IssuedAt:  NewNumericDate(afterNow),
-		},
-		func(claims *RegisteredClaims) bool { return claims.IsValidAt(now) },
-		false,
-	)
+	for _, tc := range testCases {
+		mustEqual(t, tc.f(tc.claims), tc.want)
+	}
 }

@@ -6,42 +6,61 @@ import (
 )
 
 func TestEdDSA(t *testing.T) {
-	f := func(privateKey ed25519.PrivateKey, publicKey ed25519.PublicKey, wantErr error) {
-		t.Helper()
+	testCases := []struct {
+		privateKey ed25519.PrivateKey
+		publicKey  ed25519.PublicKey
+		wantErr    error
+	}{
+		{ed25519PrivateKey, ed25519PublicKey, nil},
+		{ed25519PrivateKey, ed25519PublicKeyAnother, ErrInvalidSignature},
+		{ed25519PrivateKeyAnother, ed25519PublicKey, ErrInvalidSignature},
+	}
 
-		signer, err := NewSignerEdDSA(privateKey)
+	for _, tc := range testCases {
+		signer, err := NewSignerEdDSA(tc.privateKey)
 		mustOk(t, err)
 
-		verifier, err := NewVerifierEdDSA(publicKey)
+		verifier, err := NewVerifierEdDSA(tc.publicKey)
 		mustOk(t, err)
 
 		token, err := NewBuilder(signer).Build(simplePayload)
 		mustOk(t, err)
 
 		err = verifier.Verify(token)
-		mustEqual(t, err, wantErr)
+		mustEqual(t, err, tc.wantErr)
 	}
-
-	f(ed25519PrivateKey, ed25519PublicKey, nil)
-	f(ed25519PrivateKey, ed25519PublicKeyAnother, ErrInvalidSignature)
-	f(ed25519PrivateKeyAnother, ed25519PublicKey, ErrInvalidSignature)
 }
 
 func TestEdDSA_BadKeys(t *testing.T) {
-	f := func(err, wantErr error) {
-		t.Helper()
-		mustEqual(t, err, wantErr)
+	testCases := []struct {
+		err     error
+		wantErr error
+	}{
+		{
+			getErr(NewSignerEdDSA(nil)), ErrNilKey,
+		},
+		{
+			getErr(NewVerifierEdDSA(nil)), ErrNilKey,
+		},
+		{
+			err: func() error {
+				key := ed25519.PrivateKey(make([]byte, 72))
+				return getErr(NewSignerEdDSA(key))
+			}(),
+			wantErr: ErrInvalidKey,
+		},
+		{
+			err: func() error {
+				key := ed25519.PublicKey(make([]byte, 72))
+				return getErr(NewVerifierEdDSA(key))
+			}(),
+			wantErr: ErrInvalidKey,
+		},
 	}
 
-	f(getSignerError(NewSignerEdDSA(nil)), ErrNilKey)
-
-	priv := ed25519.PrivateKey(make([]byte, 72))
-	f(getSignerError(NewSignerEdDSA(priv)), ErrInvalidKey)
-
-	f(getVerifierError(NewVerifierEdDSA(nil)), ErrNilKey)
-
-	pub := ed25519.PublicKey(make([]byte, 72))
-	f(getVerifierError(NewVerifierEdDSA(pub)), ErrInvalidKey)
+	for _, tc := range testCases {
+		mustEqual(t, tc.err, tc.wantErr)
+	}
 }
 
 var (

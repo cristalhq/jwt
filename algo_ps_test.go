@@ -6,52 +6,61 @@ import (
 )
 
 func TestPS(t *testing.T) {
-	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, wantErr error) {
-		t.Helper()
+	testCases := []struct {
+		alg        Algorithm
+		privateKey *rsa.PrivateKey
+		publicKey  *rsa.PublicKey
+		wantErr    error
+	}{
+		{PS256, rsapsPrivateKey256, rsapsPublicKey256, nil},
+		{PS384, rsapsPrivateKey384, rsapsPublicKey384, nil},
+		{PS512, rsapsPrivateKey512, rsapsPublicKey512, nil},
+		{PS512, rsapsPrivateKey512Other, rsapsPublicKey512Other, nil},
 
-		signer, errSigner := NewSignerPS(alg, privateKey)
+		{PS256, rsapsPrivateKey256, rsapsPublicKey256Another, ErrInvalidSignature},
+		{PS384, rsapsPrivateKey384, rsapsPublicKey384Another, ErrInvalidSignature},
+		{PS512, rsapsPrivateKey512, rsapsPublicKey512Another, ErrInvalidSignature},
+
+		{PS256, rsapsPrivateKey256Another, rsapsPublicKey256, ErrInvalidSignature},
+		{PS384, rsapsPrivateKey384Another, rsapsPublicKey384, ErrInvalidSignature},
+		{PS512, rsapsPrivateKey512Another, rsapsPublicKey512, ErrInvalidSignature},
+		{PS512, rsapsPrivateKey512Another, rsapsPublicKey512Other, ErrInvalidSignature},
+	}
+
+	for _, tc := range testCases {
+		signer, errSigner := NewSignerPS(tc.alg, tc.privateKey)
 		mustOk(t, errSigner)
 
-		verifier, errVerifier := NewVerifierPS(alg, publicKey)
+		verifier, errVerifier := NewVerifierPS(tc.alg, tc.publicKey)
 		mustOk(t, errVerifier)
 
 		token, err := NewBuilder(signer).Build(simplePayload)
 		mustOk(t, err)
 
 		err = verifier.Verify(token)
-		mustEqual(t, err, wantErr)
+		mustEqual(t, err, tc.wantErr)
 	}
-
-	f(PS256, rsapsPrivateKey256, rsapsPublicKey256, nil)
-	f(PS384, rsapsPrivateKey384, rsapsPublicKey384, nil)
-	f(PS512, rsapsPrivateKey512, rsapsPublicKey512, nil)
-	f(PS512, rsapsPrivateKey512Other, rsapsPublicKey512Other, nil)
-
-	f(PS256, rsapsPrivateKey256, rsapsPublicKey256Another, ErrInvalidSignature)
-	f(PS384, rsapsPrivateKey384, rsapsPublicKey384Another, ErrInvalidSignature)
-	f(PS512, rsapsPrivateKey512, rsapsPublicKey512Another, ErrInvalidSignature)
-
-	f(PS256, rsapsPrivateKey256Another, rsapsPublicKey256, ErrInvalidSignature)
-	f(PS384, rsapsPrivateKey384Another, rsapsPublicKey384, ErrInvalidSignature)
-	f(PS512, rsapsPrivateKey512Another, rsapsPublicKey512, ErrInvalidSignature)
-	f(PS512, rsapsPrivateKey512Another, rsapsPublicKey512Other, ErrInvalidSignature)
 }
 
 func TestPS_BadKeys(t *testing.T) {
-	f := func(err, wantErr error) {
-		t.Helper()
-		mustEqual(t, err, wantErr)
+	testCases := []struct {
+		err     error
+		wantErr error
+	}{
+		{getErr(NewSignerPS(PS256, nil)), ErrNilKey},
+		{getErr(NewSignerPS(PS384, nil)), ErrNilKey},
+		{getErr(NewSignerPS(PS512, nil)), ErrNilKey},
+		{getErr(NewSignerPS("foo", rsapsPrivateKey384)), ErrUnsupportedAlg},
+
+		{getErr(NewVerifierPS(PS256, nil)), ErrNilKey},
+		{getErr(NewVerifierPS(PS384, nil)), ErrNilKey},
+		{getErr(NewVerifierPS(PS512, nil)), ErrNilKey},
+		{getErr(NewVerifierPS("boo", rsapsPublicKey384)), ErrUnsupportedAlg},
 	}
 
-	f(getSignerError(NewSignerPS(PS256, nil)), ErrNilKey)
-	f(getSignerError(NewSignerPS(PS384, nil)), ErrNilKey)
-	f(getSignerError(NewSignerPS(PS512, nil)), ErrNilKey)
-	f(getSignerError(NewSignerPS("foo", rsapsPrivateKey384)), ErrUnsupportedAlg)
-
-	f(getVerifierError(NewVerifierPS(PS256, nil)), ErrNilKey)
-	f(getVerifierError(NewVerifierPS(PS384, nil)), ErrNilKey)
-	f(getVerifierError(NewVerifierPS(PS512, nil)), ErrNilKey)
-	f(getVerifierError(NewVerifierPS("boo", rsapsPublicKey384)), ErrUnsupportedAlg)
+	for _, tc := range testCases {
+		mustEqual(t, tc.err, tc.wantErr)
+	}
 }
 
 var (

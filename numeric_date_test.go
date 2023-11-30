@@ -7,55 +7,63 @@ import (
 )
 
 func TestNumericDateMarshal(t *testing.T) {
-	f := func(got *NumericDate, want string) {
-		t.Helper()
-
-		raw, err := got.MarshalJSON()
-		mustOk(t, err)
-		mustEqual(t, string(raw), want)
-	}
-
 	now := time.Now()
 	nowTS := now.Unix()
 
-	f(NewNumericDate(time.Time{}), `null`)
-	f(NewNumericDate(now), strconv.Itoa(int(nowTS)))
+	testCases := []struct {
+		value *NumericDate
+		want  string
+	}{
+		{NewNumericDate(time.Time{}), `null`},
+		{NewNumericDate(now), strconv.Itoa(int(nowTS))},
+	}
+
+	for _, tc := range testCases {
+		raw, err := tc.value.MarshalJSON()
+		mustOk(t, err)
+		mustEqual(t, string(raw), tc.want)
+	}
 }
 
 func TestNumericDateUnmarshal(t *testing.T) {
-	f := func(s string, want NumericDate) {
-		t.Helper()
-
-		var got NumericDate
-		err := got.UnmarshalJSON([]byte(s))
-		mustOk(t, err)
-		mustEqual(t, got.Unix(), want.Unix())
+	testCases := []struct {
+		s    string
+		want NumericDate
+	}{
+		{`1588707274`, asNumericDate(1588707274)},
+		{`1588707274.3769999`, asNumericDate(1588707274)},
+		{`"12345"`, asNumericDate(12345)},
 	}
 
-	f(`1588707274`, asNumericDate(1588707274))
-	f(`1588707274.3769999`, asNumericDate(1588707274))
-	f(`"12345"`, asNumericDate(12345))
+	for _, tc := range testCases {
+		var have NumericDate
+		err := have.UnmarshalJSON([]byte(tc.s))
+		mustOk(t, err)
+		mustEqual(t, have.Unix(), tc.want.Unix())
+	}
 }
 
 func TestNumericDateUnmarshalMalformed(t *testing.T) {
-	f := func(got string) {
-		t.Helper()
-
-		var nd NumericDate
-		err := nd.UnmarshalJSON([]byte(got))
-		mustFail(t, err)
+	testCases := []struct {
+		value string
+	}{
+		{``},
+		{`{}`},
+		{`[{}]`},
+		{`abc12`},
+		{`"abc"`},
+		{`["admin",{}]`},
+		{`["admin",123]`},
+		{`{}`},
+		{`[]`},
+		{`1e+309`},
 	}
 
-	f(``)
-	f(`{}`)
-	f(`[{}]`)
-	f(`abc12`)
-	f(`"abc"`)
-	f(`["admin",{}]`)
-	f(`["admin",123]`)
-	f(`{}`)
-	f(`[]`)
-	f(`1e+309`)
+	for _, tc := range testCases {
+		var nd NumericDate
+		err := nd.UnmarshalJSON([]byte(tc.value))
+		mustFail(t, err)
+	}
 }
 
 func asNumericDate(n int64) NumericDate {

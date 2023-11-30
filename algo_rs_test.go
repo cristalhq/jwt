@@ -6,52 +6,61 @@ import (
 )
 
 func TestRS(t *testing.T) {
-	f := func(alg Algorithm, privateKey *rsa.PrivateKey, publicKey *rsa.PublicKey, wantErr error) {
-		t.Helper()
+	testCases := []struct {
+		alg        Algorithm
+		privateKey *rsa.PrivateKey
+		publicKey  *rsa.PublicKey
+		wantErr    error
+	}{
+		{RS256, rsaPrivateKey256, rsaPublicKey256, nil},
+		{RS384, rsaPrivateKey384, rsaPublicKey384, nil},
+		{RS512, rsaPrivateKey512, rsaPublicKey512, nil},
+		{RS512, rsaPrivateKey512Other, rsaPublicKey512Other, nil},
 
-		signer, errSigner := NewSignerRS(alg, privateKey)
+		{RS256, rsaPrivateKey256, rsaPublicKey256Another, ErrInvalidSignature},
+		{RS384, rsaPrivateKey384, rsaPublicKey384Another, ErrInvalidSignature},
+		{RS512, rsaPrivateKey512, rsaPublicKey512Another, ErrInvalidSignature},
+
+		{RS256, rsaPrivateKey256Another, rsaPublicKey256, ErrInvalidSignature},
+		{RS384, rsaPrivateKey384Another, rsaPublicKey384, ErrInvalidSignature},
+		{RS512, rsaPrivateKey512Another, rsaPublicKey512, ErrInvalidSignature},
+		{RS512, rsaPrivateKey512Other, rsaPublicKey512, ErrInvalidSignature},
+	}
+
+	for _, tc := range testCases {
+		signer, errSigner := NewSignerRS(tc.alg, tc.privateKey)
 		mustOk(t, errSigner)
 
-		verifier, errVerifier := NewVerifierRS(alg, publicKey)
+		verifier, errVerifier := NewVerifierRS(tc.alg, tc.publicKey)
 		mustOk(t, errVerifier)
 
 		token, err := NewBuilder(signer).Build(simplePayload)
 		mustOk(t, err)
 
 		err = verifier.Verify(token)
-		mustEqual(t, err, wantErr)
+		mustEqual(t, err, tc.wantErr)
 	}
-
-	f(RS256, rsaPrivateKey256, rsaPublicKey256, nil)
-	f(RS384, rsaPrivateKey384, rsaPublicKey384, nil)
-	f(RS512, rsaPrivateKey512, rsaPublicKey512, nil)
-	f(RS512, rsaPrivateKey512Other, rsaPublicKey512Other, nil)
-
-	f(RS256, rsaPrivateKey256, rsaPublicKey256Another, ErrInvalidSignature)
-	f(RS384, rsaPrivateKey384, rsaPublicKey384Another, ErrInvalidSignature)
-	f(RS512, rsaPrivateKey512, rsaPublicKey512Another, ErrInvalidSignature)
-
-	f(RS256, rsaPrivateKey256Another, rsaPublicKey256, ErrInvalidSignature)
-	f(RS384, rsaPrivateKey384Another, rsaPublicKey384, ErrInvalidSignature)
-	f(RS512, rsaPrivateKey512Another, rsaPublicKey512, ErrInvalidSignature)
-	f(RS512, rsaPrivateKey512Other, rsaPublicKey512, ErrInvalidSignature)
 }
 
 func TestRS_BadKeys(t *testing.T) {
-	f := func(err, wantErr error) {
-		t.Helper()
-		mustEqual(t, err, wantErr)
+	testCases := []struct {
+		err     error
+		wantErr error
+	}{
+		{getErr(NewSignerRS(RS256, nil)), ErrNilKey},
+		{getErr(NewSignerRS(RS384, nil)), ErrNilKey},
+		{getErr(NewSignerRS(RS512, nil)), ErrNilKey},
+		{getErr(NewSignerRS("foo", rsaPrivateKey384)), ErrUnsupportedAlg},
+
+		{getErr(NewVerifierRS(RS256, nil)), ErrNilKey},
+		{getErr(NewVerifierRS(RS384, nil)), ErrNilKey},
+		{getErr(NewVerifierRS(RS512, nil)), ErrNilKey},
+		{getErr(NewVerifierRS("boo", rsaPublicKey384)), ErrUnsupportedAlg},
 	}
 
-	f(getSignerError(NewSignerRS(RS256, nil)), ErrNilKey)
-	f(getSignerError(NewSignerRS(RS384, nil)), ErrNilKey)
-	f(getSignerError(NewSignerRS(RS512, nil)), ErrNilKey)
-	f(getSignerError(NewSignerRS("foo", rsaPrivateKey384)), ErrUnsupportedAlg)
-
-	f(getVerifierError(NewVerifierRS(RS256, nil)), ErrNilKey)
-	f(getVerifierError(NewVerifierRS(RS384, nil)), ErrNilKey)
-	f(getVerifierError(NewVerifierRS(RS512, nil)), ErrNilKey)
-	f(getVerifierError(NewVerifierRS("boo", rsaPublicKey384)), ErrUnsupportedAlg)
+	for _, tc := range testCases {
+		mustEqual(t, tc.err, tc.wantErr)
+	}
 }
 
 var (

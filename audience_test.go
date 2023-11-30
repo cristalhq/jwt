@@ -5,54 +5,62 @@ import (
 )
 
 func TestAudienceMarshal(t *testing.T) {
-	f := func(got Audience, want string) {
-		t.Helper()
-
-		raw, err := got.MarshalJSON()
-		mustOk(t, err)
-		mustEqual(t, string(raw), want)
+	testCases := []struct {
+		have Audience
+		want string
+	}{
+		{nil, `""`},
+		{Audience{}, `""`},
+		{Audience{"admin"}, `"admin"`},
+		{Audience{"admin", "co-admin"}, `["admin","co-admin"]`},
 	}
 
-	f(nil, `""`)
-	f(Audience{}, `""`)
-	f(Audience{"admin"}, `"admin"`)
-	f(Audience{"admin", "co-admin"}, `["admin","co-admin"]`)
+	for _, tc := range testCases {
+		raw, err := tc.have.MarshalJSON()
+		mustOk(t, err)
+		mustEqual(t, string(raw), tc.want)
+	}
 }
 
 func TestAudienceUnmarshal(t *testing.T) {
-	f := func(got string, want Audience) {
-		t.Helper()
-
-		var a Audience
-		err := a.UnmarshalJSON([]byte(got))
-		mustOk(t, err)
-		mustEqual(t, len(a), len(want))
-
-		for i := range a {
-			mustEqual(t, a[i], want[i])
-		}
+	testCases := []struct {
+		have string
+		want Audience
+	}{
+		{`[]`, Audience{}},
+		{`"admin"`, Audience{"admin"}},
+		{`["admin"]`, Audience{"admin"}},
+		{`["admin","co-admin"]`, Audience{"admin", "co-admin"}},
 	}
 
-	f(`[]`, Audience{})
-	f(`"admin"`, Audience{"admin"})
-	f(`["admin"]`, Audience{"admin"})
-	f(`["admin","co-admin"]`, Audience{"admin", "co-admin"})
+	for _, tc := range testCases {
+		var a Audience
+		err := a.UnmarshalJSON([]byte(tc.have))
+		mustOk(t, err)
+		mustEqual(t, len(a), len(tc.want))
+
+		for i := range a {
+			mustEqual(t, a[i], tc.want[i])
+		}
+	}
 }
 
 func TestAudienceUnmarshalMalformed(t *testing.T) {
-	f := func(got string) {
-		t.Helper()
-
-		var a Audience
-		err := a.UnmarshalJSON([]byte(got))
-		mustFail(t, err)
+	testCases := []struct {
+		have string
+	}{
+		{``},
+		{`abc12`},
+		{`123`},
+		{`{}`},
+		{`[{}]`},
+		{`["admin",{}]`},
+		{`["admin",123]`},
 	}
 
-	f(``)
-	f(`abc12`)
-	f(`123`)
-	f(`{}`)
-	f(`[{}]`)
-	f(`["admin",{}]`)
-	f(`["admin",123]`)
+	for _, tc := range testCases {
+		var a Audience
+		err := a.UnmarshalJSON([]byte(tc.have))
+		mustFail(t, err)
+	}
 }

@@ -5,31 +5,36 @@ import (
 )
 
 func TestHS(t *testing.T) {
-	f := func(alg Algorithm, signKey, verifyKey []byte, wantErr error) {
-		t.Helper()
+	testCases := []struct {
+		alg       Algorithm
+		signKey   []byte
+		verifyKey []byte
+		wantErr   error
+	}{
+		{HS256, hsKey256, hsKey256, nil},
+		{HS384, hsKey384, hsKey384, nil},
+		{HS512, hsKey512, hsKey512, nil},
 
-		signer, err := NewSignerHS(alg, signKey)
+		{HS256, hsKey256, hsKeyAnother256, ErrInvalidSignature},
+		{HS384, hsKey384, hsKeyAnother384, ErrInvalidSignature},
+		{HS512, hsKey512, hsKeyAnother512, ErrInvalidSignature},
+
+		{HS256, hsKey256, hsKeyAnother256, ErrInvalidSignature},
+	}
+
+	for _, tc := range testCases {
+		signer, err := NewSignerHS(tc.alg, tc.signKey)
 		mustOk(t, err)
 
-		verifier, err := NewVerifierHS(alg, verifyKey)
+		verifier, err := NewVerifierHS(tc.alg, tc.verifyKey)
 		mustOk(t, err)
 
 		token, err := NewBuilder(signer).Build(simplePayload)
 		mustOk(t, err)
 
 		err = verifier.Verify(token)
-		mustEqual(t, err, wantErr)
+		mustEqual(t, err, tc.wantErr)
 	}
-
-	f(HS256, hsKey256, hsKey256, nil)
-	f(HS384, hsKey384, hsKey384, nil)
-	f(HS512, hsKey512, hsKey512, nil)
-
-	f(HS256, hsKey256, hsKeyAnother256, ErrInvalidSignature)
-	f(HS384, hsKey384, hsKeyAnother384, ErrInvalidSignature)
-	f(HS512, hsKey512, hsKeyAnother512, ErrInvalidSignature)
-
-	f(HS256, hsKey256, hsKeyAnother256, ErrInvalidSignature)
 }
 
 var (
