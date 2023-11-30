@@ -6,39 +6,44 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	f := func(token string, header Header, claims, signature string) {
-		t.Helper()
-
-		parts := strings.Split(token, ".")
-		partHeader, _, _ := parts[0], parts[1], parts[2]
-
-		tk, err := Parse([]byte(token), nopVerifier{})
-		mustOk(t, err)
-		mustEqual(t, string(tk.HeaderPart()), partHeader)
-		mustEqual(t, tk.Header(), header)
-		mustEqual(t, string(tk.Claims()), claims)
-		mustEqual(t, bytesToBase64(tk.Signature()), signature)
+	testCases := []struct {
+		token     string
+		header    Header
+		claims    string
+		signature string
+	}{
+		{
+			`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`,
+			Header{
+				Algorithm: HS256,
+				Type:      "JWT",
+			},
+			`{"jti":"just an id","aud":"audience"}`,
+			"t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo",
+		},
+		{
+			`eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCIsImN0eSI6InRva2VuIn0.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`,
+			Header{
+				Algorithm:   HS512,
+				Type:        "JWT",
+				ContentType: "token",
+			},
+			`{"jti":"just an id","aud":"audience"}`,
+			"t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo",
+		},
 	}
 
-	f(
-		`eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`,
-		Header{
-			Algorithm: HS256,
-			Type:      "JWT",
-		},
-		`{"jti":"just an id","aud":"audience"}`,
-		"t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo",
-	)
-	f(
-		`eyJhbGciOiJIUzUxMiIsInR5cCI6IkpXVCIsImN0eSI6InRva2VuIn0.eyJqdGkiOiJqdXN0IGFuIGlkIiwiYXVkIjoiYXVkaWVuY2UifQ.t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo`,
-		Header{
-			Algorithm:   HS512,
-			Type:        "JWT",
-			ContentType: "token",
-		},
-		`{"jti":"just an id","aud":"audience"}`,
-		"t5oEdZGp0Qbth7lo5fZlV_o4-r9gMoYBSktXbarjWoo",
-	)
+	for _, tc := range testCases {
+		parts := strings.Split(tc.token, ".")
+		partHeader, _, _ := parts[0], parts[1], parts[2]
+
+		tk, err := Parse([]byte(tc.token), nopVerifier{})
+		mustOk(t, err)
+		mustEqual(t, string(tk.HeaderPart()), partHeader)
+		mustEqual(t, tk.Header(), tc.header)
+		mustEqual(t, string(tk.Claims()), tc.claims)
+		mustEqual(t, bytesToBase64(tk.Signature()), tc.signature)
+	}
 }
 
 func TestParseAnotherAlgorithm(t *testing.T) {
@@ -50,19 +55,21 @@ func TestParseAnotherAlgorithm(t *testing.T) {
 }
 
 func TestParseMalformed(t *testing.T) {
-	f := func(got string) {
-		t.Helper()
-
-		_, err := Parse([]byte(got), nopVerifier{})
-		mustEqual(t, err, ErrInvalidFormat)
+	testCases := []struct {
+		token string
+	}{
+		{`xyz.xyz`},
+		{`eyJ.xyz`},
+		{`eyJ!.x!yz.e30`},
+		{`eyJ.xyz.xyz`},
+		{`eyJhIjoxMjN9.x!yz.e30`}, // `e30` is JSON `{}` in base64.
+		{`eyJhIjoxMjN9.e30.x!yz`},
 	}
 
-	f(`xyz.xyz`)
-	f(`eyJ.xyz`)
-	f(`eyJ!.x!yz.e30`)
-	f(`eyJ.xyz.xyz`)
-	f(`eyJhIjoxMjN9.x!yz.e30`) // `e30` is JSON `{}` in base64.
-	f(`eyJhIjoxMjN9.e30.x!yz`)
+	for _, tc := range testCases {
+		_, err := Parse([]byte(tc.token), nopVerifier{})
+		mustEqual(t, err, ErrInvalidFormat)
+	}
 }
 
 type nopVerifier struct{}

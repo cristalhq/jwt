@@ -6,66 +6,75 @@ import (
 )
 
 func TestES(t *testing.T) {
-	f := func(alg Algorithm, privateKey *ecdsa.PrivateKey, publicKey *ecdsa.PublicKey, wantErr error) {
-		t.Helper()
+	testCases := []struct {
+		alg        Algorithm
+		privateKey *ecdsa.PrivateKey
+		publicKey  *ecdsa.PublicKey
+		wantErr    error
+	}{
+		{ES256, ecdsaPrivateKey256, ecdsaPublicKey256, nil},
+		{ES384, ecdsaPrivateKey384, ecdsaPublicKey384, nil},
+		{ES512, ecdsaPrivateKey521, ecdsaPublicKey521, nil},
 
-		signer, err := NewSignerES(alg, privateKey)
+		{ES256, ecdsaPrivateKey256, ecdsaPublicKey256Another, ErrInvalidSignature},
+		{ES384, ecdsaPrivateKey384, ecdsaPublicKey384Another, ErrInvalidSignature},
+		{ES512, ecdsaPrivateKey521, ecdsaPublicKey521Another, ErrInvalidSignature},
+
+		{ES256, ecdsaPrivateKey256Another, ecdsaPublicKey256, ErrInvalidSignature},
+		{ES384, ecdsaPrivateKey384Another, ecdsaPublicKey384, ErrInvalidSignature},
+		{ES512, ecdsaPrivateKey521Another, ecdsaPublicKey521, ErrInvalidSignature},
+	}
+
+	for _, tc := range testCases {
+		signer, err := NewSignerES(tc.alg, tc.privateKey)
 		mustOk(t, err)
 
-		verifier, err := NewVerifierES(alg, publicKey)
+		verifier, err := NewVerifierES(tc.alg, tc.publicKey)
 		mustOk(t, err)
 
 		token, err := NewBuilder(signer).Build(simplePayload)
 		mustOk(t, err)
 
 		err = verifier.Verify(token)
-		mustEqual(t, err, wantErr)
+		mustEqual(t, err, tc.wantErr)
 	}
-
-	f(ES256, ecdsaPrivateKey256, ecdsaPublicKey256, nil)
-	f(ES384, ecdsaPrivateKey384, ecdsaPublicKey384, nil)
-	f(ES512, ecdsaPrivateKey521, ecdsaPublicKey521, nil)
-
-	f(ES256, ecdsaPrivateKey256, ecdsaPublicKey256Another, ErrInvalidSignature)
-	f(ES384, ecdsaPrivateKey384, ecdsaPublicKey384Another, ErrInvalidSignature)
-	f(ES512, ecdsaPrivateKey521, ecdsaPublicKey521Another, ErrInvalidSignature)
-
-	f(ES256, ecdsaPrivateKey256Another, ecdsaPublicKey256, ErrInvalidSignature)
-	f(ES384, ecdsaPrivateKey384Another, ecdsaPublicKey384, ErrInvalidSignature)
-	f(ES512, ecdsaPrivateKey521Another, ecdsaPublicKey521, ErrInvalidSignature)
 }
 
 func TestES_BadKeys(t *testing.T) {
-	f := func(err, wantErr error) {
-		t.Helper()
-		mustEqual(t, err, wantErr)
+	testCases := []struct {
+		err     error
+		wantErr error
+	}{
+		{getErr(NewSignerES(ES256, nil)), ErrNilKey},
+		{getErr(NewSignerES(ES384, nil)), ErrNilKey},
+		{getErr(NewSignerES(ES512, nil)), ErrNilKey},
+
+		{getErr(NewSignerES("foo", ecdsaPrivateKey384)), ErrUnsupportedAlg},
+
+		{getErr(NewSignerES(ES256, ecdsaPrivateKey384)), ErrInvalidKey},
+		{getErr(NewSignerES(ES256, ecdsaPrivateKey521)), ErrInvalidKey},
+		{getErr(NewSignerES(ES384, ecdsaPrivateKey256)), ErrInvalidKey},
+		{getErr(NewSignerES(ES384, ecdsaPrivateKey521)), ErrInvalidKey},
+		{getErr(NewSignerES(ES512, ecdsaPrivateKey256)), ErrInvalidKey},
+		{getErr(NewSignerES(ES512, ecdsaPrivateKey384)), ErrInvalidKey},
+
+		{getErr(NewVerifierES(ES256, nil)), ErrNilKey},
+		{getErr(NewVerifierES(ES384, nil)), ErrNilKey},
+		{getErr(NewVerifierES(ES512, nil)), ErrNilKey},
+
+		{getErr(NewVerifierES("boo", ecdsaPublicKey384)), ErrUnsupportedAlg},
+
+		{getErr(NewVerifierES(ES256, ecdsaPublicKey384)), ErrInvalidKey},
+		{getErr(NewVerifierES(ES256, ecdsaPublicKey521)), ErrInvalidKey},
+		{getErr(NewVerifierES(ES384, ecdsaPublicKey256)), ErrInvalidKey},
+		{getErr(NewVerifierES(ES384, ecdsaPublicKey521)), ErrInvalidKey},
+		{getErr(NewVerifierES(ES512, ecdsaPublicKey256)), ErrInvalidKey},
+		{getErr(NewVerifierES(ES512, ecdsaPublicKey384)), ErrInvalidKey},
 	}
 
-	f(getSignerError(NewSignerES(ES256, nil)), ErrNilKey)
-	f(getSignerError(NewSignerES(ES384, nil)), ErrNilKey)
-	f(getSignerError(NewSignerES(ES512, nil)), ErrNilKey)
-
-	f(getSignerError(NewSignerES("foo", ecdsaPrivateKey384)), ErrUnsupportedAlg)
-
-	f(getSignerError(NewSignerES(ES256, ecdsaPrivateKey384)), ErrInvalidKey)
-	f(getSignerError(NewSignerES(ES256, ecdsaPrivateKey521)), ErrInvalidKey)
-	f(getSignerError(NewSignerES(ES384, ecdsaPrivateKey256)), ErrInvalidKey)
-	f(getSignerError(NewSignerES(ES384, ecdsaPrivateKey521)), ErrInvalidKey)
-	f(getSignerError(NewSignerES(ES512, ecdsaPrivateKey256)), ErrInvalidKey)
-	f(getSignerError(NewSignerES(ES512, ecdsaPrivateKey384)), ErrInvalidKey)
-
-	f(getVerifierError(NewVerifierES(ES256, nil)), ErrNilKey)
-	f(getVerifierError(NewVerifierES(ES384, nil)), ErrNilKey)
-	f(getVerifierError(NewVerifierES(ES512, nil)), ErrNilKey)
-
-	f(getVerifierError(NewVerifierES("boo", ecdsaPublicKey384)), ErrUnsupportedAlg)
-
-	f(getVerifierError(NewVerifierES(ES256, ecdsaPublicKey384)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierES(ES256, ecdsaPublicKey521)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierES(ES384, ecdsaPublicKey256)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierES(ES384, ecdsaPublicKey521)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierES(ES512, ecdsaPublicKey256)), ErrInvalidKey)
-	f(getVerifierError(NewVerifierES(ES512, ecdsaPublicKey384)), ErrInvalidKey)
+	for _, tc := range testCases {
+		mustEqual(t, tc.err, tc.wantErr)
+	}
 }
 
 var (

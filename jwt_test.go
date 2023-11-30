@@ -28,38 +28,41 @@ func TestDecodeClaims(t *testing.T) {
 }
 
 func TestMarshalHeader(t *testing.T) {
-	f := func(h *Header, want string) {
-		t.Helper()
-
-		raw, err := h.MarshalJSON()
-		mustOk(t, err)
-		mustEqual(t, string(raw), want)
+	testCases := []struct {
+		h    *Header
+		want string
+	}{
+		{
+			&Header{Algorithm: RS256},
+			`{"alg":"RS256"}`,
+		},
+		{
+			&Header{Algorithm: RS256, Type: "JWT"},
+			`{"alg":"RS256","typ":"JWT"}`,
+		},
+		{
+			&Header{Algorithm: RS256, ContentType: "token"},
+			`{"alg":"RS256","cty":"token"}`,
+		},
+		{
+			&Header{Algorithm: RS256, Type: "JWT", ContentType: "token"},
+			`{"alg":"RS256","typ":"JWT","cty":"token"}`,
+		},
+		{
+			&Header{Algorithm: RS256, Type: "JwT", ContentType: "token"},
+			`{"alg":"RS256","typ":"JwT","cty":"token"}`,
+		},
+		{
+			&Header{Algorithm: RS256, Type: "JwT", ContentType: "token", KeyID: "test"},
+			`{"alg":"RS256","typ":"JwT","cty":"token","kid":"test"}`,
+		},
 	}
 
-	f(
-		&Header{Algorithm: RS256},
-		`{"alg":"RS256"}`,
-	)
-	f(
-		&Header{Algorithm: RS256, Type: "JWT"},
-		`{"alg":"RS256","typ":"JWT"}`,
-	)
-	f(
-		&Header{Algorithm: RS256, ContentType: "token"},
-		`{"alg":"RS256","cty":"token"}`,
-	)
-	f(
-		&Header{Algorithm: RS256, Type: "JWT", ContentType: "token"},
-		`{"alg":"RS256","typ":"JWT","cty":"token"}`,
-	)
-	f(
-		&Header{Algorithm: RS256, Type: "JwT", ContentType: "token"},
-		`{"alg":"RS256","typ":"JwT","cty":"token"}`,
-	)
-	f(
-		&Header{Algorithm: RS256, Type: "JwT", ContentType: "token", KeyID: "test"},
-		`{"alg":"RS256","typ":"JwT","cty":"token","kid":"test"}`,
-	)
+	for _, tc := range testCases {
+		raw, err := tc.h.MarshalJSON()
+		mustOk(t, err)
+		mustEqual(t, string(raw), tc.want)
+	}
 }
 
 func TestNewKey(t *testing.T) {
@@ -77,11 +80,7 @@ func base64ToBytes(s string) []byte {
 	return must(base64.RawURLEncoding.DecodeString(s))
 }
 
-func getSignerError(_ Signer, err error) error {
-	return err
-}
-
-func getVerifierError(_ Verifier, err error) error {
+func getErr[T any](_ T, err error) error {
 	return err
 }
 
