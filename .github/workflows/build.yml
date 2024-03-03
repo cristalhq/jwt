@@ -11,7 +11,7 @@ on:
 # See https://github.com/cristalhq/.github/.github/workflows
 jobs:
   build:
-    uses: cristalhq/.github/.github/workflows/build.yml@v0.7.0
+    uses: cristalhq/.github/.github/workflows/build.yml@v0.8.1
 
   vuln:
-    uses: cristalhq/.github/.github/workflows/vuln.yml@v0.7.0
+    uses: cristalhq/.github/.github/workflows/vuln.yml@v0.8.1
